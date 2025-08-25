@@ -12,50 +12,40 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       
       # Database Configuration
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST:-localhost}:${DB_PORT:-5432}/${DB_NAME:-nutri_thata_db}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-validate}
-      
-      # Flyway Configuration
-      SPRING_FLYWAY_ENABLED: ${SPRING_FLYWAY_ENABLED:-true}
-      SPRING_FLYWAY_URL: jdbc:postgresql://${DB_HOST:-localhost}:${DB_PORT:-5432}/${DB_NAME:-nutri_thata_db}
-      SPRING_FLYWAY_USER: ${DB_USER:-postgres}
-      SPRING_FLYWAY_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST:-localhost}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-nutri_thata_db}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
       
       # JWT Configuration
       JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-7200000}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
       
-      # Email Configuration
-      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST}
-      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
-      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
-      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:-true}
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:-true}
+      # Email Configuration (Brevo)
+      SMTP_API_KEY: ${SMTP_API_KEY}
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL:-rafaprof312@gmail.com}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Nutri Thata}
+      
+      # CORS Configuration
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000,http://localhost:8081}
+      
+      # Upload Configuration
+      UPLOAD_DIRECTORY: ${UPLOAD_DIRECTORY:-/app/storage/uploads}
+      UPLOAD_MAX_FILE_SIZE: ${UPLOAD_MAX_FILE_SIZE:-10MB}
+      UPLOAD_BASE_URL: ${UPLOAD_BASE_URL:-http://localhost:8081}
+      
+      # Invite Configuration
+      INVITE_EXPIRATION_DAYS: ${INVITE_EXPIRATION_DAYS:-7}
+      INVITE_BASE_URL: ${INVITE_BASE_URL:-http://localhost:8081}
+      
+      # Frontend URL
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       
       # Server Configuration
       SERVER_PORT: ${SERVER_PORT:-8081}
-      
-      # File Upload Configuration
-      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: ${SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE:-10MB}
-      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: ${SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE:-10MB}
-      
-      # Logging Configuration
-      LOGGING_LEVEL_ROOT: ${LOGGING_LEVEL_ROOT:-INFO}
-      LOGGING_LEVEL_BR_RAFAALMEIDA1: ${LOGGING_LEVEL_BR_RAFAALMEIDA1:-DEBUG}
-      
-      # CORS Configuration
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
-      CORS_ALLOWED_METHODS: ${CORS_ALLOWED_METHODS:-GET,POST,PUT,DELETE,OPTIONS}
-      CORS_ALLOWED_HEADERS: ${CORS_ALLOWED_HEADERS:-*}
-      
-      # Frontend URL (necessário para reset de senha)
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
-      
-      # Brevo API Configuration (para emails)
-      BREVO_API_KEY: ${BREVO_API_KEY}
       
     ports:
       - "${API_PORT:-8081}:8081"
