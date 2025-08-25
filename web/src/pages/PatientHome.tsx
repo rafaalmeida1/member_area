@@ -122,8 +122,12 @@ export function PatientHome({ professionalName }: PatientHomeProps) {
     >
       <div className="patient-home-container">
         {/* Hero Banner Section */}
-        <section className="hero-banner-section">
-          {professional?.backgroundImage && (
+        <section className="hero-banner-section" style={{
+          backgroundImage: `url(${professional?.backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}>
+          {/* {professional?.backgroundImage && (
             <div 
               className="hero-banner-background"
               style={{
@@ -132,7 +136,7 @@ export function PatientHome({ professionalName }: PatientHomeProps) {
                 backgroundPosition: 'center',
               }}
             />
-          )}
+          )} */}
           <div className="hero-banner-overlay">
             <div className="hero-content">
               <div className="hero-text">
