@@ -9,7 +9,7 @@ services:
     container_name: nutri_thata_api
     environment:
       # Spring Profiles
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:}
       
       # Database Configuration
       DB_HOST: ${DB_HOST:}
