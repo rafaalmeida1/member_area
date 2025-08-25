@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 
-// Configuração base da API
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+// Configuração base da API - Usando proxy da Vercel para evitar Mixed Content
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Tipos para as respostas da API
 export interface ApiResponse<T> {
