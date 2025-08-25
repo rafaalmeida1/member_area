@@ -1,0 +1,1733 @@
+openapi: 3.0.3
+info:
+  title: Nutri Thata API
+  description: API para plataforma de educação nutricional com sistema de módulos, convites e upload de mídia
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@nutrithata.com
+
+servers:
+  - url: http://localhost:8080
+    description: Desenvolvimento local
+  - url: https://api.nutrithata.com
+    description: Produção
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ========== AUTENTICAÇÃO ==========
+  /auth/register/patient:
+    post:
+      tags:
+        - Autenticação
+      summary: Registrar novo paciente
+      description: Registro público disponível apenas para role PATIENT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  example: "João Silva"
+                email:
+                  type: string
+                  format: email
+                  example: "joao@email.com"
+                password:
+                  type: string
+                  minLength: 8
+                  example: "MinhaSenh@123"
+                phone:
+                  type: string
+                  example: "(11) 99999-9999"
+                birthDate:
+                  type: string
+                  format: date
+                  example: "1990-01-01"
+      responses:
+        '201':
+          description: Paciente registrado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          description: Email já está em uso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Dados de entrada inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags:
+        - Autenticação
+      summary: Fazer login
+      description: Autenticação de usuário
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "joao@email.com"
+                password:
+                  type: string
+                  example: "MinhaSenh@123"
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Dados de entrada inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Autenticação
+      summary: Renovar token JWT
+      description: Gera novo token de acesso
+      responses:
+        '200':
+          description: Token renovado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Token renovado"
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiJ9..."
+        '401':
+          description: Token inválido ou expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/me:
+    get:
+      tags:
+        - Autenticação
+      summary: Obter usuário atual
+      description: Retorna dados do usuário autenticado
+      responses:
+        '200':
+          description: Dados do usuário
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ========== USUÁRIOS ==========
+  /users/me:
+    get:
+      tags:
+        - Usuários
+      summary: Obter perfil do usuário
+      description: Dados pessoais do usuário autenticado
+      responses:
+        '200':
+          description: Perfil do usuário
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags:
+        - Usuários
+      summary: Atualizar perfil do usuário
+      description: Atualiza dados pessoais do usuário autenticado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "João Silva Santos"
+                phone:
+                  type: string
+                  example: "(11) 98888-8888"
+                birthDate:
+                  type: string
+                  format: date
+                  example: "1990-01-01"
+      responses:
+        '200':
+          description: Perfil atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Perfil atualizado com sucesso"
+                  data:
+                    $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ========== PROFISSIONAIS ==========
+  /professionals/me:
+    get:
+      tags:
+        - Profissionais
+      summary: Obter dados profissionais
+      description: Dados profissionais do usuário autenticado (PROFESSIONAL ou ADMIN)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dados profissionais
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/ProfessionalProfile'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Usuário não é profissional
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Perfil profissional não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags:
+        - Profissionais
+      summary: Atualizar dados profissionais
+      description: Atualiza dados profissionais (PROFESSIONAL ou ADMIN)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Dra. Ana Paula Silva"
+                title:
+                  type: string
+                  example: "Nutricionista Clínica"
+                bio:
+                  type: string
+                  example: "Especialista em nutrição funcional e emagrecimento saudável"
+                image:
+                  type: string
+                  example: "https://api.nutrithata.com/static/profiles/ana.jpg"
+                specialties:
+                  type: array
+                  items:
+                    type: string
+                  example: ["Nutrição Funcional", "Emagrecimento", "Nutrição Esportiva"]
+      responses:
+        '200':
+          description: Dados profissionais atualizados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Dados profissionais atualizados com sucesso"
+                  data:
+                    $ref: '#/components/schemas/ProfessionalProfile'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sem permissão
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/professionals:
+    post:
+      tags:
+        - Administração
+      summary: Criar novo profissional
+      description: Cria usuário com role PROFESSIONAL (apenas ADMIN)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user
+                - professional
+              properties:
+                user:
+                  type: object
+                  required:
+                    - name
+                    - email
+                    - password
+                  properties:
+                    name:
+                      type: string
+                      example: "Dr. Carlos Pereira"
+                    email:
+                      type: string
+                      format: email
+                      example: "carlos@nutrithata.com"
+                    password:
+                      type: string
+                      minLength: 8
+                      example: "SenhaForte@123"
+                professional:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                      example: "Nutricionista Esportivo"
+                    bio:
+                      type: string
+                      example: "Especialista em nutrição para atletas"
+                    specialties:
+                      type: array
+                      items:
+                        type: string
+                      example: ["Nutrição Esportiva", "Suplementação"]
+      responses:
+        '201':
+          description: Profissional criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Profissional criado com sucesso"
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                      professional:
+                        $ref: '#/components/schemas/ProfessionalProfile'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sem permissão (apenas ADMIN)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Email já está em uso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ========== MÓDULOS ==========
+  /modules:
+    get:
+      tags:
+        - Módulos
+      summary: Listar módulos
+      description: Lista módulos educacionais com filtros e paginação
+      parameters:
+        - name: category
+          in: query
+          description: Filtrar por categoria
+          schema:
+            type: string
+            example: "Fundamentos"
+        - name: page
+          in: query
+          description: Número da página (base 0)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Tamanho da página
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: sort
+          in: query
+          description: Campo de ordenação
+          schema:
+            type: string
+            enum: ["title", "createdAt", "category"]
+            default: "createdAt"
+        - name: direction
+          in: query
+          description: Direção da ordenação
+          schema:
+            type: string
+            enum: ["asc", "desc"]
+            default: "desc"
+      responses:
+        '200':
+          description: Lista de módulos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      modules:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ModuleSummary'
+                      totalElements:
+                        type: integer
+                        example: 50
+                      totalPages:
+                        type: integer
+                        example: 5
+                      currentPage:
+                        type: integer
+                        example: 0
+                      pageSize:
+                        type: integer
+                        example: 20
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Módulos
+      summary: Criar novo módulo
+      description: Cria módulo educacional (PROFESSIONAL ou ADMIN)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleCreateRequest'
+      responses:
+        '201':
+          description: Módulo criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Módulo criado com sucesso"
+                  data:
+                    $ref: '#/components/schemas/Module'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sem permissão (apenas PROFESSIONAL ou ADMIN)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /modules/{id}:
+    get:
+      tags:
+        - Módulos
+      summary: Obter módulo por ID
+      description: Retorna módulo completo com conteúdo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do módulo
+          schema:
+            type: string
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Módulo encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/Module'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Módulo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags:
+        - Módulos
+      summary: Atualizar módulo
+      description: Atualiza módulo (criador ou ADMIN)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do módulo
+          schema:
+            type: string
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleUpdateRequest'
+      responses:
+        '200':
+          description: Módulo atualizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Módulo atualizado com sucesso"
+                  data:
+                    $ref: '#/components/schemas/Module'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sem permissão (apenas criador ou ADMIN)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Módulo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Módulos
+      summary: Excluir módulo
+      description: Remove módulo (criador ou ADMIN)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do módulo
+          schema:
+            type: string
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '204':
+          description: Módulo excluído com sucesso
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sem permissão (apenas criador ou ADMIN)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Módulo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ========== UPLOAD DE MÍDIA ==========
+  /media/upload:
+    post:
+      tags:
+        - Mídia
+      summary: Upload de arquivo
+      description: Faz upload de arquivo local (imagem, vídeo ou áudio)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Arquivo para upload
+                type:
+                  type: string
+                  enum: ["IMAGE", "VIDEO", "AUDIO"]
+                  description: Tipo de mídia (auto-detectado se não informado)
+      responses:
+        '201':
+          description: Upload realizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Upload concluído"
+                  data:
+                    $ref: '#/components/schemas/MediaAsset'
+        '400':
+          description: Tipo de arquivo não suportado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: Arquivo muito grande
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /media/link:
+    post:
+      tags:
+        - Mídia
+      summary: Vincular URL externa
+      description: Salva referência para mídia em URL externa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+                - type
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  example: "https://youtube.com/embed/dQw4w9WgXcQ"
+                type:
+                  type: string
+                  enum: ["IMAGE", "VIDEO", "AUDIO"]
+                  example: "VIDEO"
+      responses:
+        '201':
+          description: URL validada e salva
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "URL validada e salva"
+                  data:
+                    $ref: '#/components/schemas/MediaAsset'
+        '400':
+          description: URL inválida ou inacessível
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /media/my:
+    get:
+      tags:
+        - Mídia
+      summary: Listar mídias do usuário
+      description: Lista arquivos de mídia do usuário autenticado
+      parameters:
+        - name: type
+          in: query
+          description: Filtrar por tipo de mídia
+          schema:
+            type: string
+            enum: ["IMAGE", "VIDEO", "AUDIO"]
+        - name: page
+          in: query
+          description: Número da página (base 0)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Tamanho da página
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Lista de mídias
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      media:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MediaAsset'
+                      totalElements:
+                        type: integer
+                        example: 25
+                      totalPages:
+                        type: integer
+                        example: 3
+                      currentPage:
+                        type: integer
+                        example: 0
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /media/{id}:
+    delete:
+      tags:
+        - Mídia
+      summary: Excluir mídia
+      description: Remove arquivo de mídia (dono ou ADMIN)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da mídia
+          schema:
+            type: string
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '204':
+          description: Mídia removida com sucesso
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sem permissão (apenas dono ou ADMIN)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Mídia não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ========== CONVITES ==========
+  /invites:
+    post:
+      tags:
+        - Convites
+      summary: Criar convite para paciente
+      description: Envia convite por email para novo paciente (PROFESSIONAL ou ADMIN)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "paciente@email.com"
+                prefill:
+                  type: object
+                  description: Dados para pré-preenchimento do formulário
+                  properties:
+                    name:
+                      type: string
+                      example: "Maria Santos"
+                    phone:
+                      type: string
+                      example: "(11) 99999-9999"
+      responses:
+        '201':
+          description: Convite criado e enviado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Convite enviado com sucesso"
+                  data:
+                    type: object
+                    properties:
+                      inviteId:
+                        type: string
+                        example: "550e8400-e29b-41d4-a716-446655440000"
+                      email:
+                        type: string
+                        example: "paciente@email.com"
+                      expiresAt:
+                        type: string
+                        format: date-time
+                        example: "2024-02-15T23:59:59Z"
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sem permissão (apenas PROFESSIONAL ou ADMIN)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Email já possui convite pendente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - Convites
+      summary: Listar convites criados
+      description: Lista convites criados pelo profissional autenticado
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: Filtrar por status do convite
+          schema:
+            type: string
+            enum: ["PENDING", "ACCEPTED", "EXPIRED", "CANCELLED"]
+        - name: page
+          in: query
+          description: Número da página (base 0)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Tamanho da página
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Lista de convites
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      invites:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Invite'
+                      totalElements:
+                        type: integer
+                        example: 15
+                      totalPages:
+                        type: integer
+                        example: 2
+                      currentPage:
+                        type: integer
+                        example: 0
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sem permissão
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /invites/{token}:
+    get:
+      tags:
+        - Convites
+      summary: Visualizar convite por token
+      description: Obtém dados do convite para pré-preenchimento (acesso público)
+      security: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: Token único do convite
+          schema:
+            type: string
+            example: "abc123def456"
+      responses:
+        '200':
+          description: Dados do convite
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                        example: "paciente@email.com"
+                      prefill:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            example: "Maria Santos"
+                          phone:
+                            type: string
+                            example: "(11) 99999-9999"
+                      isValid:
+                        type: boolean
+                        example: true
+                      expiresAt:
+                        type: string
+                        format: date-time
+                        example: "2024-02-15T23:59:59Z"
+        '404':
+          description: Token inválido ou não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '410':
+          description: Convite expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /invites/{token}/accept:
+    post:
+      tags:
+        - Convites
+      summary: Aceitar convite e criar conta
+      description: Cria conta de paciente baseada no convite (acesso público)
+      security: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: Token único do convite
+          schema:
+            type: string
+            example: "abc123def456"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - password
+              properties:
+                name:
+                  type: string
+                  example: "Maria Santos"
+                password:
+                  type: string
+                  minLength: 8
+                  example: "MinhaSenh@123"
+                phone:
+                  type: string
+                  example: "(11) 99999-9999"
+      responses:
+        '201':
+          description: Conta criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '404':
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Convite já foi aceito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '410':
+          description: Convite expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /invites/{id}/resend:
+    post:
+      tags:
+        - Convites
+      summary: Reenviar convite
+      description: Reenvia email de convite (criador ou ADMIN)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do convite
+          schema:
+            type: string
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Convite reenviado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Convite reenviado com sucesso"
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sem permissão
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Convite não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Convite já foi aceito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /invites/{id}/cancel:
+    post:
+      tags:
+        - Convites
+      summary: Cancelar convite
+      description: Cancela convite pendente (criador ou ADMIN)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do convite
+          schema:
+            type: string
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Convite cancelado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Convite cancelado com sucesso"
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sem permissão
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Convite não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Convite já foi aceito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ========== RECURSOS ESTÁTICOS ==========
+  /static/{path}:
+    get:
+      tags:
+        - Recursos Estáticos
+      summary: Servir arquivos estáticos
+      description: Serve arquivos uploadados localmente
+      security: []
+      parameters:
+        - name: path
+          in: path
+          required: true
+          description: Caminho do arquivo
+          schema:
+            type: string
+            example: "uploads/2024/01/abc123-image.jpg"
+      responses:
+        '200':
+          description: Arquivo encontrado
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+            video/*:
+              schema:
+                type: string
+                format: binary
+            audio/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Arquivo não encontrado
+
+# ========== COMPONENTES ==========
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # ========== RESPOSTAS DE AUTENTICAÇÃO ==========
+    AuthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        message:
+          type: string
+          example: "Login realizado com sucesso"
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              example: "eyJhbGciOiJIUzI1NiJ9..."
+            user:
+              $ref: '#/components/schemas/User'
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        faultstring:
+          type: string
+          example: "Credenciais inválidas"
+        stacktrace:
+          type: string
+          description: "Disponível apenas em ambiente de desenvolvimento"
+          example: "com.nutrithata.exception.AuthenticationException: Invalid credentials..."
+
+    # ========== MODELOS DE USUÁRIO ==========
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "João Silva"
+        email:
+          type: string
+          format: email
+          example: "joao@email.com"
+        role:
+          type: string
+          enum: ["PATIENT", "PROFESSIONAL", "ADMIN"]
+          example: "PATIENT"
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    UserProfile:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            phone:
+              type: string
+              example: "(11) 99999-9999"
+            birthDate:
+              type: string
+              format: date
+              example: "1990-01-01"
+
+    ProfessionalProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        userId:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Dra. Ana Paula Silva"
+        title:
+          type: string
+          example: "Nutricionista Clínica"
+        bio:
+          type: string
+          example: "Especialista em nutrição funcional e emagrecimento saudável. CRN 12345/SP"
+        image:
+          type: string
+          example: "https://api.nutrithata.com/static/profiles/ana.jpg"
+        specialties:
+          type: array
+          items:
+            type: string
+          example: ["Nutrição Funcional", "Emagrecimento", "Nutrição Esportiva"]
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-20T15:45:00Z"
+
+    # ========== MODELOS DE MÓDULO ==========
+    ModuleSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        title:
+          type: string
+          example: "Introdução à Alimentação Saudável"
+        description:
+          type: string
+          example: "Fundamentos básicos para uma alimentação equilibrada e nutritiva"
+        coverImage:
+          type: string
+          example: "https://api.nutrithata.com/static/covers/intro-alimentacao.jpg"
+        category:
+          type: string
+          example: "Fundamentos"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        contentCount:
+          type: integer
+          example: 3
+        createdBy:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: "Dra. Ana Paula Silva"
+
+    Module:
+      allOf:
+        - $ref: '#/components/schemas/ModuleSummary'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/ContentBlock'
+            updatedAt:
+              type: string
+              format: date-time
+              example: "2024-01-20T15:45:00Z"
+
+    ContentBlock:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1-1"
+        type:
+          type: string
+          enum: ["text", "video", "audio"]
+          example: "text"
+        content:
+          type: string
+          example: "A alimentação saudável é a base para uma vida plena e cheia de energia..."
+        order:
+          type: integer
+          example: 1
+
+    ModuleCreateRequest:
+      type: object
+      required:
+        - title
+        - description
+        - category
+        - content
+      properties:
+        title:
+          type: string
+          example: "Nutrição na Terceira Idade"
+        description:
+          type: string
+          example: "Cuidados nutricionais específicos para idosos"
+        coverImage:
+          type: string
+          example: "https://api.nutrithata.com/static/covers/terceira-idade.jpg"
+        category:
+          type: string
+          example: "Grupos Especiais"
+        content:
+          type: array
+          items:
+            type: object
+            required:
+              - type
+              - content
+              - order
+            properties:
+              type:
+                type: string
+                enum: ["text", "video", "audio"]
+              content:
+                type: string
+              order:
+                type: integer
+
+    ModuleUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Nutrição na Terceira Idade - Atualizado"
+        description:
+          type: string
+          example: "Cuidados nutricionais específicos para idosos com foco em prevenção"
+        coverImage:
+          type: string
+          example: "https://api.nutrithata.com/static/covers/terceira-idade-v2.jpg"
+        category:
+          type: string
+          example: "Grupos Especiais"
+        content:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: "ID do bloco existente (para atualização) ou null (para criação)"
+              type:
+                type: string
+                enum: ["text", "video", "audio"]
+              content:
+                type: string
+              order:
+                type: integer
+
+    # ========== MODELOS DE MÍDIA ==========
+    MediaAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        ownerUserId:
+          type: integer
+          format: int64
+          example: 1
+        type:
+          type: string
+          enum: ["IMAGE", "VIDEO", "AUDIO"]
+          example: "IMAGE"
+        storage:
+          type: string
+          enum: ["LOCAL", "EXTERNAL_URL"]
+          example: "LOCAL"
+        filePath:
+          type: string
+          nullable: true
+          example: "uploads/2024/01/abc123-image.jpg"
+        publicUrl:
+          type: string
+          nullable: true
+          example: "https://api.nutrithata.com/static/uploads/2024/01/abc123-image.jpg"
+        externalUrl:
+          type: string
+          nullable: true
+          example: "https://youtube.com/embed/dQw4w9WgXcQ"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    # ========== MODELOS DE CONVITE ==========
+    Invite:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        email:
+          type: string
+          format: email
+          example: "paciente@email.com"
+        token:
+          type: string
+          example: "abc123def456ghi789"
+        role:
+          type: string
+          enum: ["PATIENT"]
+          example: "PATIENT"
+        prefill:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "Maria Santos"
+            phone:
+              type: string
+              example: "(11) 99999-9999"
+        status:
+          type: string
+          enum: ["PENDING", "ACCEPTED", "EXPIRED", "CANCELLED"]
+          example: "PENDING"
+        expiresAt:
+          type: string
+          format: date-time
+          example: "2024-02-15T23:59:59Z"
+        acceptedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        createdBy:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: "Dra. Ana Paula Silva"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+tags:
+  - name: Autenticação
+    description: Operações de autenticação e autorização
+  - name: Usuários
+    description: Gestão de perfis de usuário
+  - name: Profissionais
+    description: Gestão de dados profissionais
+  - name: Administração
+    description: Operações administrativas
+  - name: Módulos
+    description: CRUD de módulos educacionais
+  - name: Mídia
+    description: Upload e gestão de arquivos de mídia
+  - name: Convites
+    description: Sistema de convites por email
+  - name: Recursos Estáticos
+    description: Servir arquivos estáticos

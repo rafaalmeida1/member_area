@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # ========== POSTGRESQL DATABASE ==========
+  postgres:
+    image: postgres:16-alpine
+    container_name: nutri_thata_db
+    environment:
+      POSTGRES_DB: nutri_thata_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./api/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - nutri_thata_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nutri_thata_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ========== MAILHOG (SMTP Development) ==========
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: nutri_thata_mail
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web interface
+    networks:
+      - nutri_thata_network
+
+  # ========== PGADMIN (Optional) ==========
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: nutri_thata_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@nutrithata.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - nutri_thata_network
+    depends_on:
+      - postgres
+    profiles:
+      - admin
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  nutri_thata_network:
+    driver: bridge
