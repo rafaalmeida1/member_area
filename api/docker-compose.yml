@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # API Spring Boot
   api:
@@ -22,6 +20,7 @@ services:
       # JWT Configuration
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
       
       # Email Configuration (Brevo)
       SMTP_HOST: ${SMTP_HOST}
@@ -48,6 +47,8 @@ services:
       # Server Configuration
       SERVER_PORT: ${SERVER_PORT}
       
+    tmpfs:
+      - /tmp
     volumes:
       - api_uploads:/app/uploads
       - api_storage:/app/storage
