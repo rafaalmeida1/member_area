@@ -62,29 +62,45 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        try {
+            log.info("Iniciando login para email: {}", request.getEmail());
+            
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+            
+            log.info("Autenticação bem-sucedida para email: {}", request.getEmail());
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new BusinessException("Usuário não encontrado"));
+            
+            log.info("Usuário encontrado: {}", user.getEmail());
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BusinessException("Usuário não encontrado"));
+            if (!user.getIsActive()) {
+                throw new BusinessException("Conta desativada");
+            }
 
-        if (!user.getIsActive()) {
-            throw new BusinessException("Conta desativada");
+            String jwtToken = jwtService.generateToken(user);
+            log.info("JWT token gerado com sucesso");
+            
+            UserResponse userResponse = userMapper.toUserResponse(user);
+            log.info("UserResponse criado com sucesso");
+
+            AuthResponse response = AuthResponse.builder()
+                    .token(jwtToken)
+                    .user(userResponse)
+                    .build();
+                    
+            log.info("AuthResponse criado com sucesso");
+            
+            return response;
+        } catch (Exception e) {
+            log.error("Erro inesperado no login: ", e);
+            throw e;
         }
-
-        String jwtToken = jwtService.generateToken(user);
-        UserResponse userResponse = userMapper.toUserResponse(user);
-
-
-        return AuthResponse.builder()
-                .token(jwtToken)
-                .user(userResponse)
-                .build();
     }
 
     @Transactional
