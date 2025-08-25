@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LoadingWrapper, LoadingSpinner } from '@/components/LoadingSpinner';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { FileUpload } from '@/components/FileUpload';
 import { BannerPreview } from '@/components/BannerPreview';
 import { Layout } from '@/components/Layout';
@@ -15,25 +14,12 @@ import { apiService, ProfessionalProfile, UpdateProfessionalProfileRequest } fro
 import { ArrowLeft, Save, Plus, X, Camera, Image } from 'lucide-react';
 
 interface ProfessionalSettingsProps {
-  onNavigateToHome: () => void;
-  onNavigateToModules: () => void;
-  onNavigateToInvites: () => void;
-  onNavigateToProfile: () => void;
-  onNavigateToSettings: () => void;
-  onNavigateToPatientManagement: () => void;
   professionalName?: string;
 }
 
 export function ProfessionalSettings({ 
-  onNavigateToHome,
-  onNavigateToModules,
-  onNavigateToInvites,
-  onNavigateToProfile,
-  onNavigateToSettings,
-  onNavigateToPatientManagement,
   professionalName
 }: ProfessionalSettingsProps) {
-  const { user } = useAuth();
   const { toast } = useToast();
 
   // Estados
@@ -176,12 +162,6 @@ export function ProfessionalSettings({
   return (
     <Layout
       title="Configurações do Perfil"
-      onNavigateToHome={onNavigateToHome}
-      onNavigateToModules={onNavigateToModules}
-      onNavigateToInvites={onNavigateToInvites}
-      onNavigateToProfile={onNavigateToProfile}
-      onNavigateToSettings={onNavigateToSettings}
-      onNavigateToPatientManagement={onNavigateToPatientManagement}
       professionalName={professionalName}
     >
       <div className="container mx-auto px-4 py-8 max-w-4xl">

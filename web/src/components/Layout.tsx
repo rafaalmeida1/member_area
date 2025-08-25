@@ -157,11 +157,11 @@ export function Layout({
                   className="nav-item"
                 >
                   <UserCog className="nav-icon" />
-                  <span>Meu Perfil</span>
+                  <span>Minha Conta</span>
                 </Link>
               </li>
               
-              <li>
+              {/* <li>
                 <Link 
                   to="/settings"
                   className="nav-item"
@@ -169,7 +169,7 @@ export function Layout({
                   <Settings className="nav-icon" />
                   <span>Minha Conta</span>
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
         </nav>

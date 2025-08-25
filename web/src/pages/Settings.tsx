@@ -7,25 +7,13 @@ import { Layout } from '@/components/Layout';
 import './Settings.css';
 
 interface SettingsProps {
-  onNavigateToHome: () => void;
-  onNavigateToModules: () => void;
-  onNavigateToInvites: () => void;
-  onNavigateToProfile: () => void;
-  onNavigateToSettings: () => void;
-  onNavigateToPatientManagement: () => void;
   professionalName?: string;
 }
 
 export function Settings({ 
-  onNavigateToHome,
-  onNavigateToModules,
-  onNavigateToInvites,
-  onNavigateToProfile,
-  onNavigateToSettings,
-  onNavigateToPatientManagement,
   professionalName
 }: SettingsProps) {
-  const { user, updateUser, refreshUser } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   
   const [activeTab, setActiveTab] = useState('profile');
@@ -92,13 +80,13 @@ export function Settings({
 
     try {
       setIsLoading(true);
-      const updatedUser = await apiService.updateUser({
+      const updatedUser = await apiService.updateCurrentUser({
         name: profileData.name,
         phone: profileData.phone || undefined,
         birthDate: profileData.birthDate || undefined,
       });
       
-      updateUser(updatedUser);
+      // updateUser(updatedUser);
       toast({
         title: "Perfil atualizado!",
         description: "Suas informações foram salvas com sucesso.",
@@ -146,10 +134,7 @@ export function Settings({
 
     try {
       setIsLoading(true);
-      await apiService.changePassword({
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      });
+      await apiService.changePassword(passwordData.currentPassword, passwordData.newPassword);
       
       // Limpar formulário
       setPasswordData({
@@ -176,12 +161,6 @@ export function Settings({
   return (
     <Layout
       title="Minha Conta"
-      onNavigateToHome={onNavigateToHome}
-      onNavigateToModules={onNavigateToModules}
-      onNavigateToInvites={onNavigateToInvites}
-      onNavigateToProfile={onNavigateToProfile}
-      onNavigateToSettings={onNavigateToSettings}
-      onNavigateToPatientManagement={onNavigateToPatientManagement}
       professionalName={professionalName}
     >
       <div className="settings-content">

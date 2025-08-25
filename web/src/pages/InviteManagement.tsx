@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,25 +28,12 @@ import { useToast } from '@/hooks/use-toast';
 import { apiService, Invite } from '@/services/api';
 
 interface InviteManagementProps {
-  onNavigateToHome: () => void;
-  onNavigateToModules: () => void;
-  onNavigateToInvites: () => void;
-  onNavigateToProfile: () => void;
-  onNavigateToSettings: () => void;
-  onNavigateToPatientManagement: () => void;
   professionalName?: string;
 }
 
 export function InviteManagement({ 
-  onNavigateToHome,
-  onNavigateToModules,
-  onNavigateToInvites,
-  onNavigateToProfile,
-  onNavigateToSettings,
-  onNavigateToPatientManagement,
   professionalName
 }: InviteManagementProps) {
-  const { user } = useAuth();
   const { toast } = useToast();
   
   const [invites, setInvites] = useState<Invite[]>([]);
@@ -223,12 +209,6 @@ export function InviteManagement({
   return (
     <Layout
       title="Gerenciar Convites"
-      onNavigateToHome={onNavigateToHome}
-      onNavigateToModules={onNavigateToModules}
-      onNavigateToInvites={onNavigateToInvites}
-      onNavigateToProfile={onNavigateToProfile}
-      onNavigateToSettings={onNavigateToSettings}
-      onNavigateToPatientManagement={onNavigateToPatientManagement}
       professionalName={professionalName}
     >
       <div className="flex items-center justify-between mb-6">

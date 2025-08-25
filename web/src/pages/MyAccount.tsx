@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,13 +20,19 @@ import {
   Settings,
   Save,
   Eye,
-  EyeOff
+  EyeOff,
+  Plus,
+  X,
+  Camera,
+  Image
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { apiService } from '@/services/api';
+import { apiService, ProfessionalProfile } from '@/services/api';
 import { Layout } from '@/components/Layout';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { FileUpload } from '@/components/FileUpload';
+import { BannerPreview } from '@/components/BannerPreview';
 import './MyAccount.css';
 
 interface UserStats {
@@ -44,30 +51,35 @@ interface UserStats {
 }
 
 interface MyAccountProps {
-  onNavigateToHome: () => void;
-  onNavigateToModules: () => void;
-  onNavigateToInvites: () => void;
-  onNavigateToProfile: () => void;
-  onNavigateToSettings: () => void;
-  onNavigateToPatientManagement: () => void;
   professionalName?: string;
 }
 
 export function MyAccount({
   professionalName
 }: MyAccountProps) {
-  const { user, updateUser } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [professionalProfile, setProfessionalProfile] = useState<ProfessionalProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [newSpecialty, setNewSpecialty] = useState('');
   
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || '',
     birthDate: user?.birthDate || ''
+  });
+
+  const [professionalForm, setProfessionalForm] = useState({
+    name: '',
+    title: '',
+    bio: '',
+    image: '',
+    backgroundImage: '',
+    specialties: [] as string[]
   });
 
   const [passwordForm, setPasswordForm] = useState({
@@ -79,7 +91,10 @@ export function MyAccount({
   // Carregar estatísticas do usuário
   useEffect(() => {
     loadUserStats();
-  }, []);
+    if (user?.role === 'PROFESSIONAL') {
+      loadProfessionalProfile();
+    }
+  }, [user]);
 
   const loadUserStats = async () => {
     try {
@@ -98,11 +113,33 @@ export function MyAccount({
     }
   };
 
+  const loadProfessionalProfile = async () => {
+    try {
+      const profile = await apiService.getProfessionalProfile();
+      setProfessionalProfile(profile);
+      setProfessionalForm({
+        name: profile.name || '',
+        title: profile.title || '',
+        bio: profile.bio || '',
+        image: profile.image || '',
+        backgroundImage: profile.backgroundImage || '',
+        specialties: profile.specialties || []
+      });
+    } catch (error) {
+      console.error('Erro ao carregar perfil profissional:', error);
+      toast({
+        title: "Erro ao carregar perfil profissional",
+        description: "Não foi possível carregar seu perfil profissional.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSaveProfile = async () => {
     try {
       setIsSaving(true);
       const updatedUser = await apiService.updateCurrentUser(profileForm);
-      updateUser(updatedUser);
+      // updateUser(updatedUser);
       toast({
         title: "Perfil atualizado",
         description: "Seus dados foram atualizados com sucesso.",
@@ -112,6 +149,37 @@ export function MyAccount({
       toast({
         title: "Erro ao atualizar",
         description: "Não foi possível atualizar seus dados.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveProfessional = async () => {
+    try {
+      setIsSaving(true);
+      const updateData = {
+        name: professionalForm.name,
+        title: professionalForm.title,
+        bio: professionalForm.bio || undefined,
+        image: professionalForm.image || undefined,
+        backgroundImage: professionalForm.backgroundImage || undefined,
+        specialties: professionalForm.specialties.length > 0 ? professionalForm.specialties : undefined
+      };
+
+      const updatedProfile = await apiService.updateProfessionalProfile(updateData);
+      setProfessionalProfile(updatedProfile);
+      
+      toast({
+        title: "Perfil profissional atualizado",
+        description: "Seus dados profissionais foram atualizados com sucesso.",
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar perfil profissional:', error);
+      toast({
+        title: "Erro ao atualizar",
+        description: "Não foi possível atualizar seus dados profissionais.",
         variant: "destructive",
       });
     } finally {
@@ -164,6 +232,23 @@ export function MyAccount({
     }
   };
 
+  const addSpecialty = () => {
+    if (newSpecialty.trim() && !professionalForm.specialties.includes(newSpecialty.trim())) {
+      setProfessionalForm(prev => ({
+        ...prev,
+        specialties: [...prev.specialties, newSpecialty.trim()]
+      }));
+      setNewSpecialty('');
+    }
+  };
+
+  const removeSpecialty = (index: number) => {
+    setProfessionalForm(prev => ({
+      ...prev,
+      specialties: prev.specialties.filter((_, i) => i !== index)
+    }));
+  };
+
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
@@ -184,6 +269,12 @@ export function MyAccount({
     return { status: 'inactive', label: 'Inativo', color: 'bg-red-500' };
   };
 
+  // Determinar quais abas mostrar baseado no role do usuário
+  const isProfessional = user?.role === 'PROFESSIONAL';
+  const tabs = isProfessional 
+    ? ['profile', 'professional', 'stats', 'security']
+    : ['profile', 'stats', 'security'];
+
   return (
     <Layout
       title="Minha Conta"
@@ -191,8 +282,9 @@ export function MyAccount({
     >
       <div className="my-account-container">
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-1 md:grid-cols-4">
             <TabsTrigger value="profile">Meu Perfil</TabsTrigger>
+            {isProfessional && <TabsTrigger value="professional">Perfil Profissional</TabsTrigger>}
             <TabsTrigger value="stats">Minhas Estatísticas</TabsTrigger>
             <TabsTrigger value="security">Segurança</TabsTrigger>
           </TabsList>
@@ -256,6 +348,156 @@ export function MyAccount({
               </CardContent>
             </Card>
           </TabsContent>
+
+          {isProfessional && (
+            <TabsContent value="professional" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Award className="w-5 h-5" />
+                    Perfil Profissional
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {/* Informações Básicas */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Nome Profissional</label>
+                        <Input
+                          value={professionalForm.name}
+                          onChange={(e) => setProfessionalForm(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Seu nome profissional"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Título Profissional</label>
+                        <Input
+                          value={professionalForm.title}
+                          onChange={(e) => setProfessionalForm(prev => ({ ...prev, title: e.target.value }))}
+                          placeholder="Ex: Nutricionista Especialista"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Bio */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Biografia</label>
+                      <Textarea
+                        value={professionalForm.bio}
+                        onChange={(e) => setProfessionalForm(prev => ({ ...prev, bio: e.target.value }))}
+                        placeholder="Conte um pouco sobre sua experiência e especialidades..."
+                        rows={4}
+                      />
+                    </div>
+
+                    {/* Imagem de Perfil */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Foto de Perfil</label>
+                      <FileUpload
+                        type="image"
+                        currentUrl={professionalForm.image}
+                        field="image"
+                        onFileSelect={(url) => setProfessionalForm(prev => ({ ...prev, image: url }))}
+                        specifications={{
+                          title: "Foto de Perfil",
+                          description: "Esta imagem será exibida como sua foto de perfil profissional",
+                          dimensions: "400x400 pixels (quadrada)",
+                          format: "JPG, PNG, WebP",
+                          maxSize: "5MB",
+                          tips: [
+                            "Use uma foto profissional e de boa qualidade",
+                            "A imagem será cortada automaticamente em formato quadrado",
+                            "Evite imagens muito escuras ou com muitos detalhes pequenos",
+                            "Recomendamos fundo neutro ou profissional"
+                          ]
+                        }}
+                      />
+                    </div>
+
+                    {/* Imagem de Fundo */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Imagem de Fundo do Banner</label>
+                      <FileUpload
+                        type="image"
+                        currentUrl={professionalForm.backgroundImage}
+                        field="backgroundImage"
+                        onFileSelect={(url) => setProfessionalForm(prev => ({ ...prev, backgroundImage: url }))}
+                        specifications={{
+                          title: "Imagem de Fundo do Banner",
+                          description: "Esta imagem será exibida como fundo do banner na tela principal",
+                          dimensions: "1920x640 pixels (proporção 3:1)",
+                          format: "JPG, PNG, WebP",
+                          maxSize: "10MB",
+                          tips: [
+                            "Use uma imagem que represente bem sua área profissional",
+                            "A imagem será centralizada e cortada automaticamente",
+                            "Evite textos ou elementos importantes nas bordas",
+                            "Recomendamos imagens com boa luminosidade e contraste",
+                            "A imagem terá um overlay escuro aplicado automaticamente"
+                          ]
+                        }}
+                      />
+                    </div>
+
+                    {/* Preview do Banner */}
+                    {professionalForm.backgroundImage && (
+                      <BannerPreview 
+                        imageUrl={professionalForm.backgroundImage}
+                        title="Como aparecerá no banner"
+                        description="Preview das dimensões reais do banner na tela principal"
+                      />
+                    )}
+
+                    {/* Especialidades */}
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Especialidades</label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={newSpecialty}
+                            onChange={(e) => setNewSpecialty(e.target.value)}
+                            placeholder="Adicionar especialidade"
+                            onKeyPress={(e) => e.key === 'Enter' && addSpecialty()}
+                          />
+                          <Button onClick={addSpecialty} size="sm">
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {professionalForm.specialties.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {professionalForm.specialties.map((specialty, index) => (
+                            <Badge key={index} variant="secondary" className="text-sm">
+                              {specialty}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="ml-2 h-auto p-0 text-muted-foreground hover:text-foreground"
+                                onClick={() => removeSpecialty(index)}
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Botão Salvar */}
+                    <div className="flex justify-end">
+                      <Button onClick={handleSaveProfessional} disabled={isSaving}>
+                        <Save className="w-4 h-4 mr-2" />
+                        {isSaving ? 'Salvando...' : 'Salvar Perfil Profissional'}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
           
           <TabsContent value="stats" className="space-y-6">
               {userStats ? (

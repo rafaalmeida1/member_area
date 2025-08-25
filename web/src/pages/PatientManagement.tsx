@@ -31,22 +31,10 @@ import { LoadingWrapper } from '@/components/LoadingSpinner';
 import './PatientManagement.css';
 
 interface PatientManagementProps {
-  onNavigateToHome: () => void;
-  onNavigateToModules: () => void;
-  onNavigateToInvites: () => void;
-  onNavigateToProfile: () => void;
-  onNavigateToSettings: () => void;
-  onNavigateToPatientManagement: () => void;
   professionalName?: string;
 }
 
 export function PatientManagement({
-  onNavigateToHome,
-  onNavigateToModules,
-  onNavigateToInvites,
-  onNavigateToProfile,
-  onNavigateToSettings,
-  onNavigateToPatientManagement,
   professionalName
 }: PatientManagementProps) {
   const { toast } = useToast();
@@ -187,11 +175,6 @@ export function PatientManagement({
   return (
     <Layout
       title="Gerenciamento de Pacientes"
-      onNavigateToHome={onNavigateToHome}
-      onNavigateToModules={onNavigateToModules}
-      onNavigateToInvites={onNavigateToInvites}
-      onNavigateToProfile={onNavigateToProfile}
-      onNavigateToSettings={onNavigateToSettings}
       professionalName={professionalName}
     >
       <div className="patient-management-container">
