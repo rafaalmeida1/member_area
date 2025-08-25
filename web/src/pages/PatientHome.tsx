@@ -125,7 +125,7 @@ export function PatientHome({ professionalName }: PatientHomeProps) {
         <section className="hero-banner-section" style={{
           backgroundImage: `url(${professional?.backgroundImage})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundPosition: 'top',
         }}>
           {/* {professional?.backgroundImage && (
             <div 
