@@ -11,6 +11,7 @@ import { apiService, Module, ProfessionalProfile } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   BookOpen, 
   Clock, 
@@ -163,7 +164,7 @@ export function PatientHome({ professionalName }: PatientHomeProps) {
         </section>
 
         {/* Main Content */}
-        <section className="main-content-section">
+        <div className="main-content">
           <div className="content-header">
             <div className="header-left">
               <h2 className="content-title">
@@ -178,17 +179,18 @@ export function PatientHome({ professionalName }: PatientHomeProps) {
               {/* Category Filter */}
               <div className="category-filter">
                 <Filter className="filter-icon" size={16} />
-                <select 
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="category-select"
-                >
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="category-select">
+                    <SelectValue placeholder="Selecionar categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* View Mode Toggle */}
@@ -214,7 +216,7 @@ export function PatientHome({ professionalName }: PatientHomeProps) {
           </div>
 
           {/* Modules Content */}
-          <LoadingWrapper loading={isLoading} fallback={<ModuleSkeletonGrid />}>
+          <LoadingWrapper loading={isLoading}>
             {filteredModules.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">📚</div>
@@ -238,7 +240,7 @@ export function PatientHome({ professionalName }: PatientHomeProps) {
               </div>
             )}
           </LoadingWrapper>
-        </section>
+        </div>
       </div>
     </Layout>
   );

@@ -2,8 +2,10 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { Separator } from '@/components/ui/separator';
 import {
   Home,
   User,
@@ -15,7 +17,11 @@ import {
   Menu,
   X,
   Users,
-  ArrowLeft
+  ArrowLeft,
+  Plus,
+  MoreHorizontal,
+  Search,
+  Bell
 } from 'lucide-react';
 import './Layout.css';
 
@@ -39,15 +45,26 @@ export function Layout({
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
 
-  // Fechar sidebar quando a URL mudar (navegação em mobile)
+  // Detectar se é mobile
   React.useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile && sidebarOpen) {
-      setSidebarOpen(false);
-    }
-  }, [location.pathname, sidebarOpen]);
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      
+      // Se mudou de mobile para desktop, fechar sidebar
+      if (!mobile && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [sidebarOpen]);
 
   const handleLogout = () => {
     logout();
@@ -57,6 +74,13 @@ export function Layout({
   const handleNavigateToModule = (moduleId: number) => {
     console.log('Navegar para módulo:', moduleId);
     navigate(`/module/${moduleId}`);
+  };
+
+  const handleNavigation = (path: string) => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+    navigate(path);
   };
 
   // Layout sem sidebar (para páginas de login, registro, etc.)
@@ -76,9 +100,6 @@ export function Layout({
               </Button>
             )}
             <h1 className="header-title">{title}</h1>
-            {/* <div className="header-actions">
-              <ThemeToggle />
-            </div> */}
           </div>
         </header>
         <main className="layout-simple-content">
@@ -88,147 +109,183 @@ export function Layout({
     );
   }
 
+  // Componente do Sidebar
+  const SidebarContent = () => (
+    <div className="sidebar-content">
+      {/* Branding */}
+      <div className="sidebar-branding">
+        <div className="brand-logo">TM</div>
+        <div className="brand-text">
+          <h2>{professionalName || 'Nutri Thata'}</h2>
+          <p>Plataforma</p>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="sidebar-quick-actions">
+        {user?.role === 'PROFESSIONAL' && (
+          <Button 
+            className="quick-create-btn" 
+            size="sm"
+            onClick={() => handleNavigation('/modules')}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Criar Módulo
+          </Button>
+        )}
+      </div>
+
+      {/* Primary Navigation */}
+      <nav className="sidebar-nav">
+        <div className="nav-section">
+          <h3 className="nav-title">Navegação</h3>
+          <ul className="nav-list">
+            <li>
+              <Link 
+                to="/"
+                className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}
+                onClick={() => handleNavigation('/')}
+              >
+                <Home className="nav-icon" />
+                <span>Dashboard</span>
+              </Link>
+            </li>
+            
+            {user?.role === 'PROFESSIONAL' && (
+              <>
+                <li>
+                  <Link 
+                    to="/modules"
+                    className={`nav-item ${location.pathname === '/modules' ? 'active' : ''}`}
+                    onClick={() => handleNavigation('/modules')}
+                  >
+                    <FileText className="nav-icon" />
+                    <span>Módulos</span>
+                  </Link>
+                </li>
+
+                <li>
+                  <Link 
+                    to="/invites"
+                    className={`nav-item ${location.pathname === '/invites' ? 'active' : ''}`}
+                    onClick={() => handleNavigation('/invites')}
+                  >
+                    <Mail className="nav-icon" />
+                    <span>Convites</span>
+                  </Link>
+                </li>
+
+                <li>
+                  <Link 
+                    to="/patients"
+                    className={`nav-item ${location.pathname === '/patients' ? 'active' : ''}`}
+                    onClick={() => handleNavigation('/patients')}
+                  >
+                    <Users className="nav-icon" />
+                    <span>Pacientes</span>
+                  </Link>
+                </li>
+              </>
+            )}
+          </ul>
+        </div>
+
+        {/* Secondary Navigation */}
+        <div className="nav-section">
+          <Separator className="my-4" />
+          <h3 className="nav-title">Gerenciamento</h3>
+          <ul className="nav-list">
+            <li>
+              <Link 
+                to="/profile"
+                className={`nav-item ${location.pathname === '/profile' ? 'active' : ''}`}
+                onClick={() => handleNavigation('/profile')}
+              >
+                <UserCog className="nav-icon" />
+                <span>Minha Conta</span>
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      {/* Footer */}
+      <div className="sidebar-footer">
+        <div className="user-info">
+          <div className="user-avatar">
+            <User className="user-icon" />
+          </div>
+          <div className="user-details">
+            <p className="user-name">{user?.name}</p>
+            <p className="user-email">{user?.email}</p>
+          </div>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleLogout}
+          className="logout-button"
+        >
+          <LogOut className="logout-icon" />
+          <span>Sair</span>
+        </Button>
+      </div>
+    </div>
+  );
+
   // Layout com sidebar
   return (
     <div className="layout-main">
-      {/* Sidebar */}
-      <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-        {/* Botão de fechar no mobile */}
-        <button 
-          className="sidebar-close-button"
-          onClick={() => setSidebarOpen(false)}
-          style={{ display: window.innerWidth <= 768 ? 'flex' : 'none' }}
-        >
-          <X className="close-icon" />
-        </button>
-        
-        <div className="sidebar-header">
-          <div className="sidebar-logo">
-            <div className="logo-icon">TM</div>
-            <div className="logo-text">
-              <h2>{professionalName || 'Nutri Thata'}</h2>
-              <p>Plataforma</p>
-            </div>
-          </div>
-        </div>
+      {/* Sidebar para Desktop */}
+      {!isMobile && (
+        <aside className="sidebar-desktop">
+          <SidebarContent />
+        </aside>
+      )}
 
-        <nav className="sidebar-nav">
-          <div className="nav-section">
-            <h3 className="nav-title">Navegação</h3>
-            <ul className="nav-list">
-              <li>
-                <Link 
-                  to="/"
-                  className="nav-item"
-                >
-                  <Home className="nav-icon" />
-                  <span>Início</span>
-                </Link>
-              </li>
-              
-              {user?.role === 'PROFESSIONAL' && (
-                <>
-                  <li>
-                    <Link 
-                      to="/modules"
-                      className="nav-item"
-                    >
-                      <FileText className="nav-icon" />
-                      <span>Módulos</span>
-                    </Link>
-                  </li>
-
-                  <li>
-                    <Link 
-                      to="/invites"
-                      className="nav-item"
-                    >
-                      <Mail className="nav-icon" />
-                      <span>Convites</span>
-                    </Link>
-                  </li>
-
-                  <li>
-                    <Link 
-                      to="/patients"
-                      className="nav-item"
-                    >
-                      <Users className="nav-icon" />
-                      <span>Pacientes</span>
-                    </Link>
-                  </li>
-                </>
-              )}
-
-              <li>
-                <Link 
-                  to="/profile"
-                  className="nav-item"
-                >
-                  <UserCog className="nav-icon" />
-                  <span>Minha Conta</span>
-                </Link>
-              </li>
-              
-              {/* <li>
-                <Link 
-                  to="/settings"
-                  className="nav-item"
-                >
-                  <Settings className="nav-icon" />
-                  <span>Minha Conta</span>
-                </Link>
-              </li> */}
-            </ul>
-          </div>
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="user-info">
-            <div className="user-avatar">
-              <User className="user-icon" />
-            </div>
-            <div className="user-details">
-              <p className="user-name">{user?.name}</p>
-              <p className="user-email">{user?.email}</p>
-            </div>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleLogout}
-            className="logout-button"
-          >
-            <LogOut className="logout-icon" />
-            <span>Sair</span>
-          </Button>
-        </div>
-      </aside>
+      {/* Sidebar para Mobile usando Sheet */}
+      {isMobile && (
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <SheetContent side="left" className="sidebar-mobile">
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      )}
 
       {/* Main Content */}
       <div className="main-content">
         <header className="main-header">
           <div className="header-left">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="sidebar-toggle"
-            >
-              <Menu className="toggle-icon" />
-            </Button>
+            {isMobile ? (
+              <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="sidebar-toggle"
+                  >
+                    <Menu className="toggle-icon" />
+                  </Button>
+                </SheetTrigger>
+              </Sheet>
+            ) : null}
             <h1 className="header-title">
-              {title || `Bem-vindo, ${user?.name}`}
+              {title || 'Dashboard'}
             </h1>
           </div>
           <div className="header-right">
+            {/* <Button variant="ghost" size="icon" className="search-button">
+              <Search className="w-4 h-4" />
+            </Button> */}
             <NotificationDropdown onNavigateToModule={handleNavigateToModule} />
             {/* <ThemeToggle /> */}
           </div>
         </header>
 
         <main className="main-content-area">
-          {children}
+          <div className="content-container">
+            {children}
+          </div>
         </main>
       </div>
     </div>
