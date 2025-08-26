@@ -83,7 +83,7 @@ export function InviteRegister() {
     }
 
     // Validações
-    if (!formData.name || !formData.email || !formData.phone || !formData.password || !formData.confirmPassword) {
+    if (!formData.password || !formData.confirmPassword) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha todos os campos para continuar.",
