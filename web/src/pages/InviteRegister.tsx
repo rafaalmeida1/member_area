@@ -114,9 +114,10 @@ export function InviteRegister() {
     
     try {
       const authResponse = await apiService.acceptInvite(token, {
-        name: formData.name,
-        phone: formData.phone,
-        password: formData.password
+        name: invite.name,
+        phone: invite.phone,
+        password: formData.password,
+        email: invite.email,
       });
       
       updateUser(authResponse.user);

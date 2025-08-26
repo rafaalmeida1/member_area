@@ -473,6 +473,7 @@ class ApiService {
     password: string;
     phone?: string;
     name: string;
+    email: string;
   }): Promise<AuthResponse> {
     const response: AxiosResponse<ApiResponse<AuthResponse>> = await this.api.post(`/invites/${token}/accept`, data);
 
