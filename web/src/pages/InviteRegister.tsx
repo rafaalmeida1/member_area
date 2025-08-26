@@ -81,9 +81,9 @@ export function InviteRegister() {
       });
       return;
     }
-
+    
     // Validações
-    if (!formData.password || !formData.confirmPassword) {
+    if (!invite.name || !invite.email || !invite.phone) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha todos os campos para continuar.",
