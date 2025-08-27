@@ -202,7 +202,7 @@ export function NotificationDropdown() {
       try {
         setActionLoading(notification.id);
         await markAsRead(notification.id);
-        navigate(`/module/${notification.moduleId}`);
+        window.location.href = window.location.origin + `/module/${notification.moduleId}`;
         setIsOpen(false);
       } catch (error) {
         console.error('Erro ao navegar para módulo:', error);
