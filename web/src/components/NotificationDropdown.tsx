@@ -49,6 +49,9 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
     markAllAsRead,
   } = useNotificationContext();
 
+  // Debug log para verificar estado do modal
+  console.log('NotificationDropdown renderizado, showAllNotifications:', showAllNotifications);
+
   // Carregar notificações quando abrir o dropdown (apenas se não foram carregadas recentemente)
   useEffect(() => {
     if (isOpen && user) {
@@ -304,6 +307,7 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
           <DropdownMenuItem 
             className="justify-center text-sm text-muted-foreground hover:text-foreground"
             onClick={() => {
+              console.log('Abrindo modal de todas as notificações');
               setShowAllNotifications(true);
               setIsOpen(false);
             }}
@@ -313,11 +317,14 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AllNotificationsModal
-        isOpen={showAllNotifications}
-        onClose={() => setShowAllNotifications(false)}
-        onNavigateToModule={onNavigateToModule}
-      />
+      {/* Modal renderizado fora do dropdown */}
+      {showAllNotifications && (
+        <AllNotificationsModal
+          isOpen={showAllNotifications}
+          onClose={() => setShowAllNotifications(false)}
+          onNavigateToModule={onNavigateToModule}
+        />
+      )}
     </>
   );
 } 

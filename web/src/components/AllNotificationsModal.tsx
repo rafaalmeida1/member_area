@@ -39,6 +39,9 @@ export function AllNotificationsModal({ isOpen, onClose, onNavigateToModule }: A
 
   const pageSize = 20;
 
+  // Debug log
+  console.log('AllNotificationsModal renderizado, isOpen:', isOpen);
+
   // Carregar notificações
   const loadNotifications = async (page: number = 0) => {
     if (!user) return;
@@ -49,6 +52,7 @@ export function AllNotificationsModal({ isOpen, onClose, onNavigateToModule }: A
       setNotifications(response.notifications);
       setTotalPages(response.totalPages);
       setTotalElements(response.totalElements);
+      console.log('Notificações carregadas:', response.notifications.length);
     } catch (error) {
       console.error('Erro ao carregar notificações:', error);
       toast({
@@ -174,8 +178,35 @@ export function AllNotificationsModal({ isOpen, onClose, onNavigateToModule }: A
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
+    <div 
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem'
+      }}
+    >
+      <div 
+        className="bg-background rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+        style={{
+          backgroundColor: 'var(--background)',
+          borderRadius: '0.5rem',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          width: '100%',
+          maxWidth: '56rem',
+          maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div>
