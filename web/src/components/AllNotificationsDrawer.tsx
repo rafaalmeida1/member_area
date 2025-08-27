@@ -6,7 +6,18 @@ import { apiService } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 
 interface Notification {
   id: number;
@@ -133,6 +144,21 @@ export function AllNotificationsDrawer({ isOpen, onClose, onNavigateToModule }: 
     }
   };
 
+  const getNotificationColor = (type: Notification['type']) => {
+    switch (type) {
+      case 'MODULE_NEW':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'MODULE_UPDATED':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'PROFESSIONAL_MESSAGE':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'SYSTEM':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      default:
+        return 'bg-gray-50 text-gray-700 border-gray-200';
+    }
+  };
+
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -154,169 +180,167 @@ export function AllNotificationsDrawer({ isOpen, onClose, onNavigateToModule }: 
     });
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div 
-      className="fixed inset-0 z-[9999] flex items-end justify-center"
-      style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      }}
-    >
-      <div 
-        className="bg-white rounded-t-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col transform transition-transform duration-300 ease-out"
-        style={{
-          maxHeight: '90vh',
-        }}
-      >
-        {/* Handle para arrastar */}
-        <div className="flex justify-center pt-4 pb-2">
-          <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900">Todas as Notificações</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {totalElements} notificação{totalElements !== 1 ? 's' : ''} no total
-            </p>
-          </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="size-5" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-hidden">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="size-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent mb-4" />
-              <p className="text-sm text-gray-500">Carregando notificações...</p>
+    <Drawer open={isOpen} onOpenChange={onClose}>
+      <DrawerContent className="h-[85vh] max-h-[85vh]">
+        <div className="mx-auto w-full max-w-4xl">
+          <DrawerHeader className="border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <DrawerTitle className="text-2xl font-semibold text-gray-900">
+                  Todas as Notificações
+                </DrawerTitle>
+                <DrawerDescription className="text-sm text-gray-500 mt-1">
+                  {totalElements} notificação{totalElements !== 1 ? 's' : ''} no total
+                </DrawerDescription>
+              </div>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="icon" className="hover:bg-gray-100">
+                  <X className="size-5" />
+                </Button>
+              </DrawerClose>
             </div>
-          ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Bell className="size-12 text-gray-400 mb-4" />
-              <p className="text-sm text-gray-500">Nenhuma notificação encontrada</p>
-            </div>
-          ) : (
-            <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
-                    !notification.read ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'
-                  }`}
-                >
-                  <div className="flex-shrink-0 mt-1">
-                    <div className="size-10 bg-gray-100 rounded-full flex items-center justify-center">
-                      {actionLoading === notification.id ? (
-                        <div className="size-4 animate-spin rounded-full border border-blue-500 border-t-transparent" />
-                      ) : (
-                        getNotificationIcon(notification.type)
-                      )}
-                    </div>
-                  </div>
+          </DrawerHeader>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 overflow-hidden">
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="size-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent mb-4" />
+                <p className="text-sm text-gray-500">Carregando notificações...</p>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Bell className="size-12 text-gray-400 mb-4" />
+                <p className="text-sm text-gray-500">Nenhuma notificação encontrada</p>
+              </div>
+            ) : (
+              <ScrollArea className="h-full">
+                <div className="p-6 space-y-4">
+                  {notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`flex items-start gap-4 p-4 rounded-lg border transition-colors hover:shadow-sm ${
+                        !notification.read ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex-shrink-0 mt-1">
+                        <Avatar className="size-10 bg-gray-100">
+                          <AvatarFallback className={`text-sm ${getNotificationColor(notification.type)}`}>
+                            {actionLoading === notification.id ? (
+                              <div className="size-4 animate-spin rounded-full border border-current border-t-transparent" />
+                            ) : (
+                              getNotificationIcon(notification.type)
+                            )}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p
-                            className={`text-base font-medium ${
-                              !notification.read ? "text-gray-900" : "text-gray-600"
-                            }`}
-                          >
-                            {notification.title}
-                          </p>
-                          {!notification.read && (
-                            <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
-                              Não lida
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-600 mb-2 leading-relaxed">
-                          {notification.message}
-                        </p>
-                        <div className="flex items-center gap-3">
-                          <p className="text-xs text-gray-500 font-medium">
-                            {formatTime(notification.createdAt)}
-                          </p>
-                          {notification.moduleId && (
-                            <span className="text-xs text-blue-600 flex items-center gap-1 font-medium">
-                              {notification.moduleTitle}
-                              <ExternalLink className="size-3" />
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p
+                                className={`text-base font-medium ${
+                                  !notification.read ? "text-gray-900" : "text-gray-600"
+                                }`}
+                              >
+                                {notification.title}
+                              </p>
+                              {!notification.read && (
+                                <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
+                                  Não lida
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 mb-2 leading-relaxed">
+                              {notification.message}
+                            </p>
+                            <div className="flex items-center gap-3">
+                              <p className="text-xs text-gray-500 font-medium">
+                                {formatTime(notification.createdAt)}
+                              </p>
+                              {notification.moduleId && (
+                                <span className="text-xs text-blue-600 flex items-center gap-1 font-medium">
+                                  {notification.moduleTitle}
+                                  <ExternalLink className="size-3" />
+                                </span>
+                              )}
+                            </div>
+                          </div>
 
-                      <div className="flex items-center gap-2">
-                        {!notification.read && (
-                          <button
-                            onClick={() => handleMarkAsRead(notification.id)}
-                            disabled={actionLoading === notification.id}
-                            className="text-xs px-3 py-1 rounded hover:bg-blue-50 transition-colors disabled:opacity-50"
-                          >
-                            {actionLoading === notification.id ? (
-                              <div className="size-3 animate-spin rounded-full border border-blue-500 border-t-transparent" />
-                            ) : (
-                              "Marcar como lida"
+                          <div className="flex items-center gap-2">
+                            {!notification.read && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleMarkAsRead(notification.id)}
+                                disabled={actionLoading === notification.id}
+                                className="text-xs hover:bg-blue-50"
+                              >
+                                {actionLoading === notification.id ? (
+                                  <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                                ) : (
+                                  "Marcar como lida"
+                                )}
+                              </Button>
                             )}
-                          </button>
-                        )}
-                        {notification.moduleId && (
-                          <button
-                            onClick={() => handleModuleClick(notification)}
-                            disabled={actionLoading === notification.id}
-                            className="text-xs px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
-                          >
-                            {actionLoading === notification.id ? (
-                              <div className="size-3 animate-spin rounded-full border border-blue-500 border-t-transparent" />
-                            ) : (
-                              "Abrir módulo"
+                            {notification.moduleId && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleModuleClick(notification)}
+                                disabled={actionLoading === notification.id}
+                                className="text-xs"
+                              >
+                                {actionLoading === notification.id ? (
+                                  <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                                ) : (
+                                  "Abrir módulo"
+                                )}
+                              </Button>
                             )}
-                          </button>
-                        )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </ScrollArea>
+            )}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <DrawerFooter className="border-t border-gray-200">
+              <div className="flex items-center justify-between w-full">
+                <p className="text-sm text-gray-500">
+                  Página {currentPage + 1} de {totalPages}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 0}
+                  >
+                    <ChevronLeft className="size-4" />
+                    Anterior
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages - 1}
+                  >
+                    Próxima
+                    <ChevronRight className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            </DrawerFooter>
           )}
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between p-6 border-t border-gray-200">
-            <p className="text-sm text-gray-500">
-              Página {currentPage + 1} de {totalPages}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 0}
-                className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                <ChevronLeft className="size-4" />
-                Anterior
-              </button>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages - 1}
-                className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                Próxima
-                <ChevronRight className="size-4" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+      </DrawerContent>
+    </Drawer>
   );
 } 
