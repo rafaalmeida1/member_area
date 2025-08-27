@@ -268,31 +268,6 @@ export function Profile({ onBack }: ProfileProps) {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Imagem de Perfil</label>
-                <FileUpload
-                  type="image"
-                  onFileSelect={(url) => handleImageChange('image', url)}
-                  currentUrl={professionalData.image}
-                  field="image"
-                  setFormData={setProfessionalData}
-                  formData={professionalData}
-                  specifications={{
-                    title: "Foto de Perfil",
-                    description: "Esta imagem será exibida como sua foto de perfil profissional",
-                    dimensions: "400x400 pixels (quadrada)",
-                    format: "JPG, PNG, WebP",
-                    maxSize: "5MB",
-                    tips: [
-                      "Use uma foto profissional e de boa qualidade",
-                      "A imagem será cortada automaticamente em formato quadrado",
-                      "Evite imagens muito escuras ou com muitos detalhes pequenos",
-                      "Recomendamos fundo neutro ou profissional"
-                    ]
-                  }}
-                />
-              </div>
-
-              <div className="form-group">
                 <label className="form-label">Banner de Fundo</label>
                 <BannerPreview
                   imageUrl={professionalData.image}

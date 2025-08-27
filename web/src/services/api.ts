@@ -704,7 +704,7 @@ class ApiService {
 
   // Notificações
   async getNotifications(): Promise<Notification[]> {
-    const response: AxiosResponse<ApiResponse<Notification[]>> = await this.api.get('/notifications');
+    const response: AxiosResponse<ApiResponse<Notification[]>> = await this.api.get('/api/notifications');
     if (response.data.status === 'success' && response.data.data) {
       return response.data.data;
     }
@@ -712,17 +712,25 @@ class ApiService {
   }
 
   async markNotificationAsRead(notificationId: number): Promise<void> {
-    const response: AxiosResponse<ApiResponse<void>> = await this.api.put(`/notifications/${notificationId}/read`);
+    const response: AxiosResponse<ApiResponse<void>> = await this.api.put(`/api/notifications/${notificationId}/read`);
     if (response.data.status !== 'success') {
       throw new Error(response.data.message || 'Erro ao marcar notificação como lida');
     }
   }
 
   async markAllNotificationsAsRead(): Promise<void> {
-    const response: AxiosResponse<ApiResponse<void>> = await this.api.put('/notifications/read-all');
+    const response: AxiosResponse<ApiResponse<void>> = await this.api.put('/api/notifications/read-all');
     if (response.data.status !== 'success') {
       throw new Error(response.data.message || 'Erro ao marcar todas as notificações como lidas');
     }
+  }
+
+  async getUnreadNotificationsCount(): Promise<number> {
+    const response: AxiosResponse<ApiResponse<number>> = await this.api.get('/api/notifications/unread-count');
+    if (response.data.status === 'success' && response.data.data !== undefined) {
+      return response.data.data;
+    }
+    throw new Error(response.data.message || 'Erro ao buscar contador de notificações não lidas');
   }
 
   // Patient Management Methods
