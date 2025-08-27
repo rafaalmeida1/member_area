@@ -183,8 +183,8 @@ export function AllNotificationsDrawer({ isOpen, onClose, onNavigateToModule }: 
   return (
     <Drawer open={isOpen} onOpenChange={onClose}>
       <DrawerContent className="h-[85vh] max-h-[85vh]">
-        <div className="mx-auto w-full max-w-4xl">
-          <DrawerHeader className="border-b border-gray-200">
+        <div className="mx-auto w-full max-w-4xl h-full flex flex-col">
+          <DrawerHeader className="border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div>
                 <DrawerTitle className="text-2xl font-semibold text-gray-900">
@@ -202,7 +202,7 @@ export function AllNotificationsDrawer({ isOpen, onClose, onNavigateToModule }: 
             </div>
           </DrawerHeader>
 
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden min-h-0">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="size-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent mb-4" />
@@ -214,7 +214,7 @@ export function AllNotificationsDrawer({ isOpen, onClose, onNavigateToModule }: 
                 <p className="text-sm text-gray-500">Nenhuma notificação encontrada</p>
               </div>
             ) : (
-              <ScrollArea className="h-full">
+              <div className="h-full overflow-y-auto">
                 <div className="p-6 space-y-4">
                   {notifications.map((notification) => (
                     <div
@@ -305,13 +305,13 @@ export function AllNotificationsDrawer({ isOpen, onClose, onNavigateToModule }: 
                     </div>
                   ))}
                 </div>
-              </ScrollArea>
+              </div>
             )}
           </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <DrawerFooter className="border-t border-gray-200">
+            <DrawerFooter className="border-t border-gray-200 flex-shrink-0">
               <div className="flex items-center justify-between w-full">
                 <p className="text-sm text-gray-500">
                   Página {currentPage + 1} de {totalPages}
