@@ -46,26 +46,6 @@ export function useNotifications() {
     }
   }, [user, toast]);
 
-  // Carregar contador de notificações não lidas
-  const loadUnreadCount = useCallback(async () => {
-    if (!user) return;
-    
-    try {
-      const count = await apiService.getUnreadNotificationsCount();
-      // Atualizar apenas o contador sem recarregar todas as notificações
-      setNotifications(prev => {
-        const currentUnreadCount = prev.filter(n => !n.read).length;
-        if (currentUnreadCount !== count) {
-          // Se o contador mudou, recarregar as notificações
-          loadNotifications();
-        }
-        return prev;
-      });
-    } catch (error) {
-      console.error('Erro ao carregar contador de notificações:', error);
-    }
-  }, [user, loadNotifications]);
-
   // Marcar como lida
   const markAsRead = useCallback(async (notificationId: number) => {
     try {
@@ -77,8 +57,14 @@ export function useNotifications() {
       );
     } catch (error) {
       console.error('Erro ao marcar notificação como lida:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível marcar a notificação como lida.",
+        variant: "destructive",
+      });
+      throw error; // Re-throw para que o componente possa tratar
     }
-  }, []);
+  }, [toast]);
 
   // Marcar todas como lidas
   const markAllAsRead = useCallback(async () => {
@@ -91,6 +77,12 @@ export function useNotifications() {
       });
     } catch (error) {
       console.error('Erro ao marcar todas como lidas:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível marcar todas as notificações como lidas.",
+        variant: "destructive",
+      });
+      throw error; // Re-throw para que o componente possa tratar
     }
   }, [toast]);
 
@@ -109,11 +101,12 @@ export function useNotifications() {
     if (!user) return;
 
     const interval = setInterval(() => {
-      loadUnreadCount();
+      // Recarregar notificações periodicamente
+      loadNotifications();
     }, 30000); // 30 segundos
 
     return () => clearInterval(interval);
-  }, [user, loadUnreadCount]);
+  }, [user, loadNotifications]);
 
   return {
     notifications,
@@ -121,7 +114,6 @@ export function useNotifications() {
     isLoading,
     lastUpdate,
     loadNotifications,
-    loadUnreadCount,
     markAsRead,
     markAllAsRead,
   };

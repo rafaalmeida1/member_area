@@ -34,6 +34,8 @@ interface NotificationDropdownProps {
 
 export function NotificationDropdown({ onNavigateToModule }: NotificationDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState<number | null>(null); // ID da notificação sendo processada
+  const [markAllLoading, setMarkAllLoading] = useState(false);
   const { user } = useAuth();
   const {
     notifications,
@@ -56,11 +58,42 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
   }, [isOpen, user, lastUpdate, loadNotifications]);
 
   // Navegar para módulo
-  const handleModuleClick = (notification: Notification) => {
+  const handleModuleClick = async (notification: Notification) => {
     if (notification.moduleId && onNavigateToModule) {
-      onNavigateToModule(notification.moduleId);
-      markAsRead(notification.id);
-      setIsOpen(false);
+      setActionLoading(notification.id);
+      try {
+        await markAsRead(notification.id);
+        onNavigateToModule(notification.moduleId);
+        setIsOpen(false);
+      } catch (error) {
+        console.error('Erro ao navegar para módulo:', error);
+      } finally {
+        setActionLoading(null);
+      }
+    }
+  };
+
+  // Marcar notificação como lida com loading
+  const handleMarkAsRead = async (notificationId: number) => {
+    setActionLoading(notificationId);
+    try {
+      await markAsRead(notificationId);
+    } catch (error) {
+      console.error('Erro ao marcar como lida:', error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Marcar todas como lidas com loading
+  const handleMarkAllAsRead = async () => {
+    setMarkAllLoading(true);
+    try {
+      await markAllAsRead();
+    } catch (error) {
+      console.error('Erro ao marcar todas como lidas:', error);
+    } finally {
+      setMarkAllLoading(false);
     }
   };
 
@@ -145,20 +178,25 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
               Notificações
             </DropdownMenuLabel>
             {lastUpdate && (
-                <span className="text-xs text-muted-foreground">
-                  Atualizado {formatTime(lastUpdate.toISOString())}
-                </span>
-              )}
+              <span className="text-xs text-muted-foreground">
+                Atualizado {formatTime(lastUpdate.toISOString())}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={markAllAsRead}
+                onClick={handleMarkAllAsRead}
+                disabled={markAllLoading}
                 className="h-auto p-1 text-xs text-muted-foreground hover:text-foreground"
               >
-                Marcar todas como lidas
+                {markAllLoading ? (
+                  <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                ) : (
+                  "Marcar todas como lidas"
+                )}
               </Button>
             )}
           </div>
@@ -182,12 +220,17 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
               <DropdownMenuItem
                 key={notification.id}
                 className="flex items-start gap-3 p-3 cursor-pointer group"
-                onClick={() => !notification.read && markAsRead(notification.id)}
+                onClick={() => !notification.read && handleMarkAsRead(notification.id)}
+                disabled={actionLoading === notification.id}
               >
                 <div className="flex-shrink-0 mt-0.5">
                   <Avatar className="size-8 bg-muted">
                     <AvatarFallback className={`text-xs ${getNotificationColor(notification.type)}`}>
-                      {getNotificationIcon(notification.type)}
+                      {actionLoading === notification.id ? (
+                        <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                      ) : (
+                        getNotificationIcon(notification.type)
+                      )}
                     </AvatarFallback>
                   </Avatar>
                 </div>
@@ -231,11 +274,16 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
                           if (notification.moduleId) {
                             handleModuleClick(notification);
                           } else {
-                            markAsRead(notification.id);
+                            handleMarkAsRead(notification.id);
                           }
                         }}
+                        disabled={actionLoading === notification.id}
                       >
-                        <Check className="size-3" />
+                        {actionLoading === notification.id ? (
+                          <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                        ) : (
+                          <Check className="size-3" />
+                        )}
                         <span className="sr-only">
                           {notification.moduleId ? "Abrir módulo" : "Marcar como lida"}
                         </span>
@@ -250,7 +298,14 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem className="justify-center text-sm text-muted-foreground">
+        <DropdownMenuItem 
+          className="justify-center text-sm text-muted-foreground hover:text-foreground"
+          onClick={() => {
+            // Aqui você pode implementar a navegação para uma página de todas as notificações
+            console.log('Navegar para página de todas as notificações');
+            setIsOpen(false);
+          }}
+        >
           Ver todas as notificações
         </DropdownMenuItem>
       </DropdownMenuContent>
