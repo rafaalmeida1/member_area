@@ -1,40 +1,30 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 interface NotificationDrawerContextType {
-  isDrawerOpen: boolean;
-  openDrawer: () => void;
-  closeDrawer: () => void;
-  onNavigateToModule?: (moduleId: number) => void;
-  setOnNavigateToModule: (callback: (moduleId: number) => void) => void;
+  isModalOpen: boolean;
+  openModal: () => void;
+  closeModal: () => void;
+  onNavigateToModule: ((moduleId: string) => void) | null;
+  setOnNavigateToModule: (callback: (moduleId: string) => void) => void;
 }
 
 const NotificationDrawerContext = createContext<NotificationDrawerContextType | undefined>(undefined);
 
-interface NotificationDrawerProviderProps {
-  children: ReactNode;
-}
+export function NotificationDrawerProvider({ children }: { children: React.ReactNode }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [onNavigateToModule, setOnNavigateToModule] = useState<((moduleId: string) => void) | null>(null);
 
-export function NotificationDrawerProvider({ children }: NotificationDrawerProviderProps) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [onNavigateToModule, setOnNavigateToModule] = useState<((moduleId: number) => void) | undefined>(undefined);
-
-  const openDrawer = () => setIsDrawerOpen(true);
-  const closeDrawer = () => setIsDrawerOpen(false);
-
-  const setOnNavigateToModuleCallback = (callback: (moduleId: number) => void) => {
-    setOnNavigateToModule(() => callback);
-  };
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   return (
-    <NotificationDrawerContext.Provider 
-      value={{ 
-        isDrawerOpen, 
-        openDrawer, 
-        closeDrawer, 
-        onNavigateToModule, 
-        setOnNavigateToModule: setOnNavigateToModuleCallback 
-      }}
-    >
+    <NotificationDrawerContext.Provider value={{
+      isModalOpen,
+      openModal,
+      closeModal,
+      onNavigateToModule,
+      setOnNavigateToModule
+    }}>
       {children}
     </NotificationDrawerContext.Provider>
   );
