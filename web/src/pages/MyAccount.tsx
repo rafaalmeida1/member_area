@@ -392,30 +392,6 @@ export function MyAccount({
                       />
                     </div>
 
-                    {/* Imagem de Perfil */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Foto de Perfil</label>
-                      <FileUpload
-                        type="image"
-                        currentUrl={professionalForm.image}
-                        field="image"
-                        onFileSelect={(url) => setProfessionalForm(prev => ({ ...prev, image: url }))}
-                        specifications={{
-                          title: "Foto de Perfil",
-                          description: "Esta imagem será exibida como sua foto de perfil profissional",
-                          dimensions: "400x400 pixels (quadrada)",
-                          format: "JPG, PNG, WebP",
-                          maxSize: "5MB",
-                          tips: [
-                            "Use uma foto profissional e de boa qualidade",
-                            "A imagem será cortada automaticamente em formato quadrado",
-                            "Evite imagens muito escuras ou com muitos detalhes pequenos",
-                            "Recomendamos fundo neutro ou profissional"
-                          ]
-                        }}
-                      />
-                    </div>
-
                     {/* Imagem de Fundo */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Imagem de Fundo do Banner</label>

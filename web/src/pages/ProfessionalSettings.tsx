@@ -220,66 +220,6 @@ export function ProfessionalSettings({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              
-              {/* Foto de Perfil */}
-              <div className="space-y-4">
-                <Label>Foto de Perfil</Label>
-                <div className="flex items-center gap-4">
-                  {formData.image && (
-                    <div className="w-20 h-20 rounded-full overflow-hidden bg-muted">
-                      <img 
-                        src={formData.image} 
-                        alt="Foto de perfil" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setShowImageUpload(!showImageUpload)}
-                    >
-                      <Camera className="w-4 h-4 mr-2" />
-                      {formData.image ? 'Alterar Foto' : 'Adicionar Foto'}
-                    </Button>
-                    {formData.image && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleInputChange('image', '')}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                
-                {showImageUpload && (
-                  <div className="border rounded-lg p-4">
-                    <FileUpload
-                      type="image"
-                      field="image"
-                      onFileSelect={handleImageUpload}
-                      setFormData={setFormData}
-                      formData={formData}
-                      specifications={{
-                        title: "Foto de Perfil",
-                        description: "Esta imagem será exibida como sua foto de perfil profissional",
-                        dimensions: "400x400 pixels (quadrada)",
-                        format: "JPG, PNG, WebP",
-                        maxSize: "5MB",
-                        tips: [
-                          "Use uma foto profissional e de boa qualidade",
-                          "A imagem será cortada automaticamente em formato quadrado",
-                          "Evite imagens muito escuras ou com muitos detalhes pequenos",
-                          "Recomendamos fundo neutro ou profissional"
-                        ]
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
 
               {/* Imagem de Fundo */}
               <div className="space-y-4">
