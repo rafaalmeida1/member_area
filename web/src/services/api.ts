@@ -709,6 +709,25 @@ class ApiService {
     throw new Error(response.data.message || 'Erro ao buscar notificações');
   }
 
+  async getNotificationsPaginated(page: number = 0, size: number = 20): Promise<{
+    content: Notification[];
+    totalPages: number;
+    totalElements: number;
+    currentPage: number;
+  }> {
+    const response: AxiosResponse<ApiResponse<{
+      content: Notification[];
+      totalPages: number;
+      totalElements: number;
+      currentPage: number;
+    }>> = await this.api.get(`/api/notifications/all?page=${page}&size=${size}`);
+    
+    if (response.data.status === 'success' && response.data.data) {
+      return response.data.data;
+    }
+    throw new Error(response.data.message || 'Erro ao buscar notificações');
+  }
+
   async markNotificationAsRead(notificationId: number): Promise<void> {
     const response: AxiosResponse<ApiResponse<void>> = await this.api.patch(`/api/notifications/${notificationId}/read`);
     if (response.data.status !== 'success') {

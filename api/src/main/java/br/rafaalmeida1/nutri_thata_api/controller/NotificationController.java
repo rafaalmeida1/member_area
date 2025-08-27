@@ -7,6 +7,7 @@ import br.rafaalmeida1.nutri_thata_api.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -48,14 +49,10 @@ public class NotificationController {
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<Page<NotificationResponse>>> getAllNotifications(
             @AuthenticationPrincipal User user,
-            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
-        try {
-            Page<NotificationResponse> notifications = notificationService.getAllNotifications(user, pageable);
-            return ResponseEntity.ok(ApiResponse.success("Todas as notificações carregadas com sucesso", notifications));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error("Erro ao carregar todas as notificações: " + e.getMessage()));
-        }
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        
+        Page<NotificationResponse> notifications = notificationService.getAllNotifications(user, pageable);
+        return ResponseEntity.ok(ApiResponse.success("Todas as notificações", notifications));
     }
     
     @GetMapping("/unread-count")

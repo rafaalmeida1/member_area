@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Bell, Check, ExternalLink, BookOpen, RefreshCw, MessageSquare, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -41,9 +41,18 @@ export function NotificationDropdown() {
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [markAllLoading, setMarkAllLoading] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  
+  // Estados para paginação
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Carregar notificações não lidas para o dropdown
   const loadUnreadNotifications = async () => {
@@ -67,17 +76,58 @@ export function NotificationDropdown() {
     }
   };
 
-  // Carregar todas as notificações para o sheet
-  const loadAllNotifications = async () => {
+  // Carregar todas as notificações para o sheet com paginação
+  const loadAllNotifications = async (page: number = 0, append: boolean = false) => {
     if (!user) return;
     
     try {
-      const response = await apiService.getNotifications();
-      setAllNotifications(response);
+      if (page === 0) {
+        setIsLoading(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+      
+      const response = await apiService.getNotificationsPaginated(page, 20);
+      
+      if (append) {
+        setAllNotifications(prev => [...prev, ...response.content]);
+      } else {
+        setAllNotifications(response.content);
+      }
+      
+      setCurrentPage(response.currentPage);
+      setTotalPages(response.totalPages);
+      setTotalElements(response.totalElements);
+      setHasMore(response.currentPage < response.totalPages - 1);
     } catch (error) {
       console.error('Erro ao carregar todas as notificações:', error);
+      toast({
+        title: "Erro ao carregar notificações",
+        description: "Não foi possível carregar as notificações.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
+
+  // Função para carregar mais notificações (scroll infinito)
+  const loadMoreNotifications = useCallback(async () => {
+    if (hasMore && !isLoadingMore && !isLoading) {
+      await loadAllNotifications(currentPage + 1, true);
+    }
+  }, [hasMore, isLoadingMore, isLoading, currentPage]);
+
+  // Detectar scroll para carregar mais
+  const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
+    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+    
+    if (scrollPercentage > 0.8 && hasMore && !isLoadingMore) {
+      loadMoreNotifications();
+    }
+  }, [hasMore, isLoadingMore, loadMoreNotifications]);
 
   // Carregar notificações quando abrir o dropdown
   useEffect(() => {
@@ -89,7 +139,9 @@ export function NotificationDropdown() {
   // Carregar todas as notificações quando abrir o sheet
   useEffect(() => {
     if (sheetOpen && user) {
-      loadAllNotifications();
+      setCurrentPage(0);
+      setHasMore(true);
+      loadAllNotifications(0, false);
     }
   }, [sheetOpen, user]);
 
@@ -349,6 +401,25 @@ export function NotificationDropdown() {
                         </Button>
                       </div>
                     </div>
+                    
+                    {/* Botão para redirecionar para módulo no dropdown */}
+                    {notification.moduleId && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleModuleClick(notification);
+                          }}
+                          disabled={actionLoading === notification.id}
+                          className="h-6 px-2 text-xs"
+                        >
+                          <BookOpen className="w-3 h-3 mr-1" />
+                          Ver Módulo
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </DropdownMenuItem>
               ))}
@@ -378,13 +449,22 @@ export function NotificationDropdown() {
               <div className="flex items-center gap-2">
                 <Bell className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Todas as Notificações</h2>
-                <Badge variant="secondary">{allNotifications.length}</Badge>
+                <Badge variant="secondary">{totalElements}</Badge>
               </div>
             </div>
 
             {/* Content */}
-            <ScrollArea className="flex-1 p-4">
-              {allNotifications.length === 0 ? (
+            <ScrollArea 
+              className="flex-1 p-4" 
+              onScroll={handleScroll}
+              ref={scrollAreaRef}
+            >
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <div className="w-8 h-8 animate-spin rounded-full border-2 border-primary border-t-transparent mb-2" />
+                  <p className="text-sm text-muted-foreground">Carregando notificações...</p>
+                </div>
+              ) : allNotifications.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Bell className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Nenhuma notificação encontrada</p>
@@ -450,10 +530,47 @@ export function NotificationDropdown() {
                               )}
                             </div>
                           </div>
+                          
+                          {/* Botão para redirecionar para módulo */}
+                          {notification.moduleId && (
+                            <div className="mt-2 flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  if (!notification.read) {
+                                    markAsRead(notification.id);
+                                  }
+                                  navigate(`/module/${notification.moduleId}`);
+                                  setSheetOpen(false);
+                                }}
+                                disabled={actionLoading === notification.id}
+                                className="h-7 px-3 text-xs"
+                              >
+                                <BookOpen className="w-3 h-3 mr-1" />
+                                Ver Módulo
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
                   ))}
+                  
+                  {/* Loading mais notificações */}
+                  {isLoadingMore && (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="w-6 h-6 animate-spin rounded-full border-2 border-primary border-t-transparent mr-2" />
+                      <span className="text-sm text-muted-foreground">Carregando mais...</span>
+                    </div>
+                  )}
+                  
+                  {/* Indicador de fim */}
+                  {!hasMore && allNotifications.length > 0 && (
+                    <div className="text-center py-4 text-muted-foreground">
+                      <p className="text-sm">Todas as notificações foram carregadas</p>
+                    </div>
+                  )}
                 </div>
               )}
             </ScrollArea>
