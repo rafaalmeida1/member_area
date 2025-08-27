@@ -277,7 +277,7 @@ export function Layout({
             {/* <Button variant="ghost" size="icon" className="search-button">
               <Search className="w-4 h-4" />
             </Button> */}
-            <NotificationDropdown onNavigateToModule={handleNavigateToModule} />
+            <NotificationDropdown />
             {/* <ThemeToggle /> */}
           </div>
         </header>

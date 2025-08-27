@@ -1,10 +1,10 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Bell, X, Check, ExternalLink, BookOpen, RefreshCw, MessageSquare, Settings } from 'lucide-react';
+import { Bell, Check, ExternalLink, BookOpen, RefreshCw, MessageSquare, Settings } from 'lucide-react';
 import { useNotificationContext } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { AllNotificationsDrawer } from './AllNotificationsDrawer';
+import { useNotificationDrawer } from '@/contexts/NotificationDrawerContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +17,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
+import { apiService } from '@/services/api';
+import { useNavigate } from 'react-router-dom';
 
 interface Notification {
   id: number;
@@ -29,13 +32,8 @@ interface Notification {
   moduleTitle?: string;
 }
 
-interface NotificationDropdownProps {
-  onNavigateToModule?: (moduleId: number) => void;
-}
-
-export function NotificationDropdown({ onNavigateToModule }: NotificationDropdownProps) {
+export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showAllNotifications, setShowAllNotifications] = useState(false);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [markAllLoading, setMarkAllLoading] = useState(false);
   const { user } = useAuth();
@@ -48,6 +46,16 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
     markAsRead,
     markAllAsRead,
   } = useNotificationContext();
+  const { openDrawer, setOnNavigateToModule } = useNotificationDrawer();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Configurar callback de navegação quando o componente monta
+  useEffect(() => {
+    setOnNavigateToModule((moduleId: number) => {
+      navigate(`/module/${moduleId}`);
+    });
+  }, [navigate, setOnNavigateToModule]);
 
   // Carregar notificações quando abrir o dropdown (apenas se não foram carregadas recentemente)
   useEffect(() => {
@@ -61,11 +69,11 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
 
   // Navegar para módulo
   const handleModuleClick = async (notification: Notification) => {
-    if (notification.moduleId && onNavigateToModule) {
+    if (notification.moduleId) {
       setActionLoading(notification.id);
       try {
         await markAsRead(notification.id);
-        onNavigateToModule(notification.moduleId);
+        navigate(`/module/${notification.moduleId}`);
         setIsOpen(false);
       } catch (error) {
         console.error('Erro ao navegar para módulo:', error);
@@ -304,7 +312,7 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
           <DropdownMenuItem 
             className="justify-center text-sm text-muted-foreground hover:text-foreground"
             onClick={() => {
-              setShowAllNotifications(true);
+              openDrawer();
               setIsOpen(false);
             }}
           >
@@ -314,13 +322,7 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
       </DropdownMenu>
 
       {/* Modal renderizado fora do dropdown */}
-      {showAllNotifications && (
-        <AllNotificationsDrawer
-          isOpen={showAllNotifications}
-          onClose={() => setShowAllNotifications(false)}
-          onNavigateToModule={onNavigateToModule}
-        />
-      )}
+      {/* AllNotificationsDrawer component is now managed by useNotificationDrawer */}
     </>
   );
 } 

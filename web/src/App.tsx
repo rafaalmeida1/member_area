@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { useNotificationDrawer } from './contexts/NotificationDrawerContext';
+import { AllNotificationsDrawer } from './components/AllNotificationsDrawer';
 import { Login } from './pages/Login';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
@@ -49,6 +51,8 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  const { isDrawerOpen, closeDrawer, onNavigateToModule } = useNotificationDrawer();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Routes>
@@ -169,6 +173,13 @@ function App() {
         {/* Rota catch-all para páginas não encontradas */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+
+      {/* Drawer de notificações renderizado no nível mais alto */}
+      <AllNotificationsDrawer
+        isOpen={isDrawerOpen}
+        onClose={closeDrawer}
+        onNavigateToModule={onNavigateToModule}
+      />
     </div>
   );
 }
