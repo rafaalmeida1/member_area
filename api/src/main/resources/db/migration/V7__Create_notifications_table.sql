@@ -6,7 +6,7 @@ CREATE TABLE notifications (
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
     read BOOLEAN NOT NULL DEFAULT FALSE,
-    module_id BIGINT,
+    module_id UUID,
     module_title VARCHAR(255),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
