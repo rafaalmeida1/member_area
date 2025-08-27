@@ -39,9 +39,6 @@ export function AllNotificationsModal({ isOpen, onClose, onNavigateToModule }: A
 
   const pageSize = 20;
 
-  // Debug log
-  console.log('AllNotificationsModal renderizado, isOpen:', isOpen);
-
   // Carregar notificações
   const loadNotifications = async (page: number = 0) => {
     if (!user) return;
@@ -52,7 +49,6 @@ export function AllNotificationsModal({ isOpen, onClose, onNavigateToModule }: A
       setNotifications(response.notifications);
       setTotalPages(response.totalPages);
       setTotalElements(response.totalElements);
-      console.log('Notificações carregadas:', response.notifications.length);
     } catch (error) {
       console.error('Erro ao carregar notificações:', error);
       toast({
@@ -179,180 +175,157 @@ export function AllNotificationsModal({ isOpen, onClose, onNavigateToModule }: A
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
-      style={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      style={{
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1rem'
       }}
     >
       <div 
-        className="bg-background rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+        className="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
         style={{
-          backgroundColor: 'var(--background)',
-          borderRadius: '0.5rem',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          width: '100%',
           maxWidth: '56rem',
           maxHeight: '90vh',
-          display: 'flex',
-          flexDirection: 'column'
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-2xl font-semibold">Todas as Notificações</h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h2 className="text-2xl font-semibold text-gray-900">Todas as Notificações</h2>
+            <p className="text-sm text-gray-500 mt-1">
               {totalElements} notificação{totalElements !== 1 ? 's' : ''} no total
             </p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <button 
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
             <X className="size-5" />
-          </Button>
+          </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-hidden">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent mb-4" />
-              <p className="text-sm text-muted-foreground">Carregando notificações...</p>
+              <div className="size-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent mb-4" />
+              <p className="text-sm text-gray-500">Carregando notificações...</p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <Bell className="size-12 text-muted-foreground mb-4" />
-              <p className="text-sm text-muted-foreground">Nenhuma notificação encontrada</p>
+              <Bell className="size-12 text-gray-400 mb-4" />
+              <p className="text-sm text-gray-500">Nenhuma notificação encontrada</p>
             </div>
           ) : (
-            <ScrollArea className="h-full">
-              <div className="p-6 space-y-4">
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
-                      !notification.read ? 'bg-accent/50 border-primary/20' : 'bg-background border-border'
-                    }`}
-                  >
-                    <div className="flex-shrink-0 mt-1">
-                      <Avatar className="size-10 bg-muted">
-                        <AvatarFallback className={`text-sm ${getNotificationColor(notification.type)}`}>
-                          {actionLoading === notification.id ? (
-                            <div className="size-4 animate-spin rounded-full border border-current border-t-transparent" />
-                          ) : (
-                            getNotificationIcon(notification.type)
-                          )}
-                        </AvatarFallback>
-                      </Avatar>
+            <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
+                    !notification.read ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'
+                  }`}
+                >
+                  <div className="flex-shrink-0 mt-1">
+                    <div className="size-10 bg-gray-100 rounded-full flex items-center justify-center">
+                      {actionLoading === notification.id ? (
+                        <div className="size-4 animate-spin rounded-full border border-blue-500 border-t-transparent" />
+                      ) : (
+                        getNotificationIcon(notification.type)
+                      )}
                     </div>
+                  </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p
-                              className={`text-base font-medium ${
-                                !notification.read ? "text-foreground" : "text-muted-foreground"
-                              }`}
-                            >
-                              {notification.title}
-                            </p>
-                            {!notification.read && (
-                              <Badge variant="secondary" className="text-xs">
-                                Não lida
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-2 leading-relaxed">
-                            {notification.message}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p
+                            className={`text-base font-medium ${
+                              !notification.read ? "text-gray-900" : "text-gray-600"
+                            }`}
+                          >
+                            {notification.title}
                           </p>
-                          <div className="flex items-center gap-3">
-                            <p className="text-xs text-muted-foreground font-medium">
-                              {formatTime(notification.createdAt)}
-                            </p>
-                            {notification.moduleId && (
-                              <span className="text-xs text-primary flex items-center gap-1 font-medium">
-                                {notification.moduleTitle}
-                                <ExternalLink className="size-3" />
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
                           {!notification.read && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleMarkAsRead(notification.id)}
-                              disabled={actionLoading === notification.id}
-                              className="text-xs"
-                            >
-                              {actionLoading === notification.id ? (
-                                <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
-                              ) : (
-                                "Marcar como lida"
-                              )}
-                            </Button>
+                            <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                              Não lida
+                            </span>
                           )}
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2 leading-relaxed">
+                          {notification.message}
+                        </p>
+                        <div className="flex items-center gap-3">
+                          <p className="text-xs text-gray-500 font-medium">
+                            {formatTime(notification.createdAt)}
+                          </p>
                           {notification.moduleId && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleModuleClick(notification)}
-                              disabled={actionLoading === notification.id}
-                              className="text-xs"
-                            >
-                              {actionLoading === notification.id ? (
-                                <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
-                              ) : (
-                                "Abrir módulo"
-                              )}
-                            </Button>
+                            <span className="text-xs text-blue-600 flex items-center gap-1 font-medium">
+                              {notification.moduleTitle}
+                              <ExternalLink className="size-3" />
+                            </span>
                           )}
                         </div>
                       </div>
+
+                      <div className="flex items-center gap-2">
+                        {!notification.read && (
+                          <button
+                            onClick={() => handleMarkAsRead(notification.id)}
+                            disabled={actionLoading === notification.id}
+                            className="text-xs px-3 py-1 rounded hover:bg-blue-50 transition-colors disabled:opacity-50"
+                          >
+                            {actionLoading === notification.id ? (
+                              <div className="size-3 animate-spin rounded-full border border-blue-500 border-t-transparent" />
+                            ) : (
+                              "Marcar como lida"
+                            )}
+                          </button>
+                        )}
+                        {notification.moduleId && (
+                          <button
+                            onClick={() => handleModuleClick(notification)}
+                            disabled={actionLoading === notification.id}
+                            className="text-xs px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
+                          >
+                            {actionLoading === notification.id ? (
+                              <div className="size-3 animate-spin rounded-full border border-blue-500 border-t-transparent" />
+                            ) : (
+                              "Abrir módulo"
+                            )}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between p-6 border-t">
-            <p className="text-sm text-muted-foreground">
+          <div className="flex items-center justify-between p-6 border-t border-gray-200">
+            <p className="text-sm text-gray-500">
               Página {currentPage + 1} de {totalPages}
             </p>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
+              <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 0}
+                className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 <ChevronLeft className="size-4" />
                 Anterior
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
+              </button>
+              <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages - 1}
+                className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 Próxima
                 <ChevronRight className="size-4" />
-              </Button>
+              </button>
             </div>
           </div>
         )}

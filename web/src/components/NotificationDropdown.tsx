@@ -49,9 +49,6 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
     markAllAsRead,
   } = useNotificationContext();
 
-  // Debug log para verificar estado do modal
-  console.log('NotificationDropdown renderizado, showAllNotifications:', showAllNotifications);
-
   // Carregar notificações quando abrir o dropdown (apenas se não foram carregadas recentemente)
   useEffect(() => {
     if (isOpen && user) {
@@ -177,7 +174,7 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
           </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" className="w-80">
+        <DropdownMenuContent align="end" className="w-80 z-50">
           <div className="flex items-center justify-between px-2 py-1.5">
             <div className="flex flex-col items-start gap-2">
               <DropdownMenuLabel className="p-0 text-base font-semibold">
@@ -307,7 +304,6 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
           <DropdownMenuItem 
             className="justify-center text-sm text-muted-foreground hover:text-foreground"
             onClick={() => {
-              console.log('Abrindo modal de todas as notificações');
               setShowAllNotifications(true);
               setIsOpen(false);
             }}
