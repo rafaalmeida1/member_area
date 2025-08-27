@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
 import { apiService } from '@/services/api';
 import { useNavigate } from 'react-router-dom';
@@ -34,23 +35,26 @@ interface Notification {
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [allNotifications, setAllNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [markAllLoading, setMarkAllLoading] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Carregar notificações
-  const loadNotifications = async (force = false) => {
+  // Carregar notificações não lidas para o dropdown
+  const loadUnreadNotifications = async () => {
     if (!user) return;
     
     try {
       setIsLoading(true);
       const response = await apiService.getNotifications();
-      setNotifications(response);
-      setUnreadCount(response.filter(n => !n.read).length);
+      const unreadNotifications = response.filter(n => !n.read);
+      setNotifications(unreadNotifications);
+      setUnreadCount(unreadNotifications.length);
     } catch (error) {
       console.error('Erro ao carregar notificações:', error);
       toast({
@@ -63,19 +67,41 @@ export function NotificationDropdown() {
     }
   };
 
+  // Carregar todas as notificações para o sheet
+  const loadAllNotifications = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await apiService.getNotifications();
+      setAllNotifications(response);
+    } catch (error) {
+      console.error('Erro ao carregar todas as notificações:', error);
+    }
+  };
+
   // Carregar notificações quando abrir o dropdown
   useEffect(() => {
     if (isOpen && user) {
-      loadNotifications();
+      loadUnreadNotifications();
     }
   }, [isOpen, user]);
+
+  // Carregar todas as notificações quando abrir o sheet
+  useEffect(() => {
+    if (sheetOpen && user) {
+      loadAllNotifications();
+    }
+  }, [sheetOpen, user]);
 
   // Marcar notificação como lida
   const markAsRead = async (notificationId: number) => {
     try {
       setActionLoading(notificationId);
       await apiService.markNotificationAsRead(notificationId);
-      setNotifications(prev => 
+      
+      // Atualizar estado local
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      setAllNotifications(prev => 
         prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
@@ -96,8 +122,12 @@ export function NotificationDropdown() {
     try {
       setMarkAllLoading(true);
       await apiService.markAllNotificationsAsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      
+      // Atualizar estado local
+      setNotifications([]);
+      setAllNotifications(prev => prev.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
+      
       toast({
         title: "Sucesso",
         description: "Todas as notificações foram marcadas como lidas.",
@@ -186,157 +216,250 @@ export function NotificationDropdown() {
   }
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="size-5 text-black" />
-          {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 size-5 flex items-center justify-center p-0 text-xs"
-            >
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </Badge>
-          )}
-          <span className="sr-only">
-            {unreadCount > 0 ? `${unreadCount} notificações não lidas` : "Notificações"}
-          </span>
-        </Button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end" className="w-80 z-50">
-        <div className="flex items-center justify-between px-2 py-1.5">
-          <div className="flex flex-col items-start gap-2">
-            <DropdownMenuLabel className="p-0 text-base font-semibold">
-              Notificações
-            </DropdownMenuLabel>
-          </div>
-          <div className="flex items-center gap-2">
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="size-5 text-black" />
             {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={markAllAsRead}
-                disabled={markAllLoading}
-                className="h-auto p-1 text-xs text-muted-foreground hover:text-foreground"
+              <Badge
+                variant="destructive"
+                className="absolute -top-1 -right-1 size-5 flex items-center justify-center p-0 text-xs"
               >
-                {markAllLoading ? (
-                  <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
-                ) : (
-                  "Marcar todas como lidas"
-                )}
-              </Button>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </Badge>
             )}
+            <span className="sr-only">
+              {unreadCount > 0 ? `${unreadCount} notificações não lidas` : "Notificações"}
+            </span>
+          </Button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent align="end" className="w-80 z-50">
+          <div className="flex items-center justify-between px-2 py-1.5">
+            <div className="flex flex-col items-start gap-2">
+              <DropdownMenuLabel className="p-0 text-base font-semibold">
+                Notificações Não Lidas
+              </DropdownMenuLabel>
+            </div>
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={markAllAsRead}
+                  disabled={markAllLoading}
+                  className="h-auto p-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {markAllLoading ? (
+                    <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                  ) : (
+                    "Marcar todas como lidas"
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
 
-        <DropdownMenuSeparator />
+          <DropdownMenuSeparator />
 
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent mb-2" />
-            <p className="text-sm text-muted-foreground">Carregando notificações...</p>
-          </div>
-        ) : notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Bell className="size-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">Nenhuma notificação não lida</p>
-          </div>
-        ) : (
-          <ScrollArea className="max-h-96">
-            {notifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className="flex items-start gap-3 p-3 cursor-pointer group"
-                onClick={() => !notification.read && handleModuleClick(notification)}
-                disabled={actionLoading === notification.id}
-              >
-                <div className="flex-shrink-0 mt-0.5">
-                  <Avatar className="size-8 bg-muted">
-                    <AvatarFallback className={`text-xs ${getNotificationColor(notification.type)}`}>
-                      {actionLoading === notification.id ? (
-                        <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
-                      ) : (
-                        getNotificationIcon(notification.type)
-                      )}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-sm font-medium leading-tight ${
-                          !notification.read ? "text-foreground" : "text-muted-foreground"
-                        }`}
-                      >
-                        {notification.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                        {notification.message}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className="text-xs text-muted-foreground">
-                          {formatTime(notification.createdAt)}
-                        </p>
-                        {notification.moduleId && (
-                          <span className="text-xs text-primary flex items-center gap-1">
-                            {notification.moduleTitle}
-                            <ExternalLink className="size-3" />
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      {!notification.read && (
-                        <div className="size-2 bg-primary rounded-full flex-shrink-0" />
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (notification.moduleId) {
-                            handleModuleClick(notification);
-                          } else {
-                            markAsRead(notification.id);
-                          }
-                        }}
-                        disabled={actionLoading === notification.id}
-                      >
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent mb-2" />
+              <p className="text-sm text-muted-foreground">Carregando notificações...</p>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Bell className="size-8 text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">Nenhuma notificação não lida</p>
+            </div>
+          ) : (
+            <ScrollArea className="max-h-96">
+              {notifications.map((notification) => (
+                <DropdownMenuItem
+                  key={notification.id}
+                  className="flex items-start gap-3 p-3 cursor-pointer group"
+                  onClick={() => !notification.read && handleModuleClick(notification)}
+                  disabled={actionLoading === notification.id}
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    <Avatar className="size-8 bg-muted">
+                      <AvatarFallback className={`text-xs ${getNotificationColor(notification.type)}`}>
                         {actionLoading === notification.id ? (
                           <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
                         ) : (
-                          <Check className="size-3" />
+                          getNotificationIcon(notification.type)
                         )}
-                        <span className="sr-only">
-                          {notification.moduleId ? "Abrir módulo" : "Marcar como lida"}
-                        </span>
-                      </Button>
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={`text-sm font-medium leading-tight ${
+                            !notification.read ? "text-foreground" : "text-muted-foreground"
+                          }`}
+                        >
+                          {notification.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          {notification.message}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-xs text-muted-foreground">
+                            {formatTime(notification.createdAt)}
+                          </p>
+                          {notification.moduleId && (
+                            <span className="text-xs text-primary flex items-center gap-1">
+                              {notification.moduleTitle}
+                              <ExternalLink className="size-3" />
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        {!notification.read && (
+                          <div className="size-2 bg-primary rounded-full flex-shrink-0" />
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (notification.moduleId) {
+                              handleModuleClick(notification);
+                            } else {
+                              markAsRead(notification.id);
+                            }
+                          }}
+                          disabled={actionLoading === notification.id}
+                        >
+                          {actionLoading === notification.id ? (
+                            <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                          ) : (
+                            <Check className="size-3" />
+                          )}
+                          <span className="sr-only">
+                            {notification.moduleId ? "Abrir módulo" : "Marcar como lida"}
+                          </span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
+                </DropdownMenuItem>
+              ))}
+            </ScrollArea>
+          )}
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem 
+            className="justify-center text-sm text-muted-foreground hover:text-foreground"
+            onClick={() => {
+              setSheetOpen(true);
+              setIsOpen(false);
+            }}
+          >
+            Ver todas as notificações
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Sheet para todas as notificações */}
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent side="right" className="w-96 p-0">
+          <div className="flex flex-col h-full">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center gap-2">
+                <Bell className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">Todas as Notificações</h2>
+                <Badge variant="secondary">{allNotifications.length}</Badge>
+              </div>
+            </div>
+
+            {/* Content */}
+            <ScrollArea className="flex-1 p-4">
+              {allNotifications.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Bell className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Nenhuma notificação encontrada</p>
                 </div>
-              </DropdownMenuItem>
-            ))}
-          </ScrollArea>
-        )}
+              ) : (
+                <div className="space-y-3">
+                  {allNotifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`p-3 rounded-lg border transition-colors ${
+                        notification.read 
+                          ? 'bg-muted/50' 
+                          : 'bg-background border-primary/20'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback className={`text-xs ${getNotificationColor(notification.type)}`}>
+                            {getNotificationIcon(notification.type)}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium leading-tight">
+                                {notification.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {notification.message}
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <p className="text-xs text-muted-foreground">
+                                  {formatTime(notification.createdAt)}
+                                </p>
+                                {notification.moduleId && (
+                                  <span className="text-xs text-primary flex items-center gap-1">
+                                    {notification.moduleTitle}
+                                    <ExternalLink className="w-3 h-3" />
+                                  </span>
+                                )}
+                              </div>
+                            </div>
 
-        <DropdownMenuSeparator />
-
-        <DropdownMenuItem 
-          className="justify-center text-sm text-muted-foreground hover:text-foreground"
-          onClick={() => {
-            // Aqui você pode implementar a navegação para uma página de todas as notificações
-            navigate('/notifications');
-            setIsOpen(false);
-          }}
-        >
-          Ver todas as notificações
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+                            <div className="flex items-center gap-1">
+                              {!notification.read && (
+                                <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
+                              )}
+                              {!notification.read && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => markAsRead(notification.id)}
+                                  disabled={actionLoading === notification.id}
+                                  className="h-6 px-2 text-xs"
+                                >
+                                  {actionLoading === notification.id ? (
+                                    <div className="w-3 h-3 animate-spin rounded-full border border-current border-t-transparent" />
+                                  ) : (
+                                    <Check className="w-3 h-3" />
+                                  )}
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 } 
