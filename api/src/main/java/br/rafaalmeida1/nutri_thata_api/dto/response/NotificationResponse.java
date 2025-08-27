@@ -2,6 +2,7 @@ package br.rafaalmeida1.nutri_thata_api.dto.response;
 
 import br.rafaalmeida1.nutri_thata_api.enums.NotificationType;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class NotificationResponse {
     private Long id;
@@ -9,7 +10,7 @@ public class NotificationResponse {
     private String title;
     private String message;
     private boolean read;
-    private Long moduleId;
+    private UUID moduleId;
     private String moduleTitle;
     private LocalDateTime createdAt;
     
@@ -17,7 +18,7 @@ public class NotificationResponse {
     public NotificationResponse() {}
     
     public NotificationResponse(Long id, NotificationType type, String title, String message, 
-                               boolean read, Long moduleId, String moduleTitle, LocalDateTime createdAt) {
+                               boolean read, UUID moduleId, String moduleTitle, LocalDateTime createdAt) {
         this.id = id;
         this.type = type;
         this.title = title;
@@ -69,11 +70,11 @@ public class NotificationResponse {
         this.read = read;
     }
     
-    public Long getModuleId() {
+    public UUID getModuleId() {
         return moduleId;
     }
     
-    public void setModuleId(Long moduleId) {
+    public void setModuleId(UUID moduleId) {
         this.moduleId = moduleId;
     }
     
