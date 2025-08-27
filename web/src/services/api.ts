@@ -613,15 +613,32 @@ class ApiService {
   }
 
   async getPatientsList(): Promise<User[]> {
+    console.log('API: Chamando getPatientsList...');
     const response: AxiosResponse<ApiResponse<User[]>> = await this.api.get('/users/patients/list');
+    console.log('API: Resposta getPatientsList:', response.data);
 
     if (response.data.status === 'success' && response.data.data) {
+      console.log('API: Pacientes retornados:', response.data.data);
       return response.data.data;
     }
 
+    console.error('API: Erro na resposta:', response.data);
     throw new Error(response.data.message || 'Erro ao buscar lista de pacientes');
   }
 
+  async getPatientsDebug(): Promise<Record<string, number>> {
+    console.log('API: Chamando getPatientsDebug...');
+    const response: AxiosResponse<ApiResponse<Record<string, number>>> = await this.api.get('/users/patients/debug');
+    console.log('API: Resposta getPatientsDebug:', response.data);
+
+    if (response.data.status === 'success' && response.data.data) {
+      console.log('API: Debug info:', response.data.data);
+      return response.data.data;
+    }
+
+    console.error('API: Erro na resposta debug:', response.data);
+    throw new Error(response.data.message || 'Erro ao buscar debug info');
+  }
 
 
   async uploadFile(file: File, type: 'IMAGE' | 'VIDEO' | 'AUDIO', description?: string): Promise<MediaAsset> {

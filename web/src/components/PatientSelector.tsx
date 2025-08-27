@@ -37,6 +37,7 @@ export function PatientSelector({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState<number[]>(initialSelectedIds);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
@@ -45,6 +46,7 @@ export function PatientSelector({
   // Carregar pacientes
   useEffect(() => {
     if (isOpen) {
+      console.log('PatientSelector aberto, carregando pacientes...');
       loadPatients();
     }
   }, [isOpen]);
@@ -52,13 +54,19 @@ export function PatientSelector({
   const loadPatients = async () => {
     try {
       setIsLoading(true);
+      setError(null);
+      console.log('Carregando pacientes...');
       const response = await apiService.getPatientsList();
+      console.log('Pacientes carregados:', response);
+      console.log('Número de pacientes:', response.length);
       setPatients(response);
     } catch (error) {
       console.error('Erro ao carregar pacientes:', error);
+      const errorMessage = error instanceof Error ? error.message : "Não foi possível carregar a lista de pacientes.";
+      setError(errorMessage);
       toast({
         title: "Erro ao carregar pacientes",
-        description: "Não foi possível carregar a lista de pacientes.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -71,6 +79,15 @@ export function PatientSelector({
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  console.log('Estado atual:', {
+    isOpen,
+    isLoading,
+    patientsCount: patients.length,
+    filteredCount: filteredPatients.length,
+    searchTerm,
+    selectedIds
+  });
 
   // Toggle seleção de paciente
   const togglePatient = (patientId: number) => {
@@ -226,6 +243,24 @@ export function PatientSelector({
             <Button variant="outline" size="sm" onClick={deselectAll}>
               Desmarcar Todos
             </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={async () => {
+                try {
+                  const debugInfo = await apiService.getPatientsDebug();
+                  console.log('Debug info:', debugInfo);
+                  toast({
+                    title: "Debug Info",
+                    description: `Total: ${debugInfo.totalUsers}, Pacientes: ${debugInfo.totalPatients}, Ativos: ${debugInfo.activePatients}`,
+                  });
+                } catch (error) {
+                  console.error('Erro no debug:', error);
+                }
+              }}
+            >
+              Debug
+            </Button>
             <Badge variant="secondary">
               {selectedIds.length} selecionado{selectedIds.length !== 1 ? 's' : ''}
             </Badge>
@@ -237,6 +272,20 @@ export function PatientSelector({
               <div className="loading-state">
                 <div className="loading-spinner"></div>
                 <span>Carregando pacientes...</span>
+              </div>
+            ) : error ? (
+              <div className="empty-state">
+                <Users className="empty-icon" />
+                <span>Erro ao carregar pacientes</span>
+                <p className="text-sm text-red-500 mt-2">{error}</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={loadPatients}
+                  className="mt-2"
+                >
+                  Tentar Novamente
+                </Button>
               </div>
             ) : filteredPatients.length === 0 ? (
               <div className="empty-state">
