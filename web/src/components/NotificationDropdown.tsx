@@ -28,7 +28,7 @@ interface Notification {
   message: string;
   read: boolean;
   createdAt: string;
-  moduleId?: number;
+  moduleId?: string; // UUID é uma string
   moduleTitle?: string;
 }
 
