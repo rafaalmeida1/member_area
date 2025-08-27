@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Bell, X, Check, ExternalLink, BookOpen, RefreshCw, MessageSquare, Settings } from 'lucide-react';
 import { useNotificationContext } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { AllNotificationsModal } from './AllNotificationsModal';
+import { AllNotificationsDrawer } from './AllNotificationsDrawer';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -315,7 +315,7 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
 
       {/* Modal renderizado fora do dropdown */}
       {showAllNotifications && (
-        <AllNotificationsModal
+        <AllNotificationsDrawer
           isOpen={showAllNotifications}
           onClose={() => setShowAllNotifications(false)}
           onNavigateToModule={onNavigateToModule}

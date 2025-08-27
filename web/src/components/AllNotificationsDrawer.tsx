@@ -6,8 +6,6 @@ import { apiService } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 
 interface Notification {
@@ -21,13 +19,13 @@ interface Notification {
   moduleTitle?: string;
 }
 
-interface AllNotificationsModalProps {
+interface AllNotificationsDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigateToModule?: (moduleId: number) => void;
 }
 
-export function AllNotificationsModal({ isOpen, onClose, onNavigateToModule }: AllNotificationsModalProps) {
+export function AllNotificationsDrawer({ isOpen, onClose, onNavigateToModule }: AllNotificationsDrawerProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -61,7 +59,7 @@ export function AllNotificationsModal({ isOpen, onClose, onNavigateToModule }: A
     }
   };
 
-  // Carregar notificações quando o modal abre
+  // Carregar notificações quando o drawer abre
   useEffect(() => {
     if (isOpen && user) {
       loadNotifications(0);
@@ -135,21 +133,6 @@ export function AllNotificationsModal({ isOpen, onClose, onNavigateToModule }: A
     }
   };
 
-  const getNotificationColor = (type: Notification['type']) => {
-    switch (type) {
-      case 'MODULE_NEW':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'MODULE_UPDATED':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'PROFESSIONAL_MESSAGE':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'SYSTEM':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
-    }
-  };
-
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -175,18 +158,22 @@ export function AllNotificationsModal({ isOpen, onClose, onNavigateToModule }: A
 
   return (
     <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] flex items-end justify-center"
       style={{
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
       }}
     >
       <div 
-        className="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+        className="bg-white rounded-t-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col transform transition-transform duration-300 ease-out"
         style={{
-          maxWidth: '56rem',
           maxHeight: '90vh',
         }}
       >
+        {/* Handle para arrastar */}
+        <div className="flex justify-center pt-4 pb-2">
+          <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
