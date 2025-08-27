@@ -3,6 +3,7 @@ package br.rafaalmeida1.nutri_thata_api.entities;
 import br.rafaalmeida1.nutri_thata_api.enums.NotificationType;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "notifications")
@@ -30,7 +31,7 @@ public class Notification {
     private boolean read = false;
     
     @Column(name = "module_id")
-    private Long moduleId;
+    private UUID moduleId;
     
     @Column(name = "module_title")
     private String moduleTitle;
@@ -62,7 +63,7 @@ public class Notification {
         this.message = message;
     }
     
-    public Notification(User user, NotificationType type, String title, String message, Long moduleId, String moduleTitle) {
+    public Notification(User user, NotificationType type, String title, String message, UUID moduleId, String moduleTitle) {
         this.user = user;
         this.type = type;
         this.title = title;
@@ -120,11 +121,11 @@ public class Notification {
         this.read = read;
     }
     
-    public Long getModuleId() {
+    public UUID getModuleId() {
         return moduleId;
     }
     
-    public void setModuleId(Long moduleId) {
+    public void setModuleId(UUID moduleId) {
         this.moduleId = moduleId;
     }
     

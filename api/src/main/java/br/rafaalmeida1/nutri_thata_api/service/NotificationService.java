@@ -4,6 +4,7 @@ import br.rafaalmeida1.nutri_thata_api.dto.response.NotificationResponse;
 import br.rafaalmeida1.nutri_thata_api.entities.Notification;
 import br.rafaalmeida1.nutri_thata_api.entities.User;
 import br.rafaalmeida1.nutri_thata_api.enums.NotificationType;
+import br.rafaalmeida1.nutri_thata_api.exception.BusinessException;
 import br.rafaalmeida1.nutri_thata_api.exception.NotFoundException;
 import br.rafaalmeida1.nutri_thata_api.mapper.NotificationMapper;
 import br.rafaalmeida1.nutri_thata_api.repositories.NotificationRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class NotificationService {
@@ -45,7 +47,11 @@ public class NotificationService {
     
     @Transactional
     public void markAsRead(Long notificationId, User user) {
-        notificationRepository.markAsReadByIdAndUser(notificationId, user);
+        try {
+            notificationRepository.markAsReadByIdAndUser(notificationId, user);
+        } catch (Exception e) {
+            throw new BusinessException("Erro ao marcar notificação como lida: " + e.getMessage());
+        }
     }
     
     @Transactional
@@ -60,13 +66,13 @@ public class NotificationService {
     }
     
     @Transactional
-    public void createModuleNotification(User user, NotificationType type, String title, String message, Long moduleId, String moduleTitle) {
+    public void createModuleNotification(User user, NotificationType type, String title, String message, UUID moduleId, String moduleTitle) {
         Notification notification = new Notification(user, type, title, message, moduleId, moduleTitle);
         notificationRepository.save(notification);
     }
     
     @Transactional
-    public void notifyNewModule(User user, String moduleTitle, Long moduleId) {
+    public void notifyNewModule(User user, String moduleTitle, UUID moduleId) {
         createModuleNotification(
             user,
             NotificationType.MODULE_NEW,
@@ -78,7 +84,7 @@ public class NotificationService {
     }
     
     @Transactional
-    public void notifyModuleUpdate(User user, String moduleTitle, Long moduleId) {
+    public void notifyModuleUpdate(User user, String moduleTitle, UUID moduleId) {
         createModuleNotification(
             user,
             NotificationType.MODULE_UPDATED,

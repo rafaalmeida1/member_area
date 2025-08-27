@@ -114,7 +114,7 @@ public class ModuleService {
         if (module.getVisibility() == ContentVisibility.GENERAL) {
             List<User> patients = userRepository.findByRoleAndIsActiveTrue(Role.PATIENT);
             for (User patient : patients) {
-                notificationService.notifyNewModule(patient, module.getTitle(), module.getId().getMostSignificantBits());
+                notificationService.notifyNewModule(patient, module.getTitle(), module.getId());
             }
         }
 
