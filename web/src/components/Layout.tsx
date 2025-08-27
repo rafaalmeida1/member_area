@@ -71,18 +71,6 @@ export function Layout({
     navigate('/login');
   };
 
-  const handleNavigateToModule = (moduleId: number) => {
-    console.log('Navegar para módulo:', moduleId);
-    navigate(`/module/${moduleId}`);
-  };
-
-  const handleNavigation = (path: string) => {
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
-    navigate(path);
-  };
-
   // Layout sem sidebar (para páginas de login, registro, etc.)
   if (!showSidebar) {
     return (
@@ -124,14 +112,15 @@ export function Layout({
       {/* Quick Actions */}
       <div className="sidebar-quick-actions">
         {user?.role === 'PROFESSIONAL' && (
-          <Button 
-            className="quick-create-btn" 
-            size="sm"
-            onClick={() => handleNavigation('/modules')}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Criar Módulo
-          </Button>
+          <Link to="/modules" style={{ textDecoration: 'none' }}>
+            <Button 
+              className="quick-create-btn" 
+              size="sm"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Criar Módulo
+            </Button>
+          </Link>
         )}
       </div>
 
@@ -144,7 +133,7 @@ export function Layout({
               <Link 
                 to="/"
                 className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}
-                onClick={() => handleNavigation('/')}
+                style={{ textDecoration: 'none' }}
               >
                 <Home className="nav-icon" />
                 <span>Dashboard</span>
@@ -157,7 +146,7 @@ export function Layout({
                   <Link 
                     to="/modules"
                     className={`nav-item ${location.pathname === '/modules' ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/modules')}
+                    style={{ textDecoration: 'none' }}
                   >
                     <FileText className="nav-icon" />
                     <span>Módulos</span>
@@ -168,7 +157,7 @@ export function Layout({
                   <Link 
                     to="/invites"
                     className={`nav-item ${location.pathname === '/invites' ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/invites')}
+                    style={{ textDecoration: 'none' }}
                   >
                     <Mail className="nav-icon" />
                     <span>Convites</span>
@@ -179,7 +168,7 @@ export function Layout({
                   <Link 
                     to="/patients"
                     className={`nav-item ${location.pathname === '/patients' ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/patients')}
+                    style={{ textDecoration: 'none' }}
                   >
                     <Users className="nav-icon" />
                     <span>Pacientes</span>
@@ -199,7 +188,7 @@ export function Layout({
               <Link 
                 to="/profile"
                 className={`nav-item ${location.pathname === '/profile' ? 'active' : ''}`}
-                onClick={() => handleNavigation('/profile')}
+                style={{ textDecoration: 'none' }}
               >
                 <UserCog className="nav-icon" />
                 <span>Minha Conta</span>
@@ -246,7 +235,7 @@ export function Layout({
       {/* Sidebar para Mobile usando Sheet */}
       {isMobile && (
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetContent side="left" className="sidebar-mobile">
+          <SheetContent side="right" className="sidebar-mobile">
             <SidebarContent />
           </SheetContent>
         </Sheet>
@@ -256,7 +245,13 @@ export function Layout({
       <div className="main-content">
         <header className="main-header">
           <div className="header-left">
-            {isMobile ? (
+            <h1 className="header-title">
+              {title || 'Dashboard'}
+            </h1>
+          </div>
+          <div className="header-right">
+            <NotificationDropdown />
+            {isMobile && (
               <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
                 <SheetTrigger asChild>
                   <Button
@@ -268,17 +263,7 @@ export function Layout({
                   </Button>
                 </SheetTrigger>
               </Sheet>
-            ) : null}
-            <h1 className="header-title">
-              {title || 'Dashboard'}
-            </h1>
-          </div>
-          <div className="header-right">
-            {/* <Button variant="ghost" size="icon" className="search-button">
-              <Search className="w-4 h-4" />
-            </Button> */}
-            <NotificationDropdown />
-            {/* <ThemeToggle /> */}
+            )}
           </div>
         </header>
 

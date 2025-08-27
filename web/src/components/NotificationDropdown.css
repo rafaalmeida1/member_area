@@ -1,0 +1,8 @@
+.notification-dropdown {
+  position: relative;
+  z-index: 100;
+}
+
+.notification-dropdown .dropdown-content {
+  z-index: 1000;
+} 
