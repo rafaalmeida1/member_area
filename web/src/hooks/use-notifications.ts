@@ -23,13 +23,13 @@ export function useNotifications() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // Carregar notificações
+  // Carregar notificações não lidas (para o dropdown)
   const loadNotifications = useCallback(async (showLoading = false) => {
     if (!user) return;
     
     try {
       if (showLoading) setIsLoading(true);
-      const response = await apiService.getNotifications();
+      const response = await apiService.getUnreadNotifications();
       setNotifications(response);
       setLastUpdate(new Date());
     } catch (error) {
@@ -50,11 +50,8 @@ export function useNotifications() {
   const markAsRead = useCallback(async (notificationId: number) => {
     try {
       await apiService.markNotificationAsRead(notificationId);
-      setNotifications(prev => 
-        prev.map(n => 
-          n.id === notificationId ? { ...n, read: true } : n
-        )
-      );
+      // Remove a notificação da lista local (já que agora só mostra não lidas)
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
     } catch (error) {
       console.error('Erro ao marcar notificação como lida:', error);
       toast({
@@ -70,7 +67,8 @@ export function useNotifications() {
   const markAllAsRead = useCallback(async () => {
     try {
       await apiService.markAllNotificationsAsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      // Limpa todas as notificações da lista local
+      setNotifications([]);
       toast({
         title: "Sucesso",
         description: "Todas as notificações foram marcadas como lidas.",

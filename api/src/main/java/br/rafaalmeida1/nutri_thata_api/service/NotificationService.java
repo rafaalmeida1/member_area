@@ -8,6 +8,8 @@ import br.rafaalmeida1.nutri_thata_api.exception.NotFoundException;
 import br.rafaalmeida1.nutri_thata_api.mapper.NotificationMapper;
 import br.rafaalmeida1.nutri_thata_api.repositories.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,16 @@ public class NotificationService {
     public List<NotificationResponse> getUserNotifications(User user) {
         List<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user);
         return notificationMapper.toResponseList(notifications);
+    }
+    
+    public List<NotificationResponse> getUnreadNotifications(User user) {
+        List<Notification> notifications = notificationRepository.findByUserAndReadOrderByCreatedAtDesc(user, false);
+        return notificationMapper.toResponseList(notifications);
+    }
+    
+    public Page<NotificationResponse> getAllNotifications(User user, Pageable pageable) {
+        Page<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user, pageable);
+        return notifications.map(notificationMapper::toResponse);
     }
     
     public long getUnreadCount(User user) {

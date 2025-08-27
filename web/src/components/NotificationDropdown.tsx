@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Bell, X, Check, ExternalLink, BookOpen, RefreshCw, MessageSquare, Settings } from 'lucide-react';
 import { useNotificationContext } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { AllNotificationsModal } from './AllNotificationsModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +35,8 @@ interface NotificationDropdownProps {
 
 export function NotificationDropdown({ onNavigateToModule }: NotificationDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [actionLoading, setActionLoading] = useState<number | null>(null); // ID da notificação sendo processada
+  const [showAllNotifications, setShowAllNotifications] = useState(false);
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [markAllLoading, setMarkAllLoading] = useState(false);
   const { user } = useAuth();
   const {
@@ -153,162 +155,169 @@ export function NotificationDropdown({ onNavigateToModule }: NotificationDropdow
   }
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="size-5 text-black" />
-          {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 size-5 flex items-center justify-center p-0 text-xs"
-            >
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </Badge>
-          )}
-          <span className="sr-only">
-            {unreadCount > 0 ? `${unreadCount} notificações não lidas` : "Notificações"}
-          </span>
-        </Button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end" className="w-80">
-        <div className="flex items-center justify-between px-2 py-1.5">
-          <div className="flex flex-col items-start gap-2">
-            <DropdownMenuLabel className="p-0 text-base font-semibold">
-              Notificações
-            </DropdownMenuLabel>
-            {lastUpdate && (
-              <span className="text-xs text-muted-foreground">
-                Atualizado {formatTime(lastUpdate.toISOString())}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="size-5 text-black" />
             {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleMarkAllAsRead}
-                disabled={markAllLoading}
-                className="h-auto p-1 text-xs text-muted-foreground hover:text-foreground"
+              <Badge
+                variant="destructive"
+                className="absolute -top-1 -right-1 size-5 flex items-center justify-center p-0 text-xs"
               >
-                {markAllLoading ? (
-                  <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
-                ) : (
-                  "Marcar todas como lidas"
-                )}
-              </Button>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </Badge>
             )}
+            <span className="sr-only">
+              {unreadCount > 0 ? `${unreadCount} notificações não lidas` : "Notificações"}
+            </span>
+          </Button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent align="end" className="w-80">
+          <div className="flex items-center justify-between px-2 py-1.5">
+            <div className="flex flex-col items-start gap-2">
+              <DropdownMenuLabel className="p-0 text-base font-semibold">
+                Notificações
+              </DropdownMenuLabel>
+              {lastUpdate && (
+                <span className="text-xs text-muted-foreground">
+                  Atualizado {formatTime(lastUpdate.toISOString())}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleMarkAllAsRead}
+                  disabled={markAllLoading}
+                  className="h-auto p-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {markAllLoading ? (
+                    <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                  ) : (
+                    "Marcar todas como lidas"
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
 
-        <DropdownMenuSeparator />
+          <DropdownMenuSeparator />
 
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent mb-2" />
-            <p className="text-sm text-muted-foreground">Carregando notificações...</p>
-          </div>
-        ) : notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Bell className="size-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">Nenhuma notificação</p>
-          </div>
-        ) : (
-          <ScrollArea className="max-h-96">
-            {notifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className="flex items-start gap-3 p-3 cursor-pointer group"
-                onClick={() => !notification.read && handleMarkAsRead(notification.id)}
-                disabled={actionLoading === notification.id}
-              >
-                <div className="flex-shrink-0 mt-0.5">
-                  <Avatar className="size-8 bg-muted">
-                    <AvatarFallback className={`text-xs ${getNotificationColor(notification.type)}`}>
-                      {actionLoading === notification.id ? (
-                        <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
-                      ) : (
-                        getNotificationIcon(notification.type)
-                      )}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-sm font-medium leading-tight ${
-                          !notification.read ? "text-foreground" : "text-muted-foreground"
-                        }`}
-                      >
-                        {notification.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                        {notification.message}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className="text-xs text-muted-foreground">
-                          {formatTime(notification.createdAt)}
-                        </p>
-                        {notification.moduleId && (
-                          <span className="text-xs text-primary flex items-center gap-1">
-                            {notification.moduleTitle}
-                            <ExternalLink className="size-3" />
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      {!notification.read && (
-                        <div className="size-2 bg-primary rounded-full flex-shrink-0" />
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (notification.moduleId) {
-                            handleModuleClick(notification);
-                          } else {
-                            handleMarkAsRead(notification.id);
-                          }
-                        }}
-                        disabled={actionLoading === notification.id}
-                      >
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent mb-2" />
+              <p className="text-sm text-muted-foreground">Carregando notificações...</p>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Bell className="size-8 text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">Nenhuma notificação não lida</p>
+            </div>
+          ) : (
+            <ScrollArea className="max-h-96">
+              {notifications.map((notification) => (
+                <DropdownMenuItem
+                  key={notification.id}
+                  className="flex items-start gap-3 p-3 cursor-pointer group"
+                  onClick={() => !notification.read && handleMarkAsRead(notification.id)}
+                  disabled={actionLoading === notification.id}
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    <Avatar className="size-8 bg-muted">
+                      <AvatarFallback className={`text-xs ${getNotificationColor(notification.type)}`}>
                         {actionLoading === notification.id ? (
                           <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
                         ) : (
-                          <Check className="size-3" />
+                          getNotificationIcon(notification.type)
                         )}
-                        <span className="sr-only">
-                          {notification.moduleId ? "Abrir módulo" : "Marcar como lida"}
-                        </span>
-                      </Button>
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={`text-sm font-medium leading-tight ${
+                            !notification.read ? "text-foreground" : "text-muted-foreground"
+                          }`}
+                        >
+                          {notification.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          {notification.message}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-xs text-muted-foreground">
+                            {formatTime(notification.createdAt)}
+                          </p>
+                          {notification.moduleId && (
+                            <span className="text-xs text-primary flex items-center gap-1">
+                              {notification.moduleTitle}
+                              <ExternalLink className="size-3" />
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        {!notification.read && (
+                          <div className="size-2 bg-primary rounded-full flex-shrink-0" />
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (notification.moduleId) {
+                              handleModuleClick(notification);
+                            } else {
+                              handleMarkAsRead(notification.id);
+                            }
+                          }}
+                          disabled={actionLoading === notification.id}
+                        >
+                          {actionLoading === notification.id ? (
+                            <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                          ) : (
+                            <Check className="size-3" />
+                          )}
+                          <span className="sr-only">
+                            {notification.moduleId ? "Abrir módulo" : "Marcar como lida"}
+                          </span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </DropdownMenuItem>
-            ))}
-          </ScrollArea>
-        )}
+                </DropdownMenuItem>
+              ))}
+            </ScrollArea>
+          )}
 
-        <DropdownMenuSeparator />
+          <DropdownMenuSeparator />
 
-        <DropdownMenuItem 
-          className="justify-center text-sm text-muted-foreground hover:text-foreground"
-          onClick={() => {
-            // Aqui você pode implementar a navegação para uma página de todas as notificações
-            console.log('Navegar para página de todas as notificações');
-            setIsOpen(false);
-          }}
-        >
-          Ver todas as notificações
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <DropdownMenuItem 
+            className="justify-center text-sm text-muted-foreground hover:text-foreground"
+            onClick={() => {
+              setShowAllNotifications(true);
+              setIsOpen(false);
+            }}
+          >
+            Ver todas as notificações
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AllNotificationsModal
+        isOpen={showAllNotifications}
+        onClose={() => setShowAllNotifications(false)}
+        onNavigateToModule={onNavigateToModule}
+      />
+    </>
   );
 } 
