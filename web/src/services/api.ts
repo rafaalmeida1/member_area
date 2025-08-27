@@ -613,33 +613,14 @@ class ApiService {
   }
 
   async getPatientsList(): Promise<User[]> {
-    console.log('API: Chamando getPatientsList...');
     const response: AxiosResponse<ApiResponse<User[]>> = await this.api.get('/users/patients/list');
-    console.log('API: Resposta getPatientsList:', response.data);
 
     if (response.data.status === 'success' && response.data.data) {
-      console.log('API: Pacientes retornados:', response.data.data);
       return response.data.data;
     }
 
-    console.error('API: Erro na resposta:', response.data);
     throw new Error(response.data.message || 'Erro ao buscar lista de pacientes');
   }
-
-  async getPatientsDebug(): Promise<Record<string, number>> {
-    console.log('API: Chamando getPatientsDebug...');
-    const response: AxiosResponse<ApiResponse<Record<string, number>>> = await this.api.get('/users/patients/debug');
-    console.log('API: Resposta getPatientsDebug:', response.data);
-
-    if (response.data.status === 'success' && response.data.data) {
-      console.log('API: Debug info:', response.data.data);
-      return response.data.data;
-    }
-
-    console.error('API: Erro na resposta debug:', response.data);
-    throw new Error(response.data.message || 'Erro ao buscar debug info');
-  }
-
 
   async uploadFile(file: File, type: 'IMAGE' | 'VIDEO' | 'AUDIO', description?: string): Promise<MediaAsset> {
     const formData = new FormData();
@@ -728,35 +709,15 @@ class ApiService {
     throw new Error(response.data.message || 'Erro ao buscar notificações');
   }
 
-  async getUnreadNotifications(): Promise<Notification[]> {
-    const response: AxiosResponse<ApiResponse<Notification[]>> = await this.api.get('/api/notifications/unread');
-    if (response.data.status === 'success' && response.data.data) {
-      return response.data.data;
-    }
-    throw new Error(response.data.message || 'Erro ao buscar notificações não lidas');
-  }
-
-  async getAllNotifications(page: number = 0, size: number = 20): Promise<{ notifications: Notification[], totalPages: number, totalElements: number }> {
-    const response: AxiosResponse<ApiResponse<{ content: Notification[], totalPages: number, totalElements: number }>> = await this.api.get(`/api/notifications/all?page=${page}&size=${size}`);
-    if (response.data.status === 'success' && response.data.data) {
-      return {
-        notifications: response.data.data.content,
-        totalPages: response.data.data.totalPages,
-        totalElements: response.data.data.totalElements
-      };
-    }
-    throw new Error(response.data.message || 'Erro ao buscar todas as notificações');
-  }
-
   async markNotificationAsRead(notificationId: number): Promise<void> {
-    const response: AxiosResponse<ApiResponse<void>> = await this.api.put(`/api/notifications/${notificationId}/read`);
+    const response: AxiosResponse<ApiResponse<void>> = await this.api.patch(`/api/notifications/${notificationId}/read`);
     if (response.data.status !== 'success') {
       throw new Error(response.data.message || 'Erro ao marcar notificação como lida');
     }
   }
 
   async markAllNotificationsAsRead(): Promise<void> {
-    const response: AxiosResponse<ApiResponse<void>> = await this.api.put('/api/notifications/read-all');
+    const response: AxiosResponse<ApiResponse<void>> = await this.api.patch('/api/notifications/read-all');
     if (response.data.status !== 'success') {
       throw new Error(response.data.message || 'Erro ao marcar todas as notificações como lidas');
     }

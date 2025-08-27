@@ -46,7 +46,6 @@ export function PatientSelector({
   // Carregar pacientes
   useEffect(() => {
     if (isOpen) {
-      console.log('PatientSelector aberto, carregando pacientes...');
       loadPatients();
     }
   }, [isOpen]);
@@ -55,10 +54,7 @@ export function PatientSelector({
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Carregando pacientes...');
       const response = await apiService.getPatientsList();
-      console.log('Pacientes carregados:', response);
-      console.log('Número de pacientes:', response.length);
       setPatients(response);
     } catch (error) {
       console.error('Erro ao carregar pacientes:', error);
@@ -79,15 +75,6 @@ export function PatientSelector({
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  console.log('Estado atual:', {
-    isOpen,
-    isLoading,
-    patientsCount: patients.length,
-    filteredCount: filteredPatients.length,
-    searchTerm,
-    selectedIds
-  });
 
   // Toggle seleção de paciente
   const togglePatient = (patientId: number) => {
@@ -242,24 +229,6 @@ export function PatientSelector({
             </Button>
             <Button variant="outline" size="sm" onClick={deselectAll}>
               Desmarcar Todos
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={async () => {
-                try {
-                  const debugInfo = await apiService.getPatientsDebug();
-                  console.log('Debug info:', debugInfo);
-                  toast({
-                    title: "Debug Info",
-                    description: `Total: ${debugInfo.totalUsers}, Pacientes: ${debugInfo.totalPatients}, Ativos: ${debugInfo.activePatients}`,
-                  });
-                } catch (error) {
-                  console.error('Erro no debug:', error);
-                }
-              }}
-            >
-              Debug
             </Button>
             <Badge variant="secondary">
               {selectedIds.length} selecionado{selectedIds.length !== 1 ? 's' : ''}

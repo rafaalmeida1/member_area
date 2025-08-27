@@ -121,12 +121,8 @@ public class UserService {
     }
 
     public List<UserResponse> getPatientsList() {
-        log.info("Buscando lista de pacientes...");
         List<User> patients = userRepository.findByRoleAndIsActiveTrue(Role.PATIENT);
-        log.info("Pacientes encontrados: {}", patients.size());
-        List<UserResponse> response = userMapper.toUserResponseList(patients);
-        log.info("Resposta mapeada: {}", response.size());
-        return response;
+        return userMapper.toUserResponseList(patients);
     }
 
     public List<UserResponse> getPatientsWithStats() {

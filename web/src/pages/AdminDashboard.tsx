@@ -25,9 +25,6 @@ export function AdminDashboard({ professionalName }: AdminDashboardProps) {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   
-  console.log('AdminDashboard - User:', user);
-  console.log('AdminDashboard - User role:', user?.role);
-  
   const [modules, setModules] = useState<Module[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [editingModule, setEditingModule] = useState<ModuleDetail | null>(null);

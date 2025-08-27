@@ -1,8 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { useNotificationContext } from '@/contexts/NotificationContext';
-import { useNotificationDrawer } from '@/contexts/NotificationDrawerContext';
+import { Bell, Check, ExternalLink, BookOpen, RefreshCw, MessageSquare, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,54 +15,110 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, Clock, CheckCircle, AlertCircle, Info, CheckCheck, BookOpen, RefreshCw, MessageSquare, Settings, ExternalLink, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { apiService } from '@/services/api';
 import { useNavigate } from 'react-router-dom';
-import { Notification } from '@/hooks/use-notifications';
 import './NotificationDropdown.css';
 
+interface Notification {
+  id: number;
+  type: 'MODULE_NEW' | 'MODULE_UPDATED' | 'PROFESSIONAL_MESSAGE' | 'SYSTEM';
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+  moduleId?: number;
+  moduleTitle?: string;
+}
+
 export function NotificationDropdown() {
-  const { user } = useAuth();
-  const {
-    notifications,
-    unreadCount,
-    isLoading,
-    lastUpdate,
-    loadNotifications,
-    markAsRead,
-    markAllAsRead,
-  } = useNotificationContext();
-  const { openModal, setOnNavigateToModule } = useNotificationDrawer();
-  const { toast } = useToast();
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [markAllLoading, setMarkAllLoading] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  // Carregar notificações quando abrir o dropdown (apenas se não foram carregadas recentemente)
+  // Carregar notificações
+  const loadNotifications = async (force = false) => {
+    if (!user) return;
+    
+    try {
+      setIsLoading(true);
+      const response = await apiService.getNotifications();
+      setNotifications(response);
+      setUnreadCount(response.filter(n => !n.read).length);
+    } catch (error) {
+      console.error('Erro ao carregar notificações:', error);
+      toast({
+        title: "Erro ao carregar notificações",
+        description: "Não foi possível carregar as notificações.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Carregar notificações quando abrir o dropdown
   useEffect(() => {
     if (isOpen && user) {
-      const shouldReload = !lastUpdate || (new Date().getTime() - lastUpdate.getTime()) > 60000; // 1 minuto
-      if (shouldReload) {
-        loadNotifications(true);
-      }
+      loadNotifications();
     }
-  }, [isOpen, user, lastUpdate, loadNotifications]);
+  }, [isOpen, user]);
 
-  const handleOpenAllNotifications = () => {
-    setOnNavigateToModule((moduleId: string) => {
-      // Navegar para o módulo
-      window.location.href = `/module/${moduleId}`;
-    });
-    openModal();
-    setIsOpen(false);
+  // Marcar notificação como lida
+  const markAsRead = async (notificationId: number) => {
+    try {
+      setActionLoading(notificationId);
+      await apiService.markNotificationAsRead(notificationId);
+      setNotifications(prev => 
+        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Erro ao marcar como lida:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível marcar a notificação como lida.",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Marcar todas como lidas
+  const markAllAsRead = async () => {
+    try {
+      setMarkAllLoading(true);
+      await apiService.markAllNotificationsAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadCount(0);
+      toast({
+        title: "Sucesso",
+        description: "Todas as notificações foram marcadas como lidas.",
+      });
+    } catch (error) {
+      console.error('Erro ao marcar todas como lidas:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível marcar todas as notificações como lidas.",
+        variant: "destructive",
+      });
+    } finally {
+      setMarkAllLoading(false);
+    }
   };
 
   // Navegar para módulo
   const handleModuleClick = async (notification: Notification) => {
     if (notification.moduleId) {
-      setActionLoading(notification.id);
       try {
+        setActionLoading(notification.id);
         await markAsRead(notification.id);
         navigate(`/module/${notification.moduleId}`);
         setIsOpen(false);
@@ -75,180 +130,209 @@ export function NotificationDropdown() {
     }
   };
 
-  // Marcar notificação como lida com loading
-  const handleMarkAsRead = async (notificationId: number) => {
-    setActionLoading(notificationId);
-    try {
-      await markAsRead(notificationId);
-    } catch (error) {
-      console.error('Erro ao marcar como lida:', error);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  // Marcar todas como lidas com loading
-  const handleMarkAllAsRead = async () => {
-    setMarkAllLoading(true);
-    try {
-      await markAllAsRead();
-    } catch (error) {
-      console.error('Erro ao marcar todas como lidas:', error);
-    } finally {
-      setMarkAllLoading(false);
-    }
-  };
-
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
-      case 'MODULE_AVAILABLE':
-        return <Info className="w-4 h-4" />;
-      case 'MODULE_COMPLETED':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'REMINDER':
-        return <AlertCircle className="w-4 h-4" />;
+      case 'MODULE_NEW':
+        return <BookOpen className="size-4 text-emerald-500" />;
+      case 'MODULE_UPDATED':
+        return <RefreshCw className="size-4 text-blue-500" />;
+      case 'PROFESSIONAL_MESSAGE':
+        return <MessageSquare className="size-4 text-purple-500" />;
+      case 'SYSTEM':
+        return <Settings className="size-4 text-amber-500" />;
       default:
-        return <Bell className="w-4 h-4" />;
+        return <Bell className="size-4 text-gray-500" />;
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const getNotificationColor = (type: Notification['type']) => {
+    switch (type) {
+      case 'MODULE_NEW':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'MODULE_UPDATED':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'PROFESSIONAL_MESSAGE':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'SYSTEM':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      default:
+        return 'bg-gray-50 text-gray-700 border-gray-200';
+    }
+  };
+
+  const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
     
-    if (diffInHours < 1) {
-      return 'Agora mesmo';
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h atrás`;
-    } else {
-      return date.toLocaleDateString('pt-BR');
-    }
+    if (diffInMinutes < 1) return 'Agora mesmo';
+    if (diffInMinutes < 60) return `${diffInMinutes} min atrás`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}h atrás`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}d atrás`;
+    
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+    });
   };
+
+  // Se não há usuário logado, não mostrar o componente
+  if (!user) {
+    return null;
+  }
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+          <Bell className="size-5 text-black" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+            <Badge
+              variant="destructive"
+              className="absolute -top-1 -right-1 size-5 flex items-center justify-center p-0 text-xs"
             >
-              {unreadCount > 99 ? '99+' : unreadCount}
+              {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
           )}
+          <span className="sr-only">
+            {unreadCount > 0 ? `${unreadCount} notificações não lidas` : "Notificações"}
+          </span>
         </Button>
       </DropdownMenuTrigger>
-      
-      <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notificações</span>
+
+      <DropdownMenuContent align="end" className="w-80 z-50">
+        <div className="flex items-center justify-between px-2 py-1.5">
+          <div className="flex flex-col items-start gap-2">
+            <DropdownMenuLabel className="p-0 text-base font-semibold">
+              Notificações
+            </DropdownMenuLabel>
+          </div>
           <div className="flex items-center gap-2">
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleMarkAllAsRead}
+                onClick={markAllAsRead}
                 disabled={markAllLoading}
-                className="h-6 px-2 text-xs"
+                className="h-auto p-1 text-xs text-muted-foreground hover:text-foreground"
               >
                 {markAllLoading ? (
-                  <div className="animate-spin rounded-full h-3 w-3 border-b border-current"></div>
+                  <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
                 ) : (
-                  <CheckCheck className="w-3 h-3" />
+                  "Marcar todas como lidas"
                 )}
-                Marcar todas
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => loadNotifications(true)}
-              disabled={isLoading}
-              className="h-6 px-2 text-xs"
-            >
-              {isLoading ? (
-                <div className="animate-spin rounded-full h-3 w-3 border-b border-current"></div>
-              ) : (
-                <RefreshCw className="w-3 h-3" />
-              )}
-            </Button>
           </div>
-        </DropdownMenuLabel>
-        
+        </div>
+
         <DropdownMenuSeparator />
-        
-        <ScrollArea className="h-64">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              <span className="ml-2 text-sm">Carregando...</span>
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Nenhuma notificação</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {notifications.map((notification) => (
-                <DropdownMenuItem
-                  key={notification.id}
-                  className="flex items-start gap-3 p-3 cursor-pointer"
-                  onClick={() => handleModuleClick(notification)}
-                >
-                  <Avatar className="w-8 h-8">
-                    <AvatarFallback className="text-xs">
-                      {getNotificationIcon(notification.type)}
+
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent mb-2" />
+            <p className="text-sm text-muted-foreground">Carregando notificações...</p>
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <Bell className="size-8 text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">Nenhuma notificação não lida</p>
+          </div>
+        ) : (
+          <ScrollArea className="max-h-96">
+            {notifications.map((notification) => (
+              <DropdownMenuItem
+                key={notification.id}
+                className="flex items-start gap-3 p-3 cursor-pointer group"
+                onClick={() => !notification.read && handleModuleClick(notification)}
+                disabled={actionLoading === notification.id}
+              >
+                <div className="flex-shrink-0 mt-0.5">
+                  <Avatar className="size-8 bg-muted">
+                    <AvatarFallback className={`text-xs ${getNotificationColor(notification.type)}`}>
+                      {actionLoading === notification.id ? (
+                        <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                      ) : (
+                        getNotificationIcon(notification.type)
+                      )}
                     </AvatarFallback>
                   </Avatar>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium leading-relaxed">
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`text-sm font-medium leading-tight ${
+                          !notification.read ? "text-foreground" : "text-muted-foreground"
+                        }`}
+                      >
+                        {notification.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                         {notification.message}
                       </p>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
-                        <Clock className="w-3 h-3" />
-                        {formatDate(notification.createdAt)}
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs text-muted-foreground">
+                          {formatTime(notification.createdAt)}
+                        </p>
+                        {notification.moduleId && (
+                          <span className="text-xs text-primary flex items-center gap-1">
+                            {notification.moduleTitle}
+                            <ExternalLink className="size-3" />
+                          </span>
+                        )}
                       </div>
                     </div>
-                    
-                    {!notification.read && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMarkAsRead(notification.id);
-                          }}
-                          disabled={actionLoading === notification.id}
-                          className="h-6 px-2 text-xs"
-                        >
-                          {actionLoading === notification.id ? (
-                            <div className="animate-spin rounded-full h-3 w-3 border-b border-current"></div>
-                          ) : (
-                            <Check className="w-3 h-3" />
-                          )}
-                          Marcar como lida
-                        </Button>
-                      </div>
-                    )}
+
+                    <div className="flex items-center gap-1">
+                      {!notification.read && (
+                        <div className="size-2 bg-primary rounded-full flex-shrink-0" />
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (notification.moduleId) {
+                            handleModuleClick(notification);
+                          } else {
+                            markAsRead(notification.id);
+                          }
+                        }}
+                        disabled={actionLoading === notification.id}
+                      >
+                        {actionLoading === notification.id ? (
+                          <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                        ) : (
+                          <Check className="size-3" />
+                        )}
+                        <span className="sr-only">
+                          {notification.moduleId ? "Abrir módulo" : "Marcar como lida"}
+                        </span>
+                      </Button>
+                    </div>
                   </div>
-                </DropdownMenuItem>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-        
+                </div>
+              </DropdownMenuItem>
+            ))}
+          </ScrollArea>
+        )}
+
         <DropdownMenuSeparator />
-        
+
         <DropdownMenuItem 
           className="justify-center text-sm text-muted-foreground hover:text-foreground"
-          onClick={handleOpenAllNotifications}
+          onClick={() => {
+            // Aqui você pode implementar a navegação para uma página de todas as notificações
+            navigate('/notifications');
+            setIsOpen(false);
+          }}
         >
           Ver todas as notificações
         </DropdownMenuItem>
