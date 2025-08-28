@@ -54,10 +54,13 @@ public class ModuleService {
         
         Page<Module> modules;
         if (user.getRole().equals(Role.PROFESSIONAL)) {
+            // Para profissionais, buscar todos os módulos criados por eles
             modules = moduleRepository.findByCreatedByOrderByCreatedAtDesc(user, pageable);
+            log.info("Profissional vendo {} módulos criados por ele", modules.getTotalElements());
         } else {
-            // Para pacientes, buscar módulos visíveis
+            // Para pacientes, buscar módulos visíveis (GENERAL + SPECIFIC para ele)
             modules = moduleRepository.findVisibleModulesForUser(user.getId(), pageable);
+            log.info("Paciente vendo {} módulos visíveis", modules.getTotalElements());
         }
         
         return modules.map(moduleMapper::toModuleResponse);
@@ -71,9 +74,11 @@ public class ModuleService {
         if (user.getRole().equals(Role.PROFESSIONAL)) {
             // Para profissionais, buscar todos os módulos criados por eles
             modules = moduleRepository.findByCreatedBy(user);
+            log.info("Profissional vendo {} módulos em cache", modules.size());
         } else {
-            // Para pacientes, buscar módulos visíveis
+            // Para pacientes, buscar módulos visíveis (GENERAL + SPECIFIC para ele)
             modules = moduleRepository.findVisibleToPatient(user);
+            log.info("Paciente vendo {} módulos visíveis em cache", modules.size());
         }
         
         return modules.stream()
@@ -156,6 +161,8 @@ public class ModuleService {
     })
     public ModuleResponse updateModule(String id, User user, UpdateModuleRequest request) {
         log.info("Atualizando módulo: {} para usuário: {}", id, user.getEmail());
+        log.info("Request data: title={}, visibility={}, allowedPatientIds={}", 
+                request.getTitle(), request.getVisibility(), request.getAllowedPatientIds());
         
         Module module = moduleRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new NotFoundException("Módulo não encontrado"));
@@ -179,19 +186,26 @@ public class ModuleService {
         module.setCategory(request.getCategory());
         module.setVisibility(request.getVisibility());
         
+        log.info("Dados básicos atualizados: visibility={}", module.getVisibility());
+        
         // Atualizar pacientes específicos se necessário
         if (request.getVisibility() == ContentVisibility.SPECIFIC && request.getAllowedPatientIds() != null) {
+            log.info("Configurando pacientes específicos: {}", request.getAllowedPatientIds());
             Set<User> allowedPatients = userRepository.findAllById(request.getAllowedPatientIds())
                     .stream()
                     .filter(u -> u.getRole().equals(Role.PATIENT))
                     .collect(Collectors.toSet());
             module.setAllowedPatients(allowedPatients);
+            log.info("Pacientes específicos configurados: {}", 
+                    allowedPatients.stream().map(User::getName).collect(Collectors.toList()));
         } else {
+            log.info("Limpando pacientes específicos (visibilidade: {})", request.getVisibility());
             module.setAllowedPatients(new HashSet<>());
         }
 
         // Limpar content blocks antigos
         if (module.getContent() != null) {
+            log.info("Limpando {} content blocks antigos", module.getContent().size());
             contentBlockRepository.deleteAll(module.getContent());
             module.setContent(new ArrayList<>());
         }
@@ -207,6 +221,8 @@ public class ModuleService {
             contentBlocks.add(block);
         }
         
+        log.info("Criando {} novos content blocks", contentBlocks.size());
+        
         // Salvar content blocks
         contentBlocks = contentBlocks.stream()
                 .map(block -> contentBlockRepository.save(block))
@@ -214,6 +230,7 @@ public class ModuleService {
         
         module.setContent(contentBlocks);
 
+        log.info("Salvando módulo com visibilidade: {}", module.getVisibility());
         module = moduleRepository.save(module);
 
         // Limpar arquivos antigos
@@ -227,7 +244,7 @@ public class ModuleService {
             }
         }
         
-        log.info("Módulo atualizado com sucesso: {}", module.getId());
+        log.info("Módulo atualizado com sucesso: {} (visibilidade: {})", module.getId(), module.getVisibility());
         return moduleMapper.toModuleResponse(module);
     }
 
