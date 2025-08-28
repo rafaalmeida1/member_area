@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -19,6 +20,7 @@ export function Login() {
   const [isLoading, setIsLoading] = useState(false);
   
   const { login } = useAuth();
+  const { markForAnimation } = useTheme();
   const { toast } = useToast();
   const location = useLocation();
 
@@ -61,6 +63,10 @@ export function Login() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleInviteRedirect = () => {
+    markForAnimation();
   };
 
   return (
@@ -148,7 +154,7 @@ export function Login() {
           <div className="login-footer">
             <p className="footer-text">
               Tem um link de acesso?{' '}
-              <a href="/invite" className="footer-link">
+              <a href="/invite" className="footer-link" onClick={handleInviteRedirect}>
                 Acessar
               </a>
             </p>

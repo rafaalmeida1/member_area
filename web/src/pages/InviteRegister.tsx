@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Key } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -13,6 +14,7 @@ export function InviteRegister() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { updateUser } = useAuth();
+  const { markForAnimation } = useTheme();
   const { toast } = useToast();
   
   const [invite, setInvite] = useState<InvitePreview | null>(null);
@@ -114,19 +116,24 @@ export function InviteRegister() {
     setIsLoading(true);
     
     try {
-      const authResponse = await apiService.acceptInvite(token, {
+      const response = await apiService.acceptInvite({
+        token,
         name: invite.name,
-        phone: invite.phone,
-        password: formData.password,
         email: invite.email,
+        phone: invite.phone,
+        password: formData.password
       });
-
-      // Após criar a conta, redirecionar para o login já com o e-mail preenchido
+      
+      // Atualizar dados do usuário no contexto
+      updateUser(response.user);
+      
       toast({
-        title: "Conta criada!",
-        description: "Bem-vindo! Sua conta foi criada com sucesso.",
+        title: "Conta criada com sucesso!",
+        description: "Bem-vindo ao Nutri Thata!",
       });
-      navigate(`/login?email=${encodeURIComponent(invite.email)}`);
+      
+      // Redirecionar para a página inicial
+      navigate('/');
     } catch (error) {
       const parsed = parseApiError(error);
       toast({
@@ -139,15 +146,17 @@ export function InviteRegister() {
     }
   };
 
+  const handleLoginRedirect = () => {
+    markForAnimation();
+  };
+
   if (isLoadingInvite) {
     return (
       <div className="invite-register-container">
         <div className="invite-register-form-container">
-          <div className="invite-register-form-card">
-            <div className="loading-state">
-              <div className="loading-spinner"></div>
-              <p>Carregando convite...</p>
-            </div>
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>Carregando convite...</p>
           </div>
         </div>
       </div>
@@ -155,40 +164,49 @@ export function InviteRegister() {
   }
 
   if (!invite) {
-    return null;
+    return (
+      <div className="invite-register-container">
+        <div className="invite-register-form-container">
+          <div className="loading-state">
+            <p>Convite não encontrado.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="invite-register-container">
       {/* Theme Toggle */}
-      <div className="theme-toggle-container">
+      {/* <div className="theme-toggle-container">
         <ThemeToggle />
-      </div>
+      </div> */}
       
       {/* Background Image */}
       <NutriotinistImage />
       
-      {/* Register Form */}
+      {/* Form Container */}
       <div className="invite-register-form-container">
         <div className="invite-register-form-card">
           {/* Logo */}
           <div className="invite-register-logo">
             <span className="logo-text">TM</span>
           </div>
-
+          
           {/* Invite Info */}
           <div className="invite-info">
             <div className="invite-icon">
               <Key size={24} />
             </div>
-            <h2 className="invite-title">Convite Aceito</h2>
+            <h2 className="invite-title">Convite Aceito!</h2>
             <p className="invite-description">
-              Você foi convidado por <strong>{invite.createdBy?.name || 'um profissional'}</strong>
+              Você foi convidado por <strong>{invite.createdBy?.name}</strong> para participar do Nutri Thata.
+              Complete seu cadastro para começar.
             </p>
           </div>
           
           {/* Form */}
-          <form onSubmit={handleSubmit} className="invite-register-form overflow-auto max-h-screen">
+          <form onSubmit={handleSubmit} className="invite-register-form">
             <div className="form-group">
               <label htmlFor="name" className="form-label">
                 Nome Completo
@@ -198,7 +216,7 @@ export function InviteRegister() {
                 <input
                   id="name"
                   type="text"
-                  value={invite.name}
+                  value={invite?.name}
                   onChange={handleInputChange('name')}
                   className="form-input"
                   placeholder="Seu nome completo"
@@ -216,7 +234,7 @@ export function InviteRegister() {
                 <input
                   id="email"
                   type="email"
-                  value={invite.email}
+                  value={invite?.email}
                   onChange={handleInputChange('email')}
                   className="form-input"
                   placeholder="Seu e-mail"
@@ -310,7 +328,7 @@ export function InviteRegister() {
           <div className="invite-register-footer">
             <p className="footer-text">
               Já tem uma conta?{' '}
-              <a href="/login" className="footer-link">
+              <a href="/login" className="footer-link" onClick={handleLoginRedirect}>
                 Faça login
               </a>
             </p>

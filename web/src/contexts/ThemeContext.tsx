@@ -5,6 +5,7 @@ interface ThemeContextType {
   theme: ThemeColors;
   isLoading: boolean;
   refreshTheme: () => Promise<void>;
+  markForAnimation: () => void; // Nova função para marcar que deve mostrar animação
 }
 
 const defaultTheme: ThemeColors = {
@@ -84,10 +85,57 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
-  const isFirstVisit = (): boolean => {
+  const isExternalRedirect = (): boolean => {
     try {
-      return !localStorage.getItem('nutri-thata-first-visit');
+      // Verificar se é um redirect externo (navegação direta ou refresh)
+      const navigationType = (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming)?.type;
+      
+      // Se é 'navigate' (navegação direta) ou 'reload' (refresh), é externo
+      if (navigationType === 'navigate' || navigationType === 'reload') {
+        return true;
+      }
+      
+      // Verificar se há referrer (se não há, é navegação direta)
+      if (!document.referrer) {
+        return true;
+      }
+      
+      // Verificar se o referrer é do mesmo domínio
+      const currentDomain = window.location.origin;
+      const referrerDomain = new URL(document.referrer).origin;
+      
+      // Se o referrer é de domínio diferente, é redirect externo
+      if (referrerDomain !== currentDomain) {
+        return true;
+      }
+      
+      // Se chegou até aqui, é navegação interna
+      return false;
     } catch (error) {
+      console.error('Erro ao detectar tipo de navegação:', error);
+      return true; // Em caso de erro, assume que é externo
+    }
+  };
+
+  const shouldShowAnimation = (): boolean => {
+    try {
+      // Verificar se foi marcado para mostrar animação (para redirects diretos)
+      const shouldAnimate = sessionStorage.getItem('nutri-thata-show-animation');
+      if (shouldAnimate === 'true') {
+        sessionStorage.removeItem('nutri-thata-show-animation');
+        return true;
+      }
+      
+      // Se já visitou antes, não mostrar animação
+      const hasVisited = localStorage.getItem('nutri-thata-first-visit');
+      if (hasVisited) {
+        return false;
+      }
+      
+      // Se é redirect externo, mostrar animação
+      return isExternalRedirect();
+    } catch (error) {
+      console.error('Erro ao verificar se deve mostrar animação:', error);
       return true;
     }
   };
@@ -100,13 +148,22 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
+  // Função para marcar que deve mostrar animação (usada em links de redirect direto)
+  const markForAnimation = () => {
+    try {
+      sessionStorage.setItem('nutri-thata-show-animation', 'true');
+    } catch (error) {
+      console.error('Erro ao marcar para animação:', error);
+    }
+  };
+
   const loadTheme = async () => {
     try {
-      // Verificar se é a primeira visita
-      const firstVisit = isFirstVisit();
+      // Verificar se deve mostrar animação
+      const showAnimation = shouldShowAnimation();
       
-      if (firstVisit) {
-        // Primeira visita: mostrar animação
+      if (showAnimation) {
+        // Mostrar animação apenas em redirects externos
         setIsLoading(true);
         markAsVisited();
         
@@ -122,7 +179,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         setTheme(savedTheme);
         applyThemeToCSS(savedTheme);
         
-        if (firstVisit) {
+        if (showAnimation) {
           // Delay adicional para garantir que a animação seja vista
           setTimeout(() => {
             setIsLoading(false);
@@ -139,7 +196,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       applyThemeToCSS(themeColors);
       saveThemeToLocalStorage(themeColors);
       
-      if (firstVisit) {
+      if (showAnimation) {
         // Delay adicional para garantir que a animação seja vista
         setTimeout(() => {
           setIsLoading(false);
@@ -151,7 +208,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       setTheme(defaultTheme);
       applyThemeToCSS(defaultTheme);
       
-      if (isFirstVisit()) {
+      if (shouldShowAnimation()) {
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
@@ -174,6 +231,28 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   useEffect(() => {
     loadTheme();
+
+    // Listener para detectar navegação interna e garantir que a animação não apareça
+    const handleBeforeUnload = () => {
+      // Marcar que o usuário já visitou para evitar animação em navegação interna
+      markAsVisited();
+    };
+
+    // Listener para detectar quando a página é carregada via navegação interna
+    const handlePageShow = (event: PageTransitionEvent) => {
+      // Se a página foi carregada do cache (navegação interna), não mostrar animação
+      if (event.persisted) {
+        setIsLoading(false);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
   }, []);
 
   useEffect(() => {
@@ -181,7 +260,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, isLoading, refreshTheme }}>
+    <ThemeContext.Provider value={{ theme, isLoading, refreshTheme, markForAnimation }}>
       {children}
     </ThemeContext.Provider>
   );
