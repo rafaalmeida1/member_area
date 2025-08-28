@@ -4,6 +4,7 @@ import br.rafaalmeida1.nutri_thata_api.dto.response.ApiResponse;
 import br.rafaalmeida1.nutri_thata_api.dto.response.ProfessionalProfileResponse;
 import br.rafaalmeida1.nutri_thata_api.service.ProfessionalService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.springframework.cache.annotation.Cacheable;
 
 @RestController
 @RequestMapping("/api/theme")
@@ -20,9 +20,14 @@ public class ThemeController {
 
     private final ProfessionalService professionalService;
 
-    @Cacheable(value = "theme", key = "'global'")
     @GetMapping
     public ResponseEntity<ApiResponse<Map<String, String>>> getTheme() {
+        Map<String, String> theme = getCachedTheme();
+        return ResponseEntity.ok(ApiResponse.success("Tema carregado com sucesso", theme));
+    }
+
+    @Cacheable(value = "theme", key = "'global'")
+    public Map<String, String> getCachedTheme() {
         try {
             ProfessionalProfileResponse profile = professionalService.getThemeData();
             
@@ -35,7 +40,7 @@ public class ThemeController {
             theme.put("textColor", profile.getThemeTextColor() != null ? profile.getThemeTextColor() : "#2C2C2C");
             theme.put("textSecondaryColor", profile.getThemeTextSecondaryColor() != null ? profile.getThemeTextSecondaryColor() : "#666666");
 
-            return ResponseEntity.ok(ApiResponse.success("Tema carregado com sucesso", theme));
+            return theme;
         } catch (Exception e) {
             // Se não conseguir carregar o perfil, retorna tema padrão
             Map<String, String> defaultTheme = new HashMap<>();
@@ -47,7 +52,7 @@ public class ThemeController {
             defaultTheme.put("textColor", "#2C2C2C");
             defaultTheme.put("textSecondaryColor", "#666666");
 
-            return ResponseEntity.ok(ApiResponse.success("Tema padrão carregado", defaultTheme));
+            return defaultTheme;
         }
     }
 } 

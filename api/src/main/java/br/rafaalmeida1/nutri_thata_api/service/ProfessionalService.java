@@ -179,7 +179,7 @@ public class ProfessionalService {
         return color.matches("^#[0-9A-Fa-f]{6}$");
     }
 
-    @Cacheable(value = "professional_profiles", key = "'theme_data'")
+    @Cacheable(value = "theme_data", key = "'global'")
     public ProfessionalProfileResponse getThemeData() {
         List<ProfessionalProfile> profiles = professionalProfileRepository.findAll();
         if (profiles.isEmpty()) {

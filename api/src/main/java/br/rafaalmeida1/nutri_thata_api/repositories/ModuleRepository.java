@@ -53,4 +53,12 @@ public interface ModuleRepository extends JpaRepository<Module, UUID> {
            "m.visibility = 'GENERAL' OR " +
            "(m.visibility = 'SPECIFIC' AND EXISTS (SELECT 1 FROM m.allowedPatients p WHERE p.id = :userId))")
     List<String> findDistinctCategoriesForUser(@Param("userId") Long userId);
+
+    // Métodos para cache (sem paginação)
+    List<Module> findByCreatedBy(User createdBy);
+
+    @Query("SELECT m FROM Module m WHERE " +
+           "m.visibility = 'GENERAL' OR " +
+           "(m.visibility = 'SPECIFIC' AND :patient MEMBER OF m.allowedPatients)")
+    List<Module> findVisibleToPatient(@Param("patient") User patient);
 }

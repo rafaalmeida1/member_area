@@ -47,7 +47,6 @@ public class ModuleService {
     private final CacheService cacheService;
     private final NotificationService notificationService;
 
-    @Cacheable(value = "modules", key = "#user.id + '_all'")
     public Page<ModuleResponse> getModules(User user, Pageable pageable) {
         log.info("Buscando módulos para usuário: {} (role: {})", user.getEmail(), user.getRole());
         
@@ -60,6 +59,24 @@ public class ModuleService {
         }
         
         return modules.map(moduleMapper::toModuleResponse);
+    }
+
+    @Cacheable(value = "modules", key = "#user.id + '_all'")
+    public List<ModuleResponse> getCachedModules(User user) {
+        log.info("Buscando módulos em cache para usuário: {} (role: {})", user.getEmail(), user.getRole());
+        
+        List<Module> modules;
+        if (user.getRole().equals(Role.PROFESSIONAL)) {
+            // Para profissionais, buscar todos os módulos criados por eles
+            modules = moduleRepository.findByCreatedBy(user);
+        } else {
+            // Para pacientes, buscar módulos visíveis
+            modules = moduleRepository.findVisibleToPatient(user);
+        }
+        
+        return modules.stream()
+                .map(moduleMapper::toModuleResponse)
+                .collect(Collectors.toList());
     }
 
     @Cacheable(value = "modules", key = "#id")
