@@ -14,12 +14,8 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <App />
-          <Toaster />
-        </AuthProvider>
-      </ThemeProvider>
+      <App />
+      <Toaster />
     </BrowserRouter>
   </React.StrictMode>
 );
