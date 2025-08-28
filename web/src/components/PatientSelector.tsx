@@ -7,6 +7,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Search, UserPlus, Mail, Users, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiService } from '@/services/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import './PatientSelector.css';
 
 interface Patient {
@@ -140,20 +148,18 @@ export function PatientSelector({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="patient-selector-overlay">
-      <div className="patient-selector-modal">
-        <div className="selector-header">
-          <div className="header-left">
-            <Users className="header-icon" />
-            <h3>{title}</h3>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            {title}
+          </DialogTitle>
+          <DialogDescription>
+            Selecione os pacientes que terão acesso a este módulo
+          </DialogDescription>
+        </DialogHeader>
 
         <div className="selector-content">
           {/* Barra de pesquisa */}
@@ -289,15 +295,15 @@ export function PatientSelector({
           </div>
         </div>
 
-        <div className="selector-actions">
+        <DialogFooter className="flex gap-2">
           <Button variant="outline" onClick={onClose}>
             Cancelar
           </Button>
           <Button onClick={handleSave}>
             Salvar Seleção ({selectedIds.length})
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 } 

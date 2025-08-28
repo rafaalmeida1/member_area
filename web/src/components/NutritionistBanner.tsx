@@ -7,6 +7,8 @@ interface ProfessionalData {
   bio?: string;
   image?: string;
   backgroundImage?: string;
+  backgroundPositionX?: number;
+  backgroundPositionY?: number;
   specialties: string[];
 }
 
@@ -18,11 +20,13 @@ interface NutritionistBannerProps {
 export function NutritionistBanner({ professional, isLoading = false }: NutritionistBannerProps) {
   const getBackgroundStyle = () => {
     const imageUrl = professional?.backgroundImage || bannerImage;
+    const positionX = professional?.backgroundPositionX ?? 50;
+    const positionY = professional?.backgroundPositionY ?? 50;
     
     return {
       backgroundImage: `url(${imageUrl})`,
       backgroundSize: 'cover',
-      backgroundPosition: 'center',
+      backgroundPosition: `${positionX}% ${positionY}%`,
       backgroundRepeat: 'no-repeat'
     };
   };

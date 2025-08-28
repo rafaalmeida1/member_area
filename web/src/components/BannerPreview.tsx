@@ -6,14 +6,22 @@ interface BannerPreviewProps {
   imageUrl?: string;
   title?: string;
   description?: string;
+  positionX?: number; // 0-100
+  positionY?: number; // 0-100
 }
 
-export function BannerPreview({ imageUrl, title = "Preview do Banner", description }: BannerPreviewProps) {
+export function BannerPreview({ 
+  imageUrl, 
+  title = "Preview do Banner", 
+  description,
+  positionX = 50,
+  positionY = 50
+}: BannerPreviewProps) {
   const getBackgroundStyle = () => {
     return {
       backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
       backgroundSize: 'cover',
-      backgroundPosition: 'center',
+      backgroundPosition: `${positionX}% ${positionY}%`,
       backgroundRepeat: 'no-repeat'
     };
   };

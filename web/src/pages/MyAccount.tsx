@@ -33,6 +33,7 @@ import { Layout } from '@/components/Layout';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { FileUpload } from '@/components/FileUpload';
 import { BannerPreview } from '@/components/BannerPreview';
+import { BannerPositionControl } from '@/components/BannerPositionControl';
 import { ThemeSettings } from '@/components/ThemeSettings';
 import './MyAccount.css';
 
@@ -80,6 +81,8 @@ export function MyAccount({
     bio: '',
     image: '',
     backgroundImage: '',
+    backgroundPositionX: 50,
+    backgroundPositionY: 50,
     specialties: [] as string[]
   });
 
@@ -118,14 +121,16 @@ export function MyAccount({
     try {
       const profile = await apiService.getProfessionalProfile();
       setProfessionalProfile(profile);
-      setProfessionalForm({
-        name: profile.name || '',
-        title: profile.title || '',
-        bio: profile.bio || '',
-        image: profile.image || '',
-        backgroundImage: profile.backgroundImage || '',
-        specialties: profile.specialties || []
-      });
+              setProfessionalForm({
+          name: profile.name || '',
+          title: profile.title || '',
+          bio: profile.bio || '',
+          image: profile.image || '',
+          backgroundImage: profile.backgroundImage || '',
+          backgroundPositionX: profile.backgroundPositionX || 50,
+          backgroundPositionY: profile.backgroundPositionY || 50,
+          specialties: profile.specialties || []
+        });
     } catch (error) {
       console.error('Erro ao carregar perfil profissional:', error);
       toast({
@@ -166,6 +171,8 @@ export function MyAccount({
         bio: professionalForm.bio || undefined,
         image: professionalForm.image || undefined,
         backgroundImage: professionalForm.backgroundImage || undefined,
+        backgroundPositionX: professionalForm.backgroundPositionX,
+        backgroundPositionY: professionalForm.backgroundPositionY,
         specialties: professionalForm.specialties.length > 0 ? professionalForm.specialties : undefined
       };
 
@@ -423,8 +430,24 @@ export function MyAccount({
                     {professionalForm.backgroundImage && (
                       <BannerPreview 
                         imageUrl={professionalForm.backgroundImage}
+                        positionX={professionalForm.backgroundPositionX}
+                        positionY={professionalForm.backgroundPositionY}
                         title="Como aparecerá no banner"
                         description="Preview das dimensões reais do banner na tela principal"
+                      />
+                    )}
+
+                    {/* Controle de Posicionamento do Banner */}
+                    {professionalForm.backgroundImage && (
+                      <BannerPositionControl
+                        positionX={professionalForm.backgroundPositionX}
+                        positionY={professionalForm.backgroundPositionY}
+                        imageUrl={professionalForm.backgroundImage}
+                        onPositionChange={(x, y) => setProfessionalForm(prev => ({
+                          ...prev,
+                          backgroundPositionX: x,
+                          backgroundPositionY: y
+                        }))}
                       />
                     )}
 

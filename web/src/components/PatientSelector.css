@@ -1,54 +1,14 @@
-.patient-selector-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1001;
-  backdrop-filter: blur(4px);
-}
-
-.patient-selector-modal {
-  background-color: var(--color-surface);
-  border-radius: 1rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+/* Estilos para o Dialog do PatientSelector */
+.patient-selector-dialog {
   max-width: 90vw;
   max-height: 90vh;
-  width: 600px;
+}
+
+.patient-selector-dialog .dialog-content {
+  padding: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-
-.selector-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.header-icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: var(--color-primary);
-}
-
-.selector-header h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-text);
-  margin: 0;
 }
 
 .selector-content {
@@ -57,6 +17,7 @@
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
+  max-height: 60vh;
 }
 
 .search-section {
@@ -119,6 +80,8 @@
   border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   background-color: var(--color-background);
+  max-height: 300px;
+  min-height: 200px;
 }
 
 .loading-state,
@@ -202,15 +165,7 @@
   font-size: 0.75rem;
 }
 
-.selector-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 1rem;
-  padding: 1.5rem;
-  border-top: 1px solid var(--color-border);
-  background-color: var(--color-surface);
-}
+/* Removido - agora usa DialogFooter do shadcn/ui */
 
 @keyframes spin {
   from {
