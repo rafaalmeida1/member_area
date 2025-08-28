@@ -199,6 +199,10 @@ export interface ThemeColors {
   surfaceColor: string;
   textColor: string;
   textSecondaryColor: string;
+  borderColor: string;
+  mutedColor: string;
+  shadowColor: string;
+  overlayColor: string;
 }
 
 // Classe principal do serviço de API
@@ -846,7 +850,11 @@ class ApiService {
         backgroundColor: '#FFFFFF',
         surfaceColor: '#FAFAFA',
         textColor: '#2C2C2C',
-        textSecondaryColor: '#666666'
+        textSecondaryColor: '#666666',
+        borderColor: '#E0E0E0',
+        mutedColor: '#F0F0F0',
+        shadowColor: '#0000001A',
+        overlayColor: '#00000033'
       };
     }
   }

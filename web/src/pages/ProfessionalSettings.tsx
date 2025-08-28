@@ -8,11 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { FileUpload } from '@/components/FileUpload';
 import { BannerPreview } from '@/components/BannerPreview';
-import { ThemePreview } from '@/components/ThemePreview';
+import { ThemeManager } from '@/components/ThemeManager';
 import { Layout } from '@/components/Layout';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/contexts/ThemeContext';
-import { apiService, ProfessionalProfile, UpdateProfessionalProfileRequest } from '@/services/api';
+import { apiService, ProfessionalProfile, UpdateProfessionalProfileRequest, ThemeColors } from '@/services/api';
 import { ArrowLeft, Save, Plus, X, Camera, Image } from 'lucide-react';
 
 interface ProfessionalSettingsProps {
@@ -100,6 +100,13 @@ export function ProfessionalSettings({
       ...prev,
       [field]: value
     }));
+  };
+
+  // Handler para mudança de tema
+  const handleThemeChange = (theme: ThemeColors) => {
+    // O tema já é aplicado automaticamente pelo ThemeManager
+    // Aqui podemos fazer outras ações se necessário
+    console.log('Tema alterado:', theme);
   };
 
   // Adicionar especialidade
@@ -358,175 +365,8 @@ export function ProfessionalSettings({
             </CardContent>
           </Card>
 
-          {/* Cores Personalizadas do Tema */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Cores Personalizadas do Tema</CardTitle>
-              <CardDescription>
-                Personalize as cores do sistema que aparecerão para todos os usuários
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Cor Primária */}
-                <div className="space-y-2">
-                  <Label>Cor Primária</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={formData.themePrimaryColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themePrimaryColor: e.target.value}))}
-                      className="w-12 h-10 rounded border cursor-pointer"
-                    />
-                    <Input
-                      value={formData.themePrimaryColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themePrimaryColor: e.target.value}))}
-                      placeholder="#DBCFCB"
-                      className="flex-1"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Usada em botões principais e elementos de destaque</p>
-                </div>
-
-                {/* Cor Secundária */}
-                <div className="space-y-2">
-                  <Label>Cor Secundária</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={formData.themeSecondaryColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themeSecondaryColor: e.target.value}))}
-                      className="w-12 h-10 rounded border cursor-pointer"
-                    />
-                    <Input
-                      value={formData.themeSecondaryColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themeSecondaryColor: e.target.value}))}
-                      placeholder="#D8C4A4"
-                      className="flex-1"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Usada em elementos secundários e backgrounds</p>
-                </div>
-
-                {/* Cor de Destaque */}
-                <div className="space-y-2">
-                  <Label>Cor de Destaque</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={formData.themeAccentColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themeAccentColor: e.target.value}))}
-                      className="w-12 h-10 rounded border cursor-pointer"
-                    />
-                    <Input
-                      value={formData.themeAccentColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themeAccentColor: e.target.value}))}
-                      placeholder="#A67B5B"
-                      className="flex-1"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Usada em links e elementos interativos</p>
-                </div>
-
-                {/* Cor de Fundo */}
-                <div className="space-y-2">
-                  <Label>Cor de Fundo</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={formData.themeBackgroundColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themeBackgroundColor: e.target.value}))}
-                      className="w-12 h-10 rounded border cursor-pointer"
-                    />
-                    <Input
-                      value={formData.themeBackgroundColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themeBackgroundColor: e.target.value}))}
-                      placeholder="#FFFFFF"
-                      className="flex-1"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Cor de fundo principal da aplicação</p>
-                </div>
-
-                {/* Cor de Superfície */}
-                <div className="space-y-2">
-                  <Label>Cor de Superfície</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={formData.themeSurfaceColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themeSurfaceColor: e.target.value}))}
-                      className="w-12 h-10 rounded border cursor-pointer"
-                    />
-                    <Input
-                      value={formData.themeSurfaceColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themeSurfaceColor: e.target.value}))}
-                      placeholder="#FAFAFA"
-                      className="flex-1"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Usada em cards e elementos elevados</p>
-                </div>
-
-                {/* Cor do Texto */}
-                <div className="space-y-2">
-                  <Label>Cor do Texto Principal</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={formData.themeTextColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themeTextColor: e.target.value}))}
-                      className="w-12 h-10 rounded border cursor-pointer"
-                    />
-                    <Input
-                      value={formData.themeTextColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themeTextColor: e.target.value}))}
-                      placeholder="#2C2C2C"
-                      className="flex-1"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Cor principal do texto</p>
-                </div>
-
-                {/* Cor do Texto Secundário */}
-                <div className="space-y-2">
-                  <Label>Cor do Texto Secundário</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={formData.themeTextSecondaryColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themeTextSecondaryColor: e.target.value}))}
-                      className="w-12 h-10 rounded border cursor-pointer"
-                    />
-                    <Input
-                      value={formData.themeTextSecondaryColor}
-                      onChange={(e) => setFormData(prev => ({...prev, themeTextSecondaryColor: e.target.value}))}
-                      placeholder="#666666"
-                      className="flex-1"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Cor para textos secundários e descrições</p>
-                </div>
-              </div>
-
-              {/* Preview do Tema */}
-              <div className="mt-6">
-                <ThemePreview 
-                  theme={{
-                    primaryColor: formData.themePrimaryColor,
-                    secondaryColor: formData.themeSecondaryColor,
-                    accentColor: formData.themeAccentColor,
-                    backgroundColor: formData.themeBackgroundColor,
-                    surfaceColor: formData.themeSurfaceColor,
-                    textColor: formData.themeTextColor,
-                    textSecondaryColor: formData.themeTextSecondaryColor
-                  }}
-                  title="Preview do Tema"
-                  description="Como as cores personalizadas aparecerão no sistema"
-                />
-              </div>
-            </CardContent>
-          </Card>
+          {/* Gerenciador de Tema */}
+          <ThemeManager onThemeChange={handleThemeChange} />
 
           {/* Especialidades */}
           <Card>

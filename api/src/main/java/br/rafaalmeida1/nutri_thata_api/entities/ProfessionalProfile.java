@@ -71,6 +71,18 @@ public class ProfessionalProfile {
     @Column(name = "theme_text_secondary_color")
     private String themeTextSecondaryColor;
 
+    @Column(name = "theme_border_color")
+    private String themeBorderColor;
+
+    @Column(name = "theme_muted_color")
+    private String themeMutedColor;
+
+    @Column(name = "theme_shadow_color")
+    private String themeShadowColor;
+
+    @Column(name = "theme_overlay_color")
+    private String themeOverlayColor;
+
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
@@ -215,6 +227,38 @@ public class ProfessionalProfile {
 
     public void setThemeTextSecondaryColor(String themeTextSecondaryColor) {
         this.themeTextSecondaryColor = themeTextSecondaryColor;
+    }
+
+    public String getThemeBorderColor() {
+        return themeBorderColor;
+    }
+
+    public void setThemeBorderColor(String themeBorderColor) {
+        this.themeBorderColor = themeBorderColor;
+    }
+
+    public String getThemeMutedColor() {
+        return themeMutedColor;
+    }
+
+    public void setThemeMutedColor(String themeMutedColor) {
+        this.themeMutedColor = themeMutedColor;
+    }
+
+    public String getThemeShadowColor() {
+        return themeShadowColor;
+    }
+
+    public void setThemeShadowColor(String themeShadowColor) {
+        this.themeShadowColor = themeShadowColor;
+    }
+
+    public String getThemeOverlayColor() {
+        return themeOverlayColor;
+    }
+
+    public void setThemeOverlayColor(String themeOverlayColor) {
+        this.themeOverlayColor = themeOverlayColor;
     }
 
 

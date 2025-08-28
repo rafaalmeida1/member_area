@@ -31,6 +31,10 @@ public class ProfessionalProfileResponse {
     private String themeSurfaceColor;
     private String themeTextColor;
     private String themeTextSecondaryColor;
+    private String themeBorderColor;
+    private String themeMutedColor;
+    private String themeShadowColor;
+    private String themeOverlayColor;
 
     private List<String> specialties;
     private LocalDateTime createdAt;

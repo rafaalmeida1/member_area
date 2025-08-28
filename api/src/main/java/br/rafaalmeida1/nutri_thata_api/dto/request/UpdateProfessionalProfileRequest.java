@@ -42,6 +42,10 @@ public class UpdateProfessionalProfileRequest {
     private String themeSurfaceColor;
     private String themeTextColor;
     private String themeTextSecondaryColor;
+    private String themeBorderColor;
+    private String themeMutedColor;
+    private String themeShadowColor;
+    private String themeOverlayColor;
 
     private List<String> specialties;
 
@@ -155,6 +159,38 @@ public class UpdateProfessionalProfileRequest {
 
     public void setThemeTextSecondaryColor(String themeTextSecondaryColor) {
         this.themeTextSecondaryColor = themeTextSecondaryColor;
+    }
+
+    public String getThemeBorderColor() {
+        return themeBorderColor;
+    }
+
+    public void setThemeBorderColor(String themeBorderColor) {
+        this.themeBorderColor = themeBorderColor;
+    }
+
+    public String getThemeMutedColor() {
+        return themeMutedColor;
+    }
+
+    public void setThemeMutedColor(String themeMutedColor) {
+        this.themeMutedColor = themeMutedColor;
+    }
+
+    public String getThemeShadowColor() {
+        return themeShadowColor;
+    }
+
+    public void setThemeShadowColor(String themeShadowColor) {
+        this.themeShadowColor = themeShadowColor;
+    }
+
+    public String getThemeOverlayColor() {
+        return themeOverlayColor;
+    }
+
+    public void setThemeOverlayColor(String themeOverlayColor) {
+        this.themeOverlayColor = themeOverlayColor;
     }
 
 

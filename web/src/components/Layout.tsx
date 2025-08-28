@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { Separator } from '@/components/ui/separator';
+import { useMobile } from '@/hooks/use-mobile';
 import {
   Home,
   User,
@@ -45,30 +46,16 @@ export function Layout({
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isMobile } = useMobile();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  const [isMobile, setIsMobile] = React.useState(false);
-
-  // Detectar se é mobile
-  React.useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      
-      // Se mudou de mobile para desktop, fechar sidebar
-      if (!mobile && sidebarOpen) {
-        setSidebarOpen(false);
-      }
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, [sidebarOpen]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const closeSidebar = () => {
+    setSidebarOpen(false);
   };
 
   // Layout sem sidebar (para páginas de login, registro, etc.)
@@ -99,178 +86,161 @@ export function Layout({
 
   // Componente do Sidebar
   const SidebarContent = () => (
-    <div className="sidebar-content">
-      {/* Branding */}
-      <div className="sidebar-branding">
-        <div className="brand-logo">TM</div>
-        <div className="brand-text">
-          <h2>{professionalName || 'Nutri Thata'}</h2>
-          <p>Plataforma</p>
+    <>
+      <div className="sidebar-header">
+        <div className="sidebar-title">
+          <div className="brand-logo">
+            <FileText className="w-6 h-6" />
+          </div>
+          <div>
+            <h2>NutriThata</h2>
+            <p className="sidebar-subtitle">Plataforma de Nutrição</p>
+          </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="sidebar-quick-actions">
-        {user?.role === 'PROFESSIONAL' && (
-          <Link to="/modules" style={{ textDecoration: 'none' }}>
-            <Button 
-              className="quick-create-btn" 
-              size="sm"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Criar Módulo
-            </Button>
-          </Link>
-        )}
-      </div>
-
-      {/* Primary Navigation */}
       <nav className="sidebar-nav">
         <div className="nav-section">
-          <h3 className="nav-title">Navegação</h3>
-          <ul className="nav-list">
-            <li>
-              <Link 
-                to="/"
-                className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}
-                style={{ textDecoration: 'none' }}
-              >
-                <Home className="nav-icon" />
-                <span>Dashboard</span>
-              </Link>
-            </li>
-            
-            {user?.role === 'PROFESSIONAL' && (
-              <>
-                <li>
-                  <Link 
-                    to="/modules"
-                    className={`nav-item ${location.pathname === '/modules' ? 'active' : ''}`}
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <FileText className="nav-icon" />
-                    <span>Módulos</span>
-                  </Link>
-                </li>
-
-                <li>
-                  <Link 
-                    to="/invites"
-                    className={`nav-item ${location.pathname === '/invites' ? 'active' : ''}`}
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <Mail className="nav-icon" />
-                    <span>Convites</span>
-                  </Link>
-                </li>
-
-                <li>
-                  <Link 
-                    to="/patients"
-                    className={`nav-item ${location.pathname === '/patients' ? 'active' : ''}`}
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <Users className="nav-icon" />
-                    <span>Pacientes</span>
-                  </Link>
-                </li>
-              </>
-            )}
-          </ul>
+          <h3 className="nav-section-title">Principal</h3>
+          <Link
+            to="/"
+            className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}
+            onClick={closeSidebar}
+          >
+            <Home className="nav-item-icon" />
+            <span className="nav-item-text">Início</span>
+          </Link>
+          
+          {user?.role === 'PROFESSIONAL' && (
+            <Link
+              to="/modules"
+              className={`nav-item ${location.pathname === '/modules' ? 'active' : ''}`}
+              onClick={closeSidebar}
+            >
+              <FileText className="nav-item-icon" />
+              <span className="nav-item-text">Módulos</span>
+            </Link>
+          )}
+          
+          {user?.role === 'PROFESSIONAL' && (
+            <Link
+              to="/patients"
+              className={`nav-item ${location.pathname === '/patients' ? 'active' : ''}`}
+              onClick={closeSidebar}
+            >
+              <Users className="nav-item-icon" />
+              <span className="nav-item-text">Pacientes</span>
+            </Link>
+          )}
         </div>
 
-        {/* Secondary Navigation */}
         <div className="nav-section">
-          <Separator className="my-4" />
-          <h3 className="nav-title">Gerenciamento</h3>
-          <ul className="nav-list">
-            <li>
-              <Link 
-                to="/profile"
-                className={`nav-item ${location.pathname === '/profile' ? 'active' : ''}`}
-                style={{ textDecoration: 'none' }}
-              >
-                <UserCog className="nav-icon" />
-                <span>Minha Conta</span>
-              </Link>
-            </li>
-          </ul>
+          <h3 className="nav-section-title">Gerenciamento</h3>
+          {user?.role === 'PROFESSIONAL' && (
+            <Link
+              to="/invites"
+              className={`nav-item ${location.pathname === '/invites' ? 'active' : ''}`}
+              onClick={closeSidebar}
+            >
+              <Mail className="nav-item-icon" />
+              <span className="nav-item-text">Convites</span>
+            </Link>
+          )}
+          
+          {user?.role === 'PROFESSIONAL' && (
+            <Link
+              to="/admin"
+              className={`nav-item ${location.pathname === '/admin' ? 'active' : ''}`}
+              onClick={closeSidebar}
+            >
+              <UserCog className="nav-item-icon" />
+              <span className="nav-item-text">Admin</span>
+            </Link>
+          )}
+        </div>
+
+        <div className="nav-section">
+          <h3 className="nav-section-title">Conta</h3>
+          <Link
+            to="/my-account"
+            className={`nav-item ${location.pathname === '/my-account' ? 'active' : ''}`}
+            onClick={closeSidebar}
+          >
+            <User className="nav-item-icon" />
+            <span className="nav-item-text">Minha Conta</span>
+          </Link>
+          
+          <Link
+            to="/settings"
+            className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`}
+            onClick={closeSidebar}
+          >
+            <Settings className="nav-item-icon" />
+            <span className="nav-item-text">Configurações</span>
+          </Link>
         </div>
       </nav>
 
-      {/* Footer */}
       <div className="sidebar-footer">
         <div className="user-info">
           <div className="user-avatar">
-            <User className="user-icon" />
+            {user?.name?.charAt(0).toUpperCase() || 'U'}
           </div>
           <div className="user-details">
-            <p className="user-name">{user?.name}</p>
-            <p className="user-email">{user?.email}</p>
+            <p className="user-name">{user?.name || 'Usuário'}</p>
+            <p className="user-role">{user?.role?.toLowerCase() || 'usuário'}</p>
           </div>
         </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="outline"
           onClick={handleLogout}
           className="logout-button"
         >
-          <LogOut className="logout-icon" />
-          <span>Sair</span>
+          <LogOut className="w-4 h-4 mr-2" />
+          Sair
         </Button>
       </div>
-    </div>
+    </>
   );
 
-  // Layout com sidebar
   return (
-    <div className="layout-main">
-      {/* Sidebar para Desktop */}
-      {!isMobile && (
-        <aside className="sidebar-desktop">
-          <SidebarContent />
-        </aside>
+    <div className="layout">
+      {/* Sidebar Desktop */}
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <SidebarContent />
+      </aside>
+
+      {/* Overlay para mobile */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`}
+          onClick={closeSidebar}
+        />
       )}
 
-      {/* Sidebar para Mobile usando Sheet */}
-      {isMobile && (
-        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetContent side="right" className="sidebar-mobile">
-            <SidebarContent />
-          </SheetContent>
-        </Sheet>
-      )}
-
-      {/* Main Content */}
+      {/* Conteúdo Principal */}
       <div className="main-content">
-        <header className="main-header">
+        <header className="header">
           <div className="header-left">
-            <h1 className="header-title">
-              {title || 'Dashboard'}
-            </h1>
-          </div>
-          <div className="header-right">
-            <NotificationDropdown />
             {isMobile && (
-              <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-                <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="sidebar-toggle"
-                  >
-                    <Menu className="toggle-icon" />
-                  </Button>
-                </SheetTrigger>
-              </Sheet>
+              <button
+                className="mobile-menu-button"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+              >
+                <Menu className="w-5 h-5" />
+              </button>
             )}
+            <h1 className="header-title">{title || 'NutriThata'}</h1>
+          </div>
+
+          <div className="header-actions">
+            <NotificationDropdown />
+            <ThemeToggle />
           </div>
         </header>
 
-        <main className="main-content-area">
-          <div className="content-container">
-            {children}
-          </div>
+        <main className="content">
+          {children}
         </main>
       </div>
     </div>

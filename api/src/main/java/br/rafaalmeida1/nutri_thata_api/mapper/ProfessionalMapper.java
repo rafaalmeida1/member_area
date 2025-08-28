@@ -24,6 +24,10 @@ public interface ProfessionalMapper {
     @Mapping(source = "themeSurfaceColor", target = "themeSurfaceColor")
     @Mapping(source = "themeTextColor", target = "themeTextColor")
     @Mapping(source = "themeTextSecondaryColor", target = "themeTextSecondaryColor")
+    @Mapping(source = "themeBorderColor", target = "themeBorderColor")
+    @Mapping(source = "themeMutedColor", target = "themeMutedColor")
+    @Mapping(source = "themeShadowColor", target = "themeShadowColor")
+    @Mapping(source = "themeOverlayColor", target = "themeOverlayColor")
 
     @Mapping(source = "specialties", target = "specialties")
     @Mapping(source = "createdAt", target = "createdAt")
