@@ -5,7 +5,7 @@ interface ThemeContextType {
   theme: ThemeColors;
   isLoading: boolean;
   refreshTheme: () => Promise<void>;
-  markForAnimation: () => void; // Nova função para marcar que deve mostrar animação
+  markForAnimation: () => void;
 }
 
 const defaultTheme: ThemeColors = {
@@ -126,25 +126,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         return true;
       }
       
-      // Se já visitou antes, não mostrar animação
-      const hasVisited = localStorage.getItem('nutri-thata-first-visit');
-      if (hasVisited) {
-        return false;
-      }
-      
       // Se é redirect externo, mostrar animação
       return isExternalRedirect();
     } catch (error) {
       console.error('Erro ao verificar se deve mostrar animação:', error);
       return true;
-    }
-  };
-
-  const markAsVisited = () => {
-    try {
-      localStorage.setItem('nutri-thata-first-visit', 'true');
-    } catch (error) {
-      console.error('Erro ao marcar primeira visita:', error);
     }
   };
 
@@ -165,10 +151,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       if (showAnimation) {
         // Mostrar animação apenas em redirects externos
         setIsLoading(true);
-        markAsVisited();
         
         // Simular um delay mínimo para mostrar a animação
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 2500));
       }
 
       // Tentar carregar do localStorage primeiro
@@ -234,8 +219,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     // Listener para detectar navegação interna e garantir que a animação não apareça
     const handleBeforeUnload = () => {
-      // Marcar que o usuário já visitou para evitar animação em navegação interna
-      markAsVisited();
+      // Não fazer nada aqui, deixar a lógica natural funcionar
     };
 
     // Listener para detectar quando a página é carregada via navegação interna
