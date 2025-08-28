@@ -243,7 +243,6 @@ export function Layout({
 
           <div className="header-actions">
             <NotificationDropdown />
-            <ThemeToggle />
           </div>
         </header>
 
