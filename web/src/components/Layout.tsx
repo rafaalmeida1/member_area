@@ -92,116 +92,116 @@ export function Layout({ children, title, showSidebar = true, showBackButton = f
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          "fixed top-0 left-0 h-full bg-sidebar border-sidebar-border transition-all duration-300 z-30 flex flex-col shadow-lg",
-          sidebarCollapsed ? "w-20" : "w-72",
-        )}
-      >
-        {/* Header */}
-        <div className="px-6 py-3 bg-[--color-background]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-[--color-primary] rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 text-[--color-primary-foreground]" />
-              </div>
-              {!sidebarCollapsed && (
-                <div>
-                  <h2 className="text-lg font-bold text-[--color-primary-foreground]">NutriThata</h2>
-                  <p className="text-sm text-[--color-primary]/80">Plataforma de Nutrição</p>
-                </div>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSidebar}
-              className="text-[--color-primary] hover:bg-[--color-primary]/10"
-            >
-              {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-            </Button>
-          </div>
-        </div>
+             {/* Sidebar */}
+       <aside
+         className={cn(
+           "fixed top-0 left-0 h-full bg-[--color-surface] border-r border-[--color-border] transition-all duration-300 z-30 flex flex-col shadow-lg",
+           sidebarCollapsed ? "w-20" : "w-72",
+         )}
+       >
+         {/* Header */}
+         <div className="px-6 py-3 bg-[--color-primary]">
+           <div className="flex items-center justify-between">
+             <div className="flex items-center gap-3">
+               <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                 <FileText className="w-5 h-5 text-[--color-primary]" />
+               </div>
+               {!sidebarCollapsed && (
+                 <div>
+                   <h2 className="text-lg font-bold text-white">NutriThata</h2>
+                   <p className="text-sm text-white/80">Plataforma de Nutrição</p>
+                 </div>
+               )}
+             </div>
+             <Button
+               variant="ghost"
+               size="icon"
+               onClick={toggleSidebar}
+               className="text-white hover:bg-white/10"
+             >
+               {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+             </Button>
+           </div>
+         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
-          {!sidebarCollapsed && (
-            <h3 className="text-xs font-semibold text-[--color-primary]/60 uppercase tracking-wider mb-4">
-              Navegação
-            </h3>
-          )}
-          {navigationItems.map((item) => {
-            const Icon = item.icon
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
-                  item.active
-                    ? "bg-[--color-primary] text-[--color-primary-foreground] shadow-md"
-                    : "text-[--color-primary] hover:bg-[--color-primary]/10 hover:text-[--color-primary]/80",
-                  sidebarCollapsed && "justify-center px-2",
-                )}
-                title={sidebarCollapsed ? item.label : undefined}
-              >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
-              </Link>
-            )
-          })}
-        </nav>
+         {/* Navigation */}
+         <nav className="flex-1 p-4 space-y-2">
+           {!sidebarCollapsed && (
+             <h3 className="text-xs font-semibold text-[--color-text-secondary] uppercase tracking-wider mb-4">
+               Navegação
+             </h3>
+           )}
+           {navigationItems.map((item) => {
+             const Icon = item.icon
+             return (
+               <Link
+                 key={item.href}
+                 to={item.href}
+                 className={cn(
+                   "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
+                   item.active
+                     ? "bg-[--color-primary] text-white shadow-md"
+                     : "text-[--color-text-primary] hover:bg-[--color-hover]",
+                   sidebarCollapsed && "justify-center px-2",
+                 )}
+                 title={sidebarCollapsed ? item.label : undefined}
+               >
+                 <Icon className="w-5 h-5 flex-shrink-0" />
+                 {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
+               </Link>
+             )
+           })}
+         </nav>
 
-        {/* User Info */}
-        <div className="p-4">
-          <div
-            className={cn(
-              "flex items-center gap-3 p-3 rounded-lg bg-[--color-primary]/10",
-              sidebarCollapsed && "justify-center",
-            )}
-          >
-            <div className="w-10 h-10 bg-gradient-to-br from-[--color-primary] to-[--color-primary]/80 rounded-full flex items-center justify-center text-[--color-primary] font-semibold">
-              {user?.name?.charAt(0).toUpperCase() || "U"}
-            </div>
-            {!sidebarCollapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-[--color-primary] truncate">{user?.name || "Usuário"}</p>
-                <p className="text-sm text-[--color-primary]/70 capitalize">
-                  {user?.role?.toLowerCase() || "usuário"}
-                </p>
-              </div>
-            )}
-          </div>
-          {!sidebarCollapsed && (
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              className="w-full mt-3 justify-start border-sidebar-border hover:bg-[--color-primary]/10 bg-transparent"
-            >
-              <LogOut className="w-4 h-4 mr-2 text-[--color-primary]" />
-              Sair
-            </Button>
-          )}
-        </div>
-      </aside>
+         {/* User Info */}
+         <div className="p-4">
+           <div
+             className={cn(
+               "flex items-center gap-3 p-3 rounded-lg bg-[--color-hover]",
+               sidebarCollapsed && "justify-center",
+             )}
+           >
+             <div className="w-10 h-10 bg-[--color-primary] rounded-full flex items-center justify-center text-white font-semibold">
+               {user?.name?.charAt(0).toUpperCase() || "U"}
+             </div>
+             {!sidebarCollapsed && (
+               <div className="flex-1 min-w-0">
+                 <p className="font-medium text-[--color-text-primary] truncate">{user?.name || "Usuário"}</p>
+                 <p className="text-sm text-[--color-text-secondary] capitalize">
+                   {user?.role?.toLowerCase() || "usuário"}
+                 </p>
+               </div>
+             )}
+           </div>
+           {!sidebarCollapsed && (
+             <Button
+               variant="outline"
+               onClick={handleLogout}
+               className="w-full mt-3 justify-start border-[--color-border] hover:bg-[--color-hover] bg-transparent text-[--color-text-primary]"
+             >
+               <LogOut className="w-4 h-4 mr-2" />
+               Sair
+             </Button>
+           )}
+         </div>
+       </aside>
 
-      {/* Main Content */}
-      <div className={cn("flex-1 flex flex-col transition-all duration-300", sidebarCollapsed ? "ml-20" : "ml-72")}>
-        {/* Header */}
-        <header className="bg-card border-border shadow-sm sticky top-0 z-20 backdrop-blur-sm bg-[--color-background]">
-          <div className="flex items-center justify-end px-6 py-4">
-            <div className="flex items-center gap-4">
-              <NotificationDropdown />
-            </div>
-          </div>
-        </header>
+             {/* Main Content */}
+       <div className={cn("flex-1 flex flex-col transition-all duration-300", sidebarCollapsed ? "ml-20" : "ml-72")}>
+         {/* Header */}
+         <header className="bg-[--color-surface] border-b border-[--color-border] shadow-sm sticky top-0 z-20 backdrop-blur-sm">
+           <div className="flex items-center justify-end px-6 py-4">
+             <div className="flex items-center gap-4">
+               <NotificationDropdown />
+             </div>
+           </div>
+         </header>
 
-        {/* Content */}
-        <main className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-screen mx-auto">{children}</div>
-        </main>
-      </div>
+         {/* Content */}
+         <main className="flex-1 p-6 overflow-y-auto bg-[--color-background]">
+           <div className="max-w-screen mx-auto">{children}</div>
+         </main>
+       </div>
     </div>
   )
 }

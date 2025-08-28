@@ -34,18 +34,16 @@ public class UpdateProfessionalProfileRequest {
     private Integer backgroundPositionX;
     private Integer backgroundPositionY;
 
-    // Cores personalizadas do tema
+    // Cores personalizadas do tema (esquema simplificado)
     private String themePrimaryColor;
     private String themeSecondaryColor;
-    private String themeAccentColor;
     private String themeBackgroundColor;
     private String themeSurfaceColor;
-    private String themeTextColor;
+    private String themeTextPrimaryColor;
     private String themeTextSecondaryColor;
     private String themeBorderColor;
-    private String themeMutedColor;
-    private String themeShadowColor;
-    private String themeOverlayColor;
+    private String themeHoverColor;
+    private String themeDisabledColor;
 
     private List<String> specialties;
 
@@ -121,14 +119,6 @@ public class UpdateProfessionalProfileRequest {
         this.themeSecondaryColor = themeSecondaryColor;
     }
 
-    public String getThemeAccentColor() {
-        return themeAccentColor;
-    }
-
-    public void setThemeAccentColor(String themeAccentColor) {
-        this.themeAccentColor = themeAccentColor;
-    }
-
     public String getThemeBackgroundColor() {
         return themeBackgroundColor;
     }
@@ -145,12 +135,12 @@ public class UpdateProfessionalProfileRequest {
         this.themeSurfaceColor = themeSurfaceColor;
     }
 
-    public String getThemeTextColor() {
-        return themeTextColor;
+    public String getThemeTextPrimaryColor() {
+        return themeTextPrimaryColor;
     }
 
-    public void setThemeTextColor(String themeTextColor) {
-        this.themeTextColor = themeTextColor;
+    public void setThemeTextPrimaryColor(String themeTextPrimaryColor) {
+        this.themeTextPrimaryColor = themeTextPrimaryColor;
     }
 
     public String getThemeTextSecondaryColor() {
@@ -169,28 +159,20 @@ public class UpdateProfessionalProfileRequest {
         this.themeBorderColor = themeBorderColor;
     }
 
-    public String getThemeMutedColor() {
-        return themeMutedColor;
+    public String getThemeHoverColor() {
+        return themeHoverColor;
     }
 
-    public void setThemeMutedColor(String themeMutedColor) {
-        this.themeMutedColor = themeMutedColor;
+    public void setThemeHoverColor(String themeHoverColor) {
+        this.themeHoverColor = themeHoverColor;
     }
 
-    public String getThemeShadowColor() {
-        return themeShadowColor;
+    public String getThemeDisabledColor() {
+        return themeDisabledColor;
     }
 
-    public void setThemeShadowColor(String themeShadowColor) {
-        this.themeShadowColor = themeShadowColor;
-    }
-
-    public String getThemeOverlayColor() {
-        return themeOverlayColor;
-    }
-
-    public void setThemeOverlayColor(String themeOverlayColor) {
-        this.themeOverlayColor = themeOverlayColor;
+    public void setThemeDisabledColor(String themeDisabledColor) {
+        this.themeDisabledColor = themeDisabledColor;
     }
 
 

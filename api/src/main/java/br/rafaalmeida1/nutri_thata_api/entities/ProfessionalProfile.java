@@ -49,15 +49,12 @@ public class ProfessionalProfile {
     @Column(name = "background_position_y")
     private Integer backgroundPositionY;
 
-    // Cores personalizadas do tema
+    // Cores personalizadas do tema (esquema simplificado)
     @Column(name = "theme_primary_color")
     private String themePrimaryColor;
 
     @Column(name = "theme_secondary_color")
     private String themeSecondaryColor;
-
-    @Column(name = "theme_accent_color")
-    private String themeAccentColor;
 
     @Column(name = "theme_background_color")
     private String themeBackgroundColor;
@@ -65,8 +62,8 @@ public class ProfessionalProfile {
     @Column(name = "theme_surface_color")
     private String themeSurfaceColor;
 
-    @Column(name = "theme_text_color")
-    private String themeTextColor;
+    @Column(name = "theme_text_primary_color")
+    private String themeTextPrimaryColor;
 
     @Column(name = "theme_text_secondary_color")
     private String themeTextSecondaryColor;
@@ -74,14 +71,11 @@ public class ProfessionalProfile {
     @Column(name = "theme_border_color")
     private String themeBorderColor;
 
-    @Column(name = "theme_muted_color")
-    private String themeMutedColor;
+    @Column(name = "theme_hover_color")
+    private String themeHoverColor;
 
-    @Column(name = "theme_shadow_color")
-    private String themeShadowColor;
-
-    @Column(name = "theme_overlay_color")
-    private String themeOverlayColor;
+    @Column(name = "theme_disabled_color")
+    private String themeDisabledColor;
 
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -189,13 +183,7 @@ public class ProfessionalProfile {
         this.themeSecondaryColor = themeSecondaryColor;
     }
 
-    public String getThemeAccentColor() {
-        return themeAccentColor;
-    }
 
-    public void setThemeAccentColor(String themeAccentColor) {
-        this.themeAccentColor = themeAccentColor;
-    }
 
     public String getThemeBackgroundColor() {
         return themeBackgroundColor;
@@ -213,12 +201,12 @@ public class ProfessionalProfile {
         this.themeSurfaceColor = themeSurfaceColor;
     }
 
-    public String getThemeTextColor() {
-        return themeTextColor;
+    public String getThemeTextPrimaryColor() {
+        return themeTextPrimaryColor;
     }
 
-    public void setThemeTextColor(String themeTextColor) {
-        this.themeTextColor = themeTextColor;
+    public void setThemeTextPrimaryColor(String themeTextPrimaryColor) {
+        this.themeTextPrimaryColor = themeTextPrimaryColor;
     }
 
     public String getThemeTextSecondaryColor() {
@@ -237,28 +225,20 @@ public class ProfessionalProfile {
         this.themeBorderColor = themeBorderColor;
     }
 
-    public String getThemeMutedColor() {
-        return themeMutedColor;
+    public String getThemeHoverColor() {
+        return themeHoverColor;
     }
 
-    public void setThemeMutedColor(String themeMutedColor) {
-        this.themeMutedColor = themeMutedColor;
+    public void setThemeHoverColor(String themeHoverColor) {
+        this.themeHoverColor = themeHoverColor;
     }
 
-    public String getThemeShadowColor() {
-        return themeShadowColor;
+    public String getThemeDisabledColor() {
+        return themeDisabledColor;
     }
 
-    public void setThemeShadowColor(String themeShadowColor) {
-        this.themeShadowColor = themeShadowColor;
-    }
-
-    public String getThemeOverlayColor() {
-        return themeOverlayColor;
-    }
-
-    public void setThemeOverlayColor(String themeOverlayColor) {
-        this.themeOverlayColor = themeOverlayColor;
+    public void setThemeDisabledColor(String themeDisabledColor) {
+        this.themeDisabledColor = themeDisabledColor;
     }
 
 

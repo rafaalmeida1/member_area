@@ -11,43 +11,13 @@ interface ThemeContextType {
 const defaultTheme: ThemeColors = {
   primaryColor: '#DBCFCB',
   secondaryColor: '#D8C4A4',
-  accentColor: '#A67B5B',
   backgroundColor: '#FFFFFF',
   surfaceColor: '#FAFAFA',
-  textColor: '#2C2C2C',
+  textPrimaryColor: '#2C2C2C',
   textSecondaryColor: '#666666',
   borderColor: '#E0E0E0',
-  mutedColor: '#F0F0F0',
-  shadowColor: '#0000001A',
-  overlayColor: '#00000033',
-  // Novas cores com valores padrão
-  sidebarBackgroundColor: '#FAFAFA',
-  sidebarHeaderColor: '#DBCFCB',
-  sidebarTextColor: '#2C2C2C',
-  sidebarActiveColor: '#DBCFCB',
-  sidebarHoverColor: '#F0F0F0',
-  userInfoBackgroundColor: '#F5F5F5',
-  userInfoTextColor: '#2C2C2C',
-  userAvatarColor: '#DBCFCB',
-  headerBackgroundColor: '#FAFAFA',
-  headerTextColor: '#2C2C2C',
-  buttonPrimaryColor: '#DBCFCB',
-  buttonSecondaryColor: '#D8C4A4',
-  buttonTextColor: '#FFFFFF',
-  cardBackgroundColor: '#FFFFFF',
-  cardBorderColor: '#E0E0E0',
-  inputBackgroundColor: '#FFFFFF',
-  inputBorderColor: '#E0E0E0',
-  inputTextColor: '#2C2C2C',
-  tabActiveColor: '#DBCFCB',
-  tabInactiveColor: '#F0F0F0',
-  tabTextColor: '#2C2C2C',
-  notificationBackgroundColor: '#FFFFFF',
-  notificationTextColor: '#2C2C2C',
-  successColor: '#10B981',
-  errorColor: '#EF4444',
-  warningColor: '#F59E0B',
-  infoColor: '#3B82F6'
+  hoverColor: '#F0F0F0',
+  disabledColor: '#CCCCCC'
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -66,63 +36,31 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     // Aplicar cores personalizadas como CSS custom properties
     root.style.setProperty('--color-primary', themeColors.primaryColor);
     root.style.setProperty('--color-secondary', themeColors.secondaryColor);
-    root.style.setProperty('--color-accent', themeColors.accentColor);
     root.style.setProperty('--color-background', themeColors.backgroundColor);
     root.style.setProperty('--color-surface', themeColors.surfaceColor);
-    root.style.setProperty('--color-text', themeColors.textColor);
+    root.style.setProperty('--color-text-primary', themeColors.textPrimaryColor);
     root.style.setProperty('--color-text-secondary', themeColors.textSecondaryColor);
     root.style.setProperty('--color-border', themeColors.borderColor);
-    root.style.setProperty('--color-muted', themeColors.mutedColor);
-    root.style.setProperty('--color-shadow', themeColors.shadowColor);
-    root.style.setProperty('--color-overlay', themeColors.overlayColor);
-    
-    // Novas cores para personalização completa
-    root.style.setProperty('--color-sidebar-background', themeColors.sidebarBackgroundColor);
-    root.style.setProperty('--color-sidebar-header', themeColors.sidebarHeaderColor);
-    root.style.setProperty('--color-sidebar-text', themeColors.sidebarTextColor);
-    root.style.setProperty('--color-sidebar-active', themeColors.sidebarActiveColor);
-    root.style.setProperty('--color-sidebar-hover', themeColors.sidebarHoverColor);
-    root.style.setProperty('--color-user-info-background', themeColors.userInfoBackgroundColor);
-    root.style.setProperty('--color-user-info-text', themeColors.userInfoTextColor);
-    root.style.setProperty('--color-user-avatar', themeColors.userAvatarColor);
-    root.style.setProperty('--color-header-background', themeColors.headerBackgroundColor);
-    root.style.setProperty('--color-header-text', themeColors.headerTextColor);
-    root.style.setProperty('--color-button-primary', themeColors.buttonPrimaryColor);
-    root.style.setProperty('--color-button-secondary', themeColors.buttonSecondaryColor);
-    root.style.setProperty('--color-button-text', themeColors.buttonTextColor);
-    root.style.setProperty('--color-card-background', themeColors.cardBackgroundColor);
-    root.style.setProperty('--color-card-border', themeColors.cardBorderColor);
-    root.style.setProperty('--color-input-background', themeColors.inputBackgroundColor);
-    root.style.setProperty('--color-input-border', themeColors.inputBorderColor);
-    root.style.setProperty('--color-input-text', themeColors.inputTextColor);
-    root.style.setProperty('--color-tab-active', themeColors.tabActiveColor);
-    root.style.setProperty('--color-tab-inactive', themeColors.tabInactiveColor);
-    root.style.setProperty('--color-tab-text', themeColors.tabTextColor);
-    root.style.setProperty('--color-notification-background', themeColors.notificationBackgroundColor);
-    root.style.setProperty('--color-notification-text', themeColors.notificationTextColor);
-    root.style.setProperty('--color-success', themeColors.successColor);
-    root.style.setProperty('--color-error', themeColors.errorColor);
-    root.style.setProperty('--color-warning', themeColors.warningColor);
-    root.style.setProperty('--color-info', themeColors.infoColor);
+    root.style.setProperty('--color-hover', themeColors.hoverColor);
+    root.style.setProperty('--color-disabled', themeColors.disabledColor);
     
     // Aplicar também para compatibilidade com Tailwind
     root.style.setProperty('--tw-color-primary', themeColors.primaryColor);
     root.style.setProperty('--tw-color-secondary', themeColors.secondaryColor);
-    root.style.setProperty('--tw-color-accent', themeColors.accentColor);
     root.style.setProperty('--tw-color-background', themeColors.backgroundColor);
     root.style.setProperty('--tw-color-surface', themeColors.surfaceColor);
-    root.style.setProperty('--tw-color-text', themeColors.textColor);
+    root.style.setProperty('--tw-color-text-primary', themeColors.textPrimaryColor);
     root.style.setProperty('--tw-color-text-secondary', themeColors.textSecondaryColor);
     root.style.setProperty('--tw-color-border', themeColors.borderColor);
-    root.style.setProperty('--tw-color-muted', themeColors.mutedColor);
+    root.style.setProperty('--tw-color-hover', themeColors.hoverColor);
+    root.style.setProperty('--tw-color-disabled', themeColors.disabledColor);
     
     // Forçar re-render de todos os elementos
     document.body.style.setProperty('--color-primary', themeColors.primaryColor);
     document.body.style.setProperty('--color-secondary', themeColors.secondaryColor);
-    document.body.style.setProperty('--color-accent', themeColors.accentColor);
     document.body.style.setProperty('--color-background', themeColors.backgroundColor);
     document.body.style.setProperty('--color-surface', themeColors.surfaceColor);
-    document.body.style.setProperty('--color-text', themeColors.textColor);
+    document.body.style.setProperty('--color-text-primary', themeColors.textPrimaryColor);
     document.body.style.setProperty('--color-text-secondary', themeColors.textSecondaryColor);
   };
 

@@ -13,70 +13,60 @@ interface ThemeManagerProps {
 
 // Temas pré-definidos
 const PRESET_THEMES = {
+  'Elegant': {
+    primaryColor: '#DBCFCB',
+    secondaryColor: '#D8C4A4',
+    backgroundColor: '#FFFFFF',
+    surfaceColor: '#FAFAFA',
+    textPrimaryColor: '#2C2C2C',
+    textSecondaryColor: '#666666',
+    borderColor: '#E0E0E0',
+    hoverColor: '#F0F0F0',
+    disabledColor: '#CCCCCC'
+  },
   'Nature': {
     primaryColor: '#8FBC8F',
     secondaryColor: '#A8D5BA',
-    accentColor: '#6B8E23',
     backgroundColor: '#FFFFFF',
     surfaceColor: '#F8F9FA',
-    textColor: '#2C3E50',
+    textPrimaryColor: '#2C3E50',
     textSecondaryColor: '#7F8C8D',
     borderColor: '#E8F5E8',
-    mutedColor: '#F0F8F0',
-    shadowColor: 'rgba(143, 188, 143, 0.1)',
-    overlayColor: 'rgba(0, 0, 0, 0.5)'
+    hoverColor: '#F0F8F0',
+    disabledColor: '#CCCCCC'
   },
   'Ocean': {
     primaryColor: '#4A90E2',
     secondaryColor: '#7BB3F0',
-    accentColor: '#2E5BBA',
     backgroundColor: '#FFFFFF',
     surfaceColor: '#F8FBFF',
-    textColor: '#2C3E50',
+    textPrimaryColor: '#2C3E50',
     textSecondaryColor: '#7F8C8D',
     borderColor: '#E3F2FD',
-    mutedColor: '#F0F8FF',
-    shadowColor: 'rgba(74, 144, 226, 0.1)',
-    overlayColor: 'rgba(0, 0, 0, 0.5)'
+    hoverColor: '#F0F8FF',
+    disabledColor: '#CCCCCC'
   },
   'Sunset': {
     primaryColor: '#FF6B6B',
     secondaryColor: '#FFB3BA',
-    accentColor: '#E74C3C',
     backgroundColor: '#FFFFFF',
     surfaceColor: '#FFF8F8',
-    textColor: '#2C3E50',
+    textPrimaryColor: '#2C3E50',
     textSecondaryColor: '#7F8C8D',
     borderColor: '#FFE6E6',
-    mutedColor: '#FFF0F0',
-    shadowColor: 'rgba(255, 107, 107, 0.1)',
-    overlayColor: 'rgba(0, 0, 0, 0.5)'
-  },
-  'Elegant': {
-    primaryColor: '#DBCFCB',
-    secondaryColor: '#D8C4A4',
-    accentColor: '#A67B5B',
-    backgroundColor: '#FFFFFF',
-    surfaceColor: '#FAFAFA',
-    textColor: '#2C2C2C',
-    textSecondaryColor: '#666666',
-    borderColor: '#E5E5E5',
-    mutedColor: '#F5F5F5',
-    shadowColor: 'rgba(0, 0, 0, 0.1)',
-    overlayColor: 'rgba(0, 0, 0, 0.5)'
+    hoverColor: '#FFF0F0',
+    disabledColor: '#CCCCCC'
   },
   'Dark': {
     primaryColor: '#6366F1',
     secondaryColor: '#8B5CF6',
-    accentColor: '#EC4899',
     backgroundColor: '#1A1A1A',
     surfaceColor: '#2C2C2C',
-    textColor: '#FFFFFF',
+    textPrimaryColor: '#FFFFFF',
     textSecondaryColor: '#CCCCCC',
     borderColor: '#333333',
-    mutedColor: '#2C2C2C',
-    shadowColor: 'rgba(0, 0, 0, 0.5)',
-    overlayColor: 'rgba(0, 0, 0, 0.8)'
+    hoverColor: '#3C3C3C',
+    disabledColor: '#666666'
   }
 };
 
@@ -109,15 +99,13 @@ export function ThemeManager({ onThemeChange }: ThemeManagerProps) {
     const root = document.documentElement;
     root.style.setProperty('--color-primary', theme.primaryColor);
     root.style.setProperty('--color-secondary', theme.secondaryColor);
-    root.style.setProperty('--color-accent', theme.accentColor);
     root.style.setProperty('--color-background', theme.backgroundColor);
     root.style.setProperty('--color-surface', theme.surfaceColor);
-    root.style.setProperty('--color-text', theme.textColor);
+    root.style.setProperty('--color-text-primary', theme.textPrimaryColor);
     root.style.setProperty('--color-text-secondary', theme.textSecondaryColor);
     root.style.setProperty('--color-border', theme.borderColor);
-    root.style.setProperty('--color-muted', theme.mutedColor);
-    root.style.setProperty('--color-shadow', theme.shadowColor);
-    root.style.setProperty('--color-overlay', theme.overlayColor);
+    root.style.setProperty('--color-hover', theme.hoverColor);
+    root.style.setProperty('--color-disabled', theme.disabledColor);
 
     if (onThemeChange) {
       onThemeChange(theme);
@@ -220,7 +208,7 @@ export function ThemeManager({ onThemeChange }: ThemeManagerProps) {
                   <div className="color-dots">
                     <div className="color-dot" style={{ backgroundColor: theme.primaryColor }} />
                     <div className="color-dot" style={{ backgroundColor: theme.secondaryColor }} />
-                    <div className="color-dot" style={{ backgroundColor: theme.accentColor }} />
+                    <div className="color-dot" style={{ backgroundColor: theme.backgroundColor }} />
                   </div>
                 </div>
                 <div className="preset-info">
@@ -274,7 +262,7 @@ export function ThemeManager({ onThemeChange }: ThemeManagerProps) {
     return (
       theme.primaryColor === currentTheme.primaryColor &&
       theme.secondaryColor === currentTheme.secondaryColor &&
-      theme.accentColor === currentTheme.accentColor
+      theme.backgroundColor === currentTheme.backgroundColor
     );
   }
 } 

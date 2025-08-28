@@ -192,45 +192,20 @@ export interface UpdateProfessionalProfileRequest {
 }
 
 export interface ThemeColors {
-  primaryColor: string;
-  secondaryColor: string;
-  accentColor: string;
-  backgroundColor: string;
-  surfaceColor: string;
-  textColor: string;
-  textSecondaryColor: string;
-  borderColor: string;
-  mutedColor: string;
-  shadowColor: string;
-  overlayColor: string;
-  // Novas cores para personalização completa
-  sidebarBackgroundColor: string;
-  sidebarHeaderColor: string;
-  sidebarTextColor: string;
-  sidebarActiveColor: string;
-  sidebarHoverColor: string;
-  userInfoBackgroundColor: string;
-  userInfoTextColor: string;
-  userAvatarColor: string;
-  headerBackgroundColor: string;
-  headerTextColor: string;
-  buttonPrimaryColor: string;
-  buttonSecondaryColor: string;
-  buttonTextColor: string;
-  cardBackgroundColor: string;
-  cardBorderColor: string;
-  inputBackgroundColor: string;
-  inputBorderColor: string;
-  inputTextColor: string;
-  tabActiveColor: string;
-  tabInactiveColor: string;
-  tabTextColor: string;
-  notificationBackgroundColor: string;
-  notificationTextColor: string;
-  successColor: string;
-  errorColor: string;
-  warningColor: string;
-  infoColor: string;
+  // Cores principais
+  primaryColor: string;        // Cor principal (botões, links ativos, etc.)
+  secondaryColor: string;      // Cor secundária (hover, estados secundários)
+  backgroundColor: string;     // Background principal da página
+  surfaceColor: string;        // Background de cards, modais, dropdowns
+  
+  // Cores de texto
+  textPrimaryColor: string;    // Texto principal
+  textSecondaryColor: string;  // Texto secundário (labels, descrições)
+  
+  // Cores de borda e interação
+  borderColor: string;         // Bordas de inputs, cards, etc.
+  hoverColor: string;          // Cor de hover para botões, links, etc.
+  disabledColor: string;       // Cor para elementos desabilitados
 }
 
 // Classe principal do serviço de API
@@ -874,43 +849,13 @@ class ApiService {
       return {
         primaryColor: '#DBCFCB',
         secondaryColor: '#D8C4A4',
-        accentColor: '#A67B5B',
         backgroundColor: '#FFFFFF',
         surfaceColor: '#FAFAFA',
-        textColor: '#2C2C2C',
+        textPrimaryColor: '#2C2C2C',
         textSecondaryColor: '#666666',
         borderColor: '#E0E0E0',
-        mutedColor: '#F0F0F0',
-        shadowColor: '#0000001A',
-        overlayColor: '#00000033',
-        // Novas cores com valores padrão
-        sidebarBackgroundColor: '#FAFAFA',
-        sidebarHeaderColor: '#DBCFCB',
-        sidebarTextColor: '#2C2C2C',
-        sidebarActiveColor: '#DBCFCB',
-        sidebarHoverColor: '#F0F0F0',
-        userInfoBackgroundColor: '#F5F5F5',
-        userInfoTextColor: '#2C2C2C',
-        userAvatarColor: '#DBCFCB',
-        headerBackgroundColor: '#FAFAFA',
-        headerTextColor: '#2C2C2C',
-        buttonPrimaryColor: '#DBCFCB',
-        buttonSecondaryColor: '#D8C4A4',
-        buttonTextColor: '#FFFFFF',
-        cardBackgroundColor: '#FFFFFF',
-        cardBorderColor: '#E0E0E0',
-        inputBackgroundColor: '#FFFFFF',
-        inputBorderColor: '#E0E0E0',
-        inputTextColor: '#2C2C2C',
-        tabActiveColor: '#DBCFCB',
-        tabInactiveColor: '#F0F0F0',
-        tabTextColor: '#2C2C2C',
-        notificationBackgroundColor: '#FFFFFF',
-        notificationTextColor: '#2C2C2C',
-        successColor: '#10B981',
-        errorColor: '#EF4444',
-        warningColor: '#F59E0B',
-        infoColor: '#3B82F6'
+        hoverColor: '#F0F0F0',
+        disabledColor: '#CCCCCC'
       };
     }
   }

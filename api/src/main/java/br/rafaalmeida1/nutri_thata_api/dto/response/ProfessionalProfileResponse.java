@@ -23,18 +23,16 @@ public class ProfessionalProfileResponse {
     private Integer backgroundPositionX;
     private Integer backgroundPositionY;
 
-    // Cores personalizadas do tema
+    // Cores personalizadas do tema (esquema simplificado)
     private String themePrimaryColor;
     private String themeSecondaryColor;
-    private String themeAccentColor;
     private String themeBackgroundColor;
     private String themeSurfaceColor;
-    private String themeTextColor;
+    private String themeTextPrimaryColor;
     private String themeTextSecondaryColor;
     private String themeBorderColor;
-    private String themeMutedColor;
-    private String themeShadowColor;
-    private String themeOverlayColor;
+    private String themeHoverColor;
+    private String themeDisabledColor;
 
     private List<String> specialties;
     private LocalDateTime createdAt;
