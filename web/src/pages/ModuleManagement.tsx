@@ -22,7 +22,7 @@ interface AdminDashboardProps {
   professionalName?: string;
 }
 
-export function AdminDashboard({ professionalName }: AdminDashboardProps) {
+export function ModuleManagement({ professionalName }: AdminDashboardProps) {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   

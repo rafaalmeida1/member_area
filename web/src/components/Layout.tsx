@@ -154,37 +154,17 @@ export function Layout({
               <span className="nav-item-text">Convites</span>
             </Link>
           )}
-          
-          {user?.role === 'PROFESSIONAL' && (
-            <Link
-              to="/admin"
-              className={`nav-item ${location.pathname === '/admin' ? 'active' : ''}`}
-              onClick={closeSidebar}
-            >
-              <UserCog className="nav-item-icon" />
-              <span className="nav-item-text">Admin</span>
-            </Link>
-          )}
         </div>
 
         <div className="nav-section">
           <h3 className="nav-section-title">Conta</h3>
           <Link
-            to="/my-account"
-            className={`nav-item ${location.pathname === '/my-account' ? 'active' : ''}`}
+            to="/profile"
+            className={`nav-item ${location.pathname === '/profile' ? 'active' : ''}`}
             onClick={closeSidebar}
           >
             <User className="nav-item-icon" />
             <span className="nav-item-text">Minha Conta</span>
-          </Link>
-          
-          <Link
-            to="/settings"
-            className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`}
-            onClick={closeSidebar}
-          >
-            <Settings className="nav-item-icon" />
-            <span className="nav-item-text">Configurações</span>
           </Link>
         </div>
       </nav>

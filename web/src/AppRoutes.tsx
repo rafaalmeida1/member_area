@@ -7,8 +7,7 @@ import { InviteToken } from './pages/InviteToken';
 import { InviteRegister } from './pages/InviteRegister';
 import Index from './pages/Index';
 import { PatientHome } from './pages/PatientHome';
-import { AdminDashboard } from './pages/AdminDashboard';
-import { Settings } from './pages/Settings';
+import { ModuleManagement } from './pages/ModuleManagement';
 import { MyAccount } from './pages/MyAccount';
 import { InviteManagement } from './pages/InviteManagement';
 import { PatientManagement } from './pages/PatientManagement';
@@ -112,7 +111,7 @@ function AppRoutes() {
           path="/modules" 
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <ModuleManagement />
             </ProtectedRoute>
           } 
         />
@@ -154,14 +153,7 @@ function AppRoutes() {
           } 
         />
         
-        <Route 
-          path="/settings" 
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          } 
-        />
+
         
         {/* Rota para visualizar módulo específico */}
         <Route 
