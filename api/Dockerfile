@@ -17,11 +17,12 @@ COPY src ./src
 
 # Build da aplicação
 RUN mvn clean package -DskipTests
-RUN mvn flyway:repair
-RUN mvn flyway:migrate
 
 # Stage de produção
 FROM eclipse-temurin:21-jre-alpine
+
+# Instalar netcat para verificar conectividade
+RUN apk add --no-cache netcat-openbsd
 
 # Criar usuário não-root para segurança
 RUN addgroup -g 1001 -S appgroup && \
@@ -33,9 +34,13 @@ WORKDIR /app
 # Copiar o JAR da aplicação do stage de build
 COPY --from=build /app/target/nutri_thata_api-0.0.1-SNAPSHOT.jar app.jar
 
+# Copiar script de entrypoint
+COPY entrypoint.sh entrypoint.sh
+
 # Criar diretórios necessários e definir permissões
 RUN mkdir -p /app/uploads /app/storage && \
-    chown -R appuser:appgroup /app
+    chown -R appuser:appgroup /app && \
+    chmod +x entrypoint.sh
 
 # Mudar para usuário não-root
 USER appuser
@@ -44,4 +49,4 @@ USER appuser
 EXPOSE 8081
 
 # Comando para executar a aplicação
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["./entrypoint.sh"]
