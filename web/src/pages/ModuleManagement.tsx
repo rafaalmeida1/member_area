@@ -295,7 +295,7 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
         onBack={resetForm}
       >
 
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mx-auto px-4 py-8 max-w-screen">
           <Card className="shadow-elegant">
             <CardHeader>
               <CardTitle className="text-2xl">
@@ -484,10 +484,12 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
   return (
     <Layout
       title="Gerenciar Módulos"
-      professionalName={professionalName}
+      showSidebar={true}
+      showBackButton={true}
+      onBack={resetForm}
     >
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto px-4 py-8 max-w-screen">
         {/* Dashboard Header */}
         <div className="flex items-center justify-between mb-8">
           <div>

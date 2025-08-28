@@ -16,24 +16,40 @@
   top: 0;
   left: 0;
   height: 100vh;
-  z-index: 50;
+  z-index: 30;
   box-shadow: 2px 0 10px var(--color-shadow);
+  transition: width 0.3s ease;
 }
 
-/* ===== SIDEBAR SHEET (MOBILE) ===== */
-.sidebar-sheet {
-  width: 280px !important;
-  max-width: 280px !important;
-  padding: 0 !important;
-  background: var(--color-surface) !important;
-  border-right: 1px solid var(--color-border) !important;
+/* Sidebar collapsed state */
+.sidebar.collapsed {
+  width: 80px;
 }
+
+
 
 .sidebar-header {
   padding: 1.5rem;
   border-bottom: 1px solid var(--color-border);
   background: linear-gradient(135deg, var(--color-sidebar-header, var(--color-primary)), var(--color-secondary));
   color: var(--color-background);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-toggle {
+  background: transparent !important;
+  border: none !important;
+  color: var(--color-background) !important;
+  padding: 0.5rem !important;
+  border-radius: 0.5rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 .sidebar-title {
@@ -83,6 +99,14 @@
   margin: 0 0.5rem;
   border-radius: 0.5rem;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Nav item when sidebar is collapsed */
+.sidebar.collapsed .nav-item {
+  padding: 0.75rem;
+  justify-content: center;
 }
 
 .nav-item:hover {
@@ -123,6 +147,13 @@
   border-radius: 0.5rem;
   background: var(--color-user-info-background, var(--color-surface));
   border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+/* User info when sidebar is collapsed */
+.sidebar.collapsed .user-info {
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
 }
 
 .user-avatar {
@@ -181,10 +212,16 @@
 /* ===== MAIN CONTENT ===== */
 .main-content {
   flex: 1;
-  margin-left: 0;
+  margin-left: 280px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+/* Main content when sidebar is collapsed */
+.sidebar.collapsed + .main-content {
+  margin-left: 80px;
 }
 
 /* ===== HEADER ===== */
@@ -336,145 +373,35 @@
 /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 768px) {
   .sidebar {
-    transform: translateX(-100%);
-    width: 100%;
-    max-width: 320px;
+    width: 80px;
   }
-
-  .sidebar.open {
-    transform: translateX(0);
+  
+  .sidebar.collapsed {
+    width: 80px;
   }
-
+  
   .main-content {
-    margin-left: 0;
+    margin-left: 80px;
   }
-
+  
+  .sidebar.collapsed + .main-content {
+    margin-left: 80px;
+  }
+  
   .header {
     padding: 1rem;
-  }
-
-  .mobile-menu-button {
-    display: flex;
   }
 
   .header-title {
     font-size: 1.25rem;
   }
 
-  .header-actions {
-    gap: 0.5rem;
-  }
-
   .content {
     padding: 1rem;
   }
-
-  .layout-simple-header {
-    padding: 1rem;
-  }
-
-  .layout-simple-content {
-    padding: 1rem;
-  }
-
-  /* Mobile Sidebar Overlay */
-  .sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 40;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-  }
-
-  .sidebar-overlay.open {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  /* Mobile Navigation */
-  .nav-item {
-    padding: 1rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 0.75rem;
-    margin: 0 0.75rem 0.25rem;
-  }
-
-  .nav-item-icon {
-    width: 1.5rem;
-    height: 1.5rem;
-  }
-
-  .nav-item-text {
-    font-size: 1rem;
-  }
-
-  /* Mobile User Info */
-  .user-info {
-    padding: 1rem;
-    margin: 0.75rem;
-    border-radius: 0.75rem;
-  }
-
-  .user-avatar {
-    width: 3rem;
-    height: 3rem;
-    font-size: 1rem;
-  }
-
-  .user-name {
-    font-size: 1rem;
-  }
-
-  .user-role {
-    font-size: 0.875rem;
-  }
-
-  /* Mobile Header Actions */
-  .header-action-button {
-    padding: 0.75rem;
-  }
-
-  .notification-badge {
-    width: 1.5rem;
-    height: 1.5rem;
-    font-size: 0.875rem;
-  }
 }
 
-/* ===== DESKTOP RESPONSIVE ===== */
-@media (min-width: 1025px) {
-  .sidebar {
-    width: 280px;
-  }
 
-  .main-content {
-    margin-left: 280px;
-  }
-
-  .mobile-menu-button {
-    display: none;
-  }
-}
-
-/* ===== TABLET RESPONSIVE ===== */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .sidebar {
-    width: 240px;
-  }
-
-  .main-content {
-    margin-left: 240px;
-  }
-
-  .content {
-    padding: 1.5rem;
-  }
-}
 
 /* ===== ANIMAÇÕES ===== */
 @keyframes fadeIn {
