@@ -15,7 +15,39 @@ const defaultTheme: ThemeColors = {
   backgroundColor: '#FFFFFF',
   surfaceColor: '#FAFAFA',
   textColor: '#2C2C2C',
-  textSecondaryColor: '#666666'
+  textSecondaryColor: '#666666',
+  borderColor: '#E0E0E0',
+  mutedColor: '#F0F0F0',
+  shadowColor: '#0000001A',
+  overlayColor: '#00000033',
+  // Novas cores com valores padrão
+  sidebarBackgroundColor: '#FAFAFA',
+  sidebarHeaderColor: '#DBCFCB',
+  sidebarTextColor: '#2C2C2C',
+  sidebarActiveColor: '#DBCFCB',
+  sidebarHoverColor: '#F0F0F0',
+  userInfoBackgroundColor: '#F5F5F5',
+  userInfoTextColor: '#2C2C2C',
+  userAvatarColor: '#DBCFCB',
+  headerBackgroundColor: '#FAFAFA',
+  headerTextColor: '#2C2C2C',
+  buttonPrimaryColor: '#DBCFCB',
+  buttonSecondaryColor: '#D8C4A4',
+  buttonTextColor: '#FFFFFF',
+  cardBackgroundColor: '#FFFFFF',
+  cardBorderColor: '#E0E0E0',
+  inputBackgroundColor: '#FFFFFF',
+  inputBorderColor: '#E0E0E0',
+  inputTextColor: '#2C2C2C',
+  tabActiveColor: '#DBCFCB',
+  tabInactiveColor: '#F0F0F0',
+  tabTextColor: '#2C2C2C',
+  notificationBackgroundColor: '#FFFFFF',
+  notificationTextColor: '#2C2C2C',
+  successColor: '#10B981',
+  errorColor: '#EF4444',
+  warningColor: '#F59E0B',
+  infoColor: '#3B82F6'
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -39,12 +71,39 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     root.style.setProperty('--color-surface', themeColors.surfaceColor);
     root.style.setProperty('--color-text', themeColors.textColor);
     root.style.setProperty('--color-text-secondary', themeColors.textSecondaryColor);
+    root.style.setProperty('--color-border', themeColors.borderColor);
+    root.style.setProperty('--color-muted', themeColors.mutedColor);
+    root.style.setProperty('--color-shadow', themeColors.shadowColor);
+    root.style.setProperty('--color-overlay', themeColors.overlayColor);
     
-    // Definir cores derivadas
-    root.style.setProperty('--color-border', themeColors.backgroundColor === '#FFFFFF' ? '#e5e5e5' : '#333333');
-    root.style.setProperty('--color-muted', themeColors.backgroundColor === '#FFFFFF' ? '#f5f5f5' : '#2c2c2c');
-    root.style.setProperty('--color-shadow', themeColors.backgroundColor === '#FFFFFF' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 0, 0, 0.5)');
-    root.style.setProperty('--color-overlay', themeColors.backgroundColor === '#FFFFFF' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.8)');
+    // Novas cores para personalização completa
+    root.style.setProperty('--color-sidebar-background', themeColors.sidebarBackgroundColor);
+    root.style.setProperty('--color-sidebar-header', themeColors.sidebarHeaderColor);
+    root.style.setProperty('--color-sidebar-text', themeColors.sidebarTextColor);
+    root.style.setProperty('--color-sidebar-active', themeColors.sidebarActiveColor);
+    root.style.setProperty('--color-sidebar-hover', themeColors.sidebarHoverColor);
+    root.style.setProperty('--color-user-info-background', themeColors.userInfoBackgroundColor);
+    root.style.setProperty('--color-user-info-text', themeColors.userInfoTextColor);
+    root.style.setProperty('--color-user-avatar', themeColors.userAvatarColor);
+    root.style.setProperty('--color-header-background', themeColors.headerBackgroundColor);
+    root.style.setProperty('--color-header-text', themeColors.headerTextColor);
+    root.style.setProperty('--color-button-primary', themeColors.buttonPrimaryColor);
+    root.style.setProperty('--color-button-secondary', themeColors.buttonSecondaryColor);
+    root.style.setProperty('--color-button-text', themeColors.buttonTextColor);
+    root.style.setProperty('--color-card-background', themeColors.cardBackgroundColor);
+    root.style.setProperty('--color-card-border', themeColors.cardBorderColor);
+    root.style.setProperty('--color-input-background', themeColors.inputBackgroundColor);
+    root.style.setProperty('--color-input-border', themeColors.inputBorderColor);
+    root.style.setProperty('--color-input-text', themeColors.inputTextColor);
+    root.style.setProperty('--color-tab-active', themeColors.tabActiveColor);
+    root.style.setProperty('--color-tab-inactive', themeColors.tabInactiveColor);
+    root.style.setProperty('--color-tab-text', themeColors.tabTextColor);
+    root.style.setProperty('--color-notification-background', themeColors.notificationBackgroundColor);
+    root.style.setProperty('--color-notification-text', themeColors.notificationTextColor);
+    root.style.setProperty('--color-success', themeColors.successColor);
+    root.style.setProperty('--color-error', themeColors.errorColor);
+    root.style.setProperty('--color-warning', themeColors.warningColor);
+    root.style.setProperty('--color-info', themeColors.infoColor);
     
     // Aplicar também para compatibilidade com Tailwind
     root.style.setProperty('--tw-color-primary', themeColors.primaryColor);
@@ -54,8 +113,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     root.style.setProperty('--tw-color-surface', themeColors.surfaceColor);
     root.style.setProperty('--tw-color-text', themeColors.textColor);
     root.style.setProperty('--tw-color-text-secondary', themeColors.textSecondaryColor);
-    root.style.setProperty('--tw-color-border', themeColors.backgroundColor === '#FFFFFF' ? '#e5e5e5' : '#333333');
-    root.style.setProperty('--tw-color-muted', themeColors.backgroundColor === '#FFFFFF' ? '#f5f5f5' : '#2c2c2c');
+    root.style.setProperty('--tw-color-border', themeColors.borderColor);
+    root.style.setProperty('--tw-color-muted', themeColors.mutedColor);
     
     // Forçar re-render de todos os elementos
     document.body.style.setProperty('--color-primary', themeColors.primaryColor);

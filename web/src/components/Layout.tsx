@@ -194,16 +194,19 @@ export function Layout({
   return (
     <div className="layout">
       {/* Sidebar Desktop */}
-      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <SidebarContent />
-      </aside>
+      {!isMobile && (
+        <aside className="sidebar">
+          <SidebarContent />
+        </aside>
+      )}
 
-      {/* Overlay para mobile */}
-      {isMobile && sidebarOpen && (
-        <div 
-          className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`}
-          onClick={closeSidebar}
-        />
+      {/* Sheet para Mobile */}
+      {isMobile && (
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <SheetContent side="left" className="sidebar-sheet">
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
       )}
 
       {/* Conteúdo Principal */}
@@ -211,12 +214,13 @@ export function Layout({
         <header className="header">
           <div className="header-left">
             {isMobile && (
-              <button
-                className="mobile-menu-button"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-              >
-                <Menu className="w-5 h-5" />
-              </button>
+              <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+                <SheetTrigger asChild>
+                  <button className="mobile-menu-button">
+                    <Menu className="w-5 h-5" />
+                  </button>
+                </SheetTrigger>
+              </Sheet>
             )}
             <h1 className="header-title">{title || 'NutriThata'}</h1>
           </div>

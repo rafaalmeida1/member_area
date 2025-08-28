@@ -203,6 +203,34 @@ export interface ThemeColors {
   mutedColor: string;
   shadowColor: string;
   overlayColor: string;
+  // Novas cores para personalização completa
+  sidebarBackgroundColor: string;
+  sidebarHeaderColor: string;
+  sidebarTextColor: string;
+  sidebarActiveColor: string;
+  sidebarHoverColor: string;
+  userInfoBackgroundColor: string;
+  userInfoTextColor: string;
+  userAvatarColor: string;
+  headerBackgroundColor: string;
+  headerTextColor: string;
+  buttonPrimaryColor: string;
+  buttonSecondaryColor: string;
+  buttonTextColor: string;
+  cardBackgroundColor: string;
+  cardBorderColor: string;
+  inputBackgroundColor: string;
+  inputBorderColor: string;
+  inputTextColor: string;
+  tabActiveColor: string;
+  tabInactiveColor: string;
+  tabTextColor: string;
+  notificationBackgroundColor: string;
+  notificationTextColor: string;
+  successColor: string;
+  errorColor: string;
+  warningColor: string;
+  infoColor: string;
 }
 
 // Classe principal do serviço de API
@@ -795,7 +823,7 @@ class ApiService {
     throw new Error(response.data.message || 'Erro ao buscar pacientes com estatísticas');
   }
 
-  async updatePatient(patientId: number, data: any): Promise<User> {
+  async updatePatient(patientId: number, data: Record<string, unknown>): Promise<User> {
     const response: AxiosResponse<ApiResponse<User>> = await this.api.patch(`/users/${patientId}`, data);
 
     if (response.data.status === 'success' && response.data.data) {
@@ -824,7 +852,7 @@ class ApiService {
     throw new Error(response.data.message || 'Erro ao buscar estatísticas do usuário');
   }
 
-  async updateCurrentUser(data: any): Promise<User> {
+  async updateCurrentUser(data: Record<string, unknown>): Promise<User> {
     const response: AxiosResponse<ApiResponse<User>> = await this.api.patch('/users/me', data);
 
     if (response.data.status === 'success' && response.data.data) {
@@ -854,7 +882,35 @@ class ApiService {
         borderColor: '#E0E0E0',
         mutedColor: '#F0F0F0',
         shadowColor: '#0000001A',
-        overlayColor: '#00000033'
+        overlayColor: '#00000033',
+        // Novas cores com valores padrão
+        sidebarBackgroundColor: '#FAFAFA',
+        sidebarHeaderColor: '#DBCFCB',
+        sidebarTextColor: '#2C2C2C',
+        sidebarActiveColor: '#DBCFCB',
+        sidebarHoverColor: '#F0F0F0',
+        userInfoBackgroundColor: '#F5F5F5',
+        userInfoTextColor: '#2C2C2C',
+        userAvatarColor: '#DBCFCB',
+        headerBackgroundColor: '#FAFAFA',
+        headerTextColor: '#2C2C2C',
+        buttonPrimaryColor: '#DBCFCB',
+        buttonSecondaryColor: '#D8C4A4',
+        buttonTextColor: '#FFFFFF',
+        cardBackgroundColor: '#FFFFFF',
+        cardBorderColor: '#E0E0E0',
+        inputBackgroundColor: '#FFFFFF',
+        inputBorderColor: '#E0E0E0',
+        inputTextColor: '#2C2C2C',
+        tabActiveColor: '#DBCFCB',
+        tabInactiveColor: '#F0F0F0',
+        tabTextColor: '#2C2C2C',
+        notificationBackgroundColor: '#FFFFFF',
+        notificationTextColor: '#2C2C2C',
+        successColor: '#10B981',
+        errorColor: '#EF4444',
+        warningColor: '#F59E0B',
+        infoColor: '#3B82F6'
       };
     }
   }
