@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Palette, Save, RotateCcw } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
-import { apiService } from '@/services/api';
+import { apiService, ThemeColors } from '@/services/api';
 import './ThemeSettings.css';
 
 interface ColorField {

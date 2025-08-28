@@ -20,6 +20,7 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 0.25rem;
+  box-shadow: 0 2px 8px var(--color-shadow);
 }
 
 .tabs-trigger {

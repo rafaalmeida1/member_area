@@ -15,8 +15,20 @@
   --color-text: #2c2c2c;
   --color-text-secondary: #666666;
   --color-border: #e5e5e5;
+  --color-muted: #f5f5f5;
   --color-shadow: rgba(0, 0, 0, 0.1);
   --color-overlay: rgba(0, 0, 0, 0.5);
+  
+  /* Variáveis para compatibilidade com Tailwind */
+  --tw-color-primary: var(--color-primary);
+  --tw-color-secondary: var(--color-secondary);
+  --tw-color-accent: var(--color-accent);
+  --tw-color-background: var(--color-background);
+  --tw-color-surface: var(--color-surface);
+  --tw-color-text: var(--color-text);
+  --tw-color-text-secondary: var(--color-text-secondary);
+  --tw-color-border: var(--color-border);
+  --tw-color-muted: var(--color-muted);
 }
 
 [data-theme="dark"] {
@@ -29,9 +41,20 @@
   --color-text: #ffffff;
   --color-text-secondary: #a0a0a0;
   --color-border: #333333;
+  --color-muted: #2c2c2c;
   --color-shadow: rgba(0, 0, 0, 0.5);
   --color-overlay: rgba(0, 0, 0, 0.8);
-  --color-muted: #2c2c2c;
+  
+  /* Variáveis para compatibilidade com Tailwind */
+  --tw-color-primary: var(--color-primary);
+  --tw-color-secondary: var(--color-secondary);
+  --tw-color-accent: var(--color-accent);
+  --tw-color-background: var(--color-background);
+  --tw-color-surface: var(--color-surface);
+  --tw-color-text: var(--color-text);
+  --tw-color-text-secondary: var(--color-text-secondary);
+  --tw-color-border: var(--color-border);
+  --tw-color-muted: var(--color-muted);
 }
 
 /* Garantir que o dark mode seja aplicado em todos os elementos */
