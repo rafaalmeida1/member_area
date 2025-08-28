@@ -34,6 +34,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.HashSet;
 import java.util.Set;
+import br.rafaalmeida1.nutri_thata_api.repositories.ContentBlockRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +47,7 @@ public class ModuleService {
     private final FileCleanupService fileCleanupService;
     private final CacheService cacheService;
     private final NotificationService notificationService;
+    private final ContentBlockRepository contentBlockRepository;
 
     public Page<ModuleResponse> getModules(User user, Pageable pageable) {
         log.info("Buscando módulos para usuário: {} (role: {})", user.getEmail(), user.getRole());
@@ -120,19 +122,26 @@ public class ModuleService {
             module.setAllowedPatients(allowedPatients);
         }
 
-        // Processar conteúdo
-        List<ContentBlock> contentBlocks = request.getContent().stream()
-                .map(contentDto -> {
-                    ContentBlock block = new ContentBlock();
-                    block.setType(contentDto.getType());
-                    block.setContent(contentDto.getContent());
-                    block.setOrderIndex(contentDto.getOrder());
-                    return block;
-                })
+        // Salvar módulo primeiro
+        module = moduleRepository.save(module);
+
+        // Processar e salvar content blocks
+        List<ContentBlock> contentBlocks = new ArrayList<>();
+        for (var contentDto : request.getContent()) {
+            ContentBlock block = new ContentBlock();
+            block.setType(contentDto.getType());
+            block.setContent(contentDto.getContent());
+            block.setOrderIndex(contentDto.getOrder());
+            block.setModule(module);
+            contentBlocks.add(block);
+        }
+        
+        // Salvar content blocks
+        contentBlocks = contentBlocks.stream()
+                .map(block -> contentBlockRepository.save(block))
                 .collect(Collectors.toList());
         
         module.setContent(contentBlocks);
-
         module = moduleRepository.save(module);
         
         log.info("Módulo criado com sucesso: {}", module.getId());
