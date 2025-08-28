@@ -6,9 +6,10 @@
 }
 
 :root {
-  /* Cores do tema light */
+  /* Cores do tema light - agora usando CSS custom properties */
   --color-primary: #DBCFCB;
   --color-secondary: #D8C4A4;
+  --color-accent: #A67B5B;
   --color-background: #ffffff;
   --color-surface: #fafafa;
   --color-text: #2c2c2c;
@@ -22,6 +23,7 @@
   /* Cores do tema dark - bem escuro */
   --color-primary: #1a1a1a;
   --color-secondary: #2c2c2c;
+  --color-accent: #A67B5B;
   --color-background: #0a0a0a;
   --color-surface: #1a1a1a;
   --color-text: #ffffff;

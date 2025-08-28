@@ -106,7 +106,16 @@ export interface ProfessionalProfile {
   bio?: string;
   image?: string;
   backgroundImage?: string;
-  backgroundImageConfig?: string;
+  backgroundPositionX?: number; // 0-100
+  backgroundPositionY?: number; // 0-100
+  // Cores personalizadas do tema
+  themePrimaryColor?: string;
+  themeSecondaryColor?: string;
+  themeAccentColor?: string;
+  themeBackgroundColor?: string;
+  themeSurfaceColor?: string;
+  themeTextColor?: string;
+  themeTextSecondaryColor?: string;
   specialties: string[];
   createdAt: string;
   updatedAt: string;
@@ -167,8 +176,27 @@ export interface UpdateProfessionalProfileRequest {
   bio?: string;
   image?: string;
   backgroundImage?: string;
-  backgroundImageConfig?: string;
+  backgroundPositionX?: number;
+  backgroundPositionY?: number;
+  // Cores personalizadas do tema
+  themePrimaryColor?: string;
+  themeSecondaryColor?: string;
+  themeAccentColor?: string;
+  themeBackgroundColor?: string;
+  themeSurfaceColor?: string;
+  themeTextColor?: string;
+  themeTextSecondaryColor?: string;
   specialties?: string[];
+}
+
+export interface ThemeColors {
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  backgroundColor: string;
+  surfaceColor: string;
+  textColor: string;
+  textSecondaryColor: string;
 }
 
 // Classe principal do serviço de API
@@ -729,14 +757,14 @@ class ApiService {
   }
 
   async markNotificationAsRead(notificationId: number): Promise<void> {
-    const response: AxiosResponse<ApiResponse<void>> = await this.api.patch(`/notifications/${notificationId}/read`);
+    const response: AxiosResponse<ApiResponse<void>> = await this.api.put(`/notifications/${notificationId}/read`);
     if (response.data.status !== 'success') {
       throw new Error(response.data.message || 'Erro ao marcar notificação como lida');
     }
   }
 
   async markAllNotificationsAsRead(): Promise<void> {
-    const response: AxiosResponse<ApiResponse<void>> = await this.api.patch('/notifications/read-all');
+    const response: AxiosResponse<ApiResponse<void>> = await this.api.put('/notifications/read-all');
     if (response.data.status !== 'success') {
       throw new Error(response.data.message || 'Erro ao marcar todas as notificações como lidas');
     }
@@ -798,6 +826,26 @@ class ApiService {
     }
 
     throw new Error(response.data.message || 'Erro ao atualizar usuário');
+  }
+
+  // MARK: - Theme
+  async getTheme(): Promise<ThemeColors> {
+    try {
+      const response = await this.api.get('/api/theme');
+      return response.data.data;
+    } catch (error) {
+      console.error('Erro ao buscar tema:', error);
+      // Retornar tema padrão em caso de erro
+      return {
+        primaryColor: '#DBCFCB',
+        secondaryColor: '#D8C4A4',
+        accentColor: '#A67B5B',
+        backgroundColor: '#FFFFFF',
+        surfaceColor: '#FAFAFA',
+        textColor: '#2C2C2C',
+        textSecondaryColor: '#666666'
+      };
+    }
   }
 
 

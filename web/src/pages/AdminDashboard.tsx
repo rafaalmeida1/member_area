@@ -15,6 +15,7 @@ import { Layout } from '@/components/Layout';
 import { PatientSelector } from '@/components/PatientSelector';
 import { ArrowLeft, Plus, FileText, Video, Volume2, Save, Trash2, User, Settings, LogOut, Mail, UserCog, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { parseApiError } from '@/lib/utils';
 import { apiService, Module, ModuleDetail } from '@/services/api';
 
 interface AdminDashboardProps {
@@ -50,15 +51,23 @@ export function AdminDashboard({ professionalName }: AdminDashboardProps) {
     order: number;
   }>>([]);
 
+  // Abrir seletor imediatamente ao escolher SPECIFIC
+  useEffect(() => {
+    if (formData.visibility === 'SPECIFIC' && !showPatientSelector) {
+      setShowPatientSelector(true);
+    }
+  }, [formData.visibility]);
+
   const loadModules = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await apiService.getModules();
       setModules(response.content);
     } catch (error) {
+      const parsed = parseApiError(error);
       toast({
-        title: "Erro ao carregar módulos",
-        description: error instanceof Error ? error.message : "Erro inesperado",
+        title: parsed.title,
+        description: parsed.description,
         variant: "destructive",
       });
     } finally {
@@ -243,9 +252,10 @@ export function AdminDashboard({ professionalName }: AdminDashboardProps) {
       loadModules();
       loadCategories(); // Recarregar categorias caso uma nova tenha sido criada
     } catch (error) {
+      const parsed = parseApiError(error);
       toast({
-        title: "Erro ao salvar módulo",
-        description: error instanceof Error ? error.message : "Erro inesperado",
+        title: parsed.title,
+        description: parsed.description,
         variant: "destructive",
       });
     } finally {
@@ -263,9 +273,10 @@ export function AdminDashboard({ professionalName }: AdminDashboardProps) {
       });
       loadModules();
     } catch (error) {
+      const parsed = parseApiError(error);
       toast({
-        title: "Erro ao excluir módulo",
-        description: error instanceof Error ? error.message : "Erro inesperado",
+        title: parsed.title,
+        description: parsed.description,
         variant: "destructive",
       });
     } finally {

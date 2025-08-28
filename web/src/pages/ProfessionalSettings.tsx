@@ -8,8 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { FileUpload } from '@/components/FileUpload';
 import { BannerPreview } from '@/components/BannerPreview';
+import { ThemePreview } from '@/components/ThemePreview';
 import { Layout } from '@/components/Layout';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from '@/contexts/ThemeContext';
 import { apiService, ProfessionalProfile, UpdateProfessionalProfileRequest } from '@/services/api';
 import { ArrowLeft, Save, Plus, X, Camera, Image } from 'lucide-react';
 
@@ -21,6 +23,7 @@ export function ProfessionalSettings({
   professionalName
 }: ProfessionalSettingsProps) {
   const { toast } = useToast();
+  const { refreshTheme } = useTheme();
 
   // Estados
   const [profile, setProfile] = useState<ProfessionalProfile | null>(null);
@@ -34,6 +37,16 @@ export function ProfessionalSettings({
     bio: '',
     image: '',
     backgroundImage: '',
+    backgroundPositionX: 50,
+    backgroundPositionY: 50,
+    // Cores personalizadas do tema
+    themePrimaryColor: '#DBCFCB',
+    themeSecondaryColor: '#D8C4A4',
+    themeAccentColor: '#A67B5B',
+    themeBackgroundColor: '#FFFFFF',
+    themeSurfaceColor: '#FAFAFA',
+    themeTextColor: '#2C2C2C',
+    themeTextSecondaryColor: '#666666',
     specialties: [] as string[]
   });
   
@@ -54,6 +67,16 @@ export function ProfessionalSettings({
           bio: profileData.bio || '',
           image: profileData.image || '',
           backgroundImage: profileData.backgroundImage || '',
+          backgroundPositionX: profileData.backgroundPositionX ?? 50,
+          backgroundPositionY: profileData.backgroundPositionY ?? 50,
+          // Cores personalizadas do tema
+          themePrimaryColor: profileData.themePrimaryColor ?? '#DBCFCB',
+          themeSecondaryColor: profileData.themeSecondaryColor ?? '#D8C4A4',
+          themeAccentColor: profileData.themeAccentColor ?? '#A67B5B',
+          themeBackgroundColor: profileData.themeBackgroundColor ?? '#FFFFFF',
+          themeSurfaceColor: profileData.themeSurfaceColor ?? '#FAFAFA',
+          themeTextColor: profileData.themeTextColor ?? '#2C2C2C',
+          themeTextSecondaryColor: profileData.themeTextSecondaryColor ?? '#666666',
           specialties: profileData.specialties || []
         });
       } catch (error) {
@@ -109,11 +132,24 @@ export function ProfessionalSettings({
         bio: formData.bio || undefined,
         image: formData.image || undefined,
         backgroundImage: formData.backgroundImage || undefined,
+        backgroundPositionX: formData.backgroundPositionX,
+        backgroundPositionY: formData.backgroundPositionY,
+        // Cores personalizadas do tema
+        themePrimaryColor: formData.themePrimaryColor,
+        themeSecondaryColor: formData.themeSecondaryColor,
+        themeAccentColor: formData.themeAccentColor,
+        themeBackgroundColor: formData.themeBackgroundColor,
+        themeSurfaceColor: formData.themeSurfaceColor,
+        themeTextColor: formData.themeTextColor,
+        themeTextSecondaryColor: formData.themeTextSecondaryColor,
         specialties: formData.specialties.length > 0 ? formData.specialties : undefined
       };
 
       const updatedProfile = await apiService.updateProfessionalProfile(updateData);
       setProfile(updatedProfile);
+      
+      // Recarregar o tema global após salvar
+      await refreshTheme();
       
       toast({
         title: "Perfil atualizado!",
@@ -227,10 +263,12 @@ export function ProfessionalSettings({
                 <div className="space-y-2">
                   {formData.backgroundImage && (
                     <div className="w-full h-32 rounded-lg overflow-hidden bg-muted">
-                      <img 
-                        src={formData.backgroundImage} 
-                        alt="Imagem de fundo" 
-                        className="w-full h-full object-cover"
+                      <div
+                        className="w-full h-full bg-no-repeat bg-cover"
+                        style={{
+                          backgroundImage: `url(${formData.backgroundImage})`,
+                          backgroundPosition: `${formData.backgroundPositionX}% ${formData.backgroundPositionY}%`
+                        }}
                       />
                     </div>
                   )}
@@ -278,6 +316,33 @@ export function ProfessionalSettings({
                         ]
                       }}
                     />
+
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Posição Horizontal (X%)</Label>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={formData.backgroundPositionX}
+                          onChange={(e) => setFormData(prev => ({...prev, backgroundPositionX: Number(e.target.value)}))}
+                          className="w-full"
+                        />
+                        <div className="text-sm text-muted-foreground mt-1">{formData.backgroundPositionX}%</div>
+                      </div>
+                      <div>
+                        <Label>Posição Vertical (Y%)</Label>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={formData.backgroundPositionY}
+                          onChange={(e) => setFormData(prev => ({...prev, backgroundPositionY: Number(e.target.value)}))}
+                          className="w-full"
+                        />
+                        <div className="text-sm text-muted-foreground mt-1">{formData.backgroundPositionY}%</div>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -289,6 +354,176 @@ export function ProfessionalSettings({
                     description="Preview das dimensões reais do banner na tela principal"
                   />
                 )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Cores Personalizadas do Tema */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Cores Personalizadas do Tema</CardTitle>
+              <CardDescription>
+                Personalize as cores do sistema que aparecerão para todos os usuários
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Cor Primária */}
+                <div className="space-y-2">
+                  <Label>Cor Primária</Label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={formData.themePrimaryColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themePrimaryColor: e.target.value}))}
+                      className="w-12 h-10 rounded border cursor-pointer"
+                    />
+                    <Input
+                      value={formData.themePrimaryColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themePrimaryColor: e.target.value}))}
+                      placeholder="#DBCFCB"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Usada em botões principais e elementos de destaque</p>
+                </div>
+
+                {/* Cor Secundária */}
+                <div className="space-y-2">
+                  <Label>Cor Secundária</Label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={formData.themeSecondaryColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themeSecondaryColor: e.target.value}))}
+                      className="w-12 h-10 rounded border cursor-pointer"
+                    />
+                    <Input
+                      value={formData.themeSecondaryColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themeSecondaryColor: e.target.value}))}
+                      placeholder="#D8C4A4"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Usada em elementos secundários e backgrounds</p>
+                </div>
+
+                {/* Cor de Destaque */}
+                <div className="space-y-2">
+                  <Label>Cor de Destaque</Label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={formData.themeAccentColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themeAccentColor: e.target.value}))}
+                      className="w-12 h-10 rounded border cursor-pointer"
+                    />
+                    <Input
+                      value={formData.themeAccentColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themeAccentColor: e.target.value}))}
+                      placeholder="#A67B5B"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Usada em links e elementos interativos</p>
+                </div>
+
+                {/* Cor de Fundo */}
+                <div className="space-y-2">
+                  <Label>Cor de Fundo</Label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={formData.themeBackgroundColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themeBackgroundColor: e.target.value}))}
+                      className="w-12 h-10 rounded border cursor-pointer"
+                    />
+                    <Input
+                      value={formData.themeBackgroundColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themeBackgroundColor: e.target.value}))}
+                      placeholder="#FFFFFF"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Cor de fundo principal da aplicação</p>
+                </div>
+
+                {/* Cor de Superfície */}
+                <div className="space-y-2">
+                  <Label>Cor de Superfície</Label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={formData.themeSurfaceColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themeSurfaceColor: e.target.value}))}
+                      className="w-12 h-10 rounded border cursor-pointer"
+                    />
+                    <Input
+                      value={formData.themeSurfaceColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themeSurfaceColor: e.target.value}))}
+                      placeholder="#FAFAFA"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Usada em cards e elementos elevados</p>
+                </div>
+
+                {/* Cor do Texto */}
+                <div className="space-y-2">
+                  <Label>Cor do Texto Principal</Label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={formData.themeTextColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themeTextColor: e.target.value}))}
+                      className="w-12 h-10 rounded border cursor-pointer"
+                    />
+                    <Input
+                      value={formData.themeTextColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themeTextColor: e.target.value}))}
+                      placeholder="#2C2C2C"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Cor principal do texto</p>
+                </div>
+
+                {/* Cor do Texto Secundário */}
+                <div className="space-y-2">
+                  <Label>Cor do Texto Secundário</Label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={formData.themeTextSecondaryColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themeTextSecondaryColor: e.target.value}))}
+                      className="w-12 h-10 rounded border cursor-pointer"
+                    />
+                    <Input
+                      value={formData.themeTextSecondaryColor}
+                      onChange={(e) => setFormData(prev => ({...prev, themeTextSecondaryColor: e.target.value}))}
+                      placeholder="#666666"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Cor para textos secundários e descrições</p>
+                </div>
+              </div>
+
+              {/* Preview do Tema */}
+              <div className="mt-6">
+                <ThemePreview 
+                  theme={{
+                    primaryColor: formData.themePrimaryColor,
+                    secondaryColor: formData.themeSecondaryColor,
+                    accentColor: formData.themeAccentColor,
+                    backgroundColor: formData.themeBackgroundColor,
+                    surfaceColor: formData.themeSurfaceColor,
+                    textColor: formData.themeTextColor,
+                    textSecondaryColor: formData.themeTextSecondaryColor
+                  }}
+                  title="Preview do Tema"
+                  description="Como as cores personalizadas aparecerão no sistema"
+                />
               </div>
             </CardContent>
           </Card>

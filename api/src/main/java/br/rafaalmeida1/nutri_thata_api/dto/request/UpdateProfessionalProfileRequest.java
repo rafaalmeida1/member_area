@@ -30,7 +30,18 @@ public class UpdateProfessionalProfileRequest {
 
     private String backgroundImage;
 
+    // Novos campos para posicionamento da imagem de fundo (0-100)
+    private Integer backgroundPositionX;
+    private Integer backgroundPositionY;
 
+    // Cores personalizadas do tema
+    private String themePrimaryColor;
+    private String themeSecondaryColor;
+    private String themeAccentColor;
+    private String themeBackgroundColor;
+    private String themeSurfaceColor;
+    private String themeTextColor;
+    private String themeTextSecondaryColor;
 
     private List<String> specialties;
 
@@ -74,6 +85,77 @@ public class UpdateProfessionalProfileRequest {
         this.backgroundImage = backgroundImage;
     }
 
+    public Integer getBackgroundPositionX() {
+        return backgroundPositionX;
+    }
+
+    public void setBackgroundPositionX(Integer backgroundPositionX) {
+        this.backgroundPositionX = backgroundPositionX;
+    }
+
+    public Integer getBackgroundPositionY() {
+        return backgroundPositionY;
+    }
+
+    public void setBackgroundPositionY(Integer backgroundPositionY) {
+        this.backgroundPositionY = backgroundPositionY;
+    }
+
+    public String getThemePrimaryColor() {
+        return themePrimaryColor;
+    }
+
+    public void setThemePrimaryColor(String themePrimaryColor) {
+        this.themePrimaryColor = themePrimaryColor;
+    }
+
+    public String getThemeSecondaryColor() {
+        return themeSecondaryColor;
+    }
+
+    public void setThemeSecondaryColor(String themeSecondaryColor) {
+        this.themeSecondaryColor = themeSecondaryColor;
+    }
+
+    public String getThemeAccentColor() {
+        return themeAccentColor;
+    }
+
+    public void setThemeAccentColor(String themeAccentColor) {
+        this.themeAccentColor = themeAccentColor;
+    }
+
+    public String getThemeBackgroundColor() {
+        return themeBackgroundColor;
+    }
+
+    public void setThemeBackgroundColor(String themeBackgroundColor) {
+        this.themeBackgroundColor = themeBackgroundColor;
+    }
+
+    public String getThemeSurfaceColor() {
+        return themeSurfaceColor;
+    }
+
+    public void setThemeSurfaceColor(String themeSurfaceColor) {
+        this.themeSurfaceColor = themeSurfaceColor;
+    }
+
+    public String getThemeTextColor() {
+        return themeTextColor;
+    }
+
+    public void setThemeTextColor(String themeTextColor) {
+        this.themeTextColor = themeTextColor;
+    }
+
+    public String getThemeTextSecondaryColor() {
+        return themeTextSecondaryColor;
+    }
+
+    public void setThemeTextSecondaryColor(String themeTextSecondaryColor) {
+        this.themeTextSecondaryColor = themeTextSecondaryColor;
+    }
 
 
     public List<String> getSpecialties() {

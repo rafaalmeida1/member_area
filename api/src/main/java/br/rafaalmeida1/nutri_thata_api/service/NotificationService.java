@@ -8,91 +8,185 @@ import br.rafaalmeida1.nutri_thata_api.exception.BusinessException;
 import br.rafaalmeida1.nutri_thata_api.exception.NotFoundException;
 import br.rafaalmeida1.nutri_thata_api.mapper.NotificationMapper;
 import br.rafaalmeida1.nutri_thata_api.repositories.NotificationRepository;
+import br.rafaalmeida1.nutri_thata_api.repositories.ModuleRepository;
+import br.rafaalmeida1.nutri_thata_api.repositories.UserRepository;
+import br.rafaalmeida1.nutri_thata_api.entities.Module;
+import br.rafaalmeida1.nutri_thata_api.enums.ContentVisibility;
+import br.rafaalmeida1.nutri_thata_api.enums.Role;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class NotificationService {
-    
-    @Autowired
-    private NotificationRepository notificationRepository;
-    
-    @Autowired
-    private NotificationMapper notificationMapper;
-    
+
+    private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
+    private final ModuleRepository moduleRepository;
+    private final NotificationMapper notificationMapper;
+    private final CacheService cacheService;
+
     public List<NotificationResponse> getUserNotifications(User user) {
         List<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user);
         return notificationMapper.toResponseList(notifications);
     }
-    
+
+    @Cacheable(value = "notifications", key = "#user.id + '_unread'")
     public List<NotificationResponse> getUnreadNotifications(User user) {
-        List<Notification> notifications = notificationRepository.findByUserAndReadOrderByCreatedAtDesc(user, false);
-        return notificationMapper.toResponseList(notifications);
+        List<Notification> notifications = notificationRepository.findByUserAndReadFalseOrderByCreatedAtDesc(user);
+        return notifications.stream()
+                .map(notificationMapper::toResponse)
+                .collect(Collectors.toList());
     }
-    
+
+    @Cacheable(value = "notifications", key = "#user.id + '_all'")
     public Page<NotificationResponse> getAllNotifications(User user, Pageable pageable) {
         Page<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user, pageable);
         return notifications.map(notificationMapper::toResponse);
     }
-    
+
+    @Cacheable(value = "notifications", key = "#user.id + '_count'")
     public long getUnreadCount(User user) {
-        return notificationRepository.countByUserAndRead(user, false);
+        return notificationRepository.countByUserAndReadFalse(user);
     }
-    
-    @Transactional
+
+    @Caching(evict = {
+        @CacheEvict(value = "notifications", key = "#user.id + '_unread'"),
+        @CacheEvict(value = "notifications", key = "#user.id + '_count'"),
+        @CacheEvict(value = "notifications", allEntries = true)
+    })
     public void markAsRead(Long notificationId, User user) {
-        try {
-            notificationRepository.markAsReadByIdAndUser(notificationId, user);
-        } catch (Exception e) {
-            throw new BusinessException("Erro ao marcar notificação como lida: " + e.getMessage());
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotFoundException("Notificação não encontrada"));
+
+        if (!notification.getUser().getId().equals(user.getId())) {
+            throw new BusinessException("Você não tem permissão para marcar esta notificação como lida");
         }
+
+        notification.setRead(true);
+        notificationRepository.save(notification);
     }
-    
-    @Transactional
+
+    @Caching(evict = {
+        @CacheEvict(value = "notifications", key = "#user.id + '_unread'"),
+        @CacheEvict(value = "notifications", key = "#user.id + '_all'"),
+        @CacheEvict(value = "notifications", key = "#user.id + '_count'"),
+        @CacheEvict(value = "notifications", allEntries = true)
+    })
     public void markAllAsRead(User user) {
-        notificationRepository.markAllAsReadByUser(user);
+        List<Notification> unreadNotifications = notificationRepository.findByUserAndReadFalse(user);
+        
+        for (Notification notification : unreadNotifications) {
+            notification.setRead(true);
+        }
+        
+        notificationRepository.saveAll(unreadNotifications);
     }
-    
-    @Transactional
+
+    @Caching(evict = {
+        @CacheEvict(value = "notifications", key = "#user.id + '_unread'"),
+        @CacheEvict(value = "notifications", key = "#user.id + '_all'"),
+        @CacheEvict(value = "notifications", key = "#user.id + '_count'"),
+        @CacheEvict(value = "notifications", allEntries = true)
+    })
     public void createNotification(User user, NotificationType type, String title, String message) {
         Notification notification = new Notification(user, type, title, message);
         notificationRepository.save(notification);
     }
-    
-    @Transactional
-    public void createModuleNotification(User user, NotificationType type, String title, String message, UUID moduleId, String moduleTitle) {
-        Notification notification = new Notification(user, type, title, message, moduleId, moduleTitle);
+
+    @Caching(evict = {
+        @CacheEvict(value = "notifications", key = "#user.id + '_unread'"),
+        @CacheEvict(value = "notifications", key = "#user.id + '_all'"),
+        @CacheEvict(value = "notifications", key = "#user.id + '_count'"),
+        @CacheEvict(value = "notifications", allEntries = true)
+    })
+    public void createModuleNotification(User user, String moduleTitle, UUID moduleId) {
+        Notification notification = Notification.builder()
+                .user(user)
+                .type(NotificationType.MODULE_NEW)
+                .title("Novo Módulo Disponível")
+                .message("Um novo módulo foi adicionado: " + moduleTitle)
+                .moduleId(moduleId)
+                .moduleTitle(moduleTitle)
+                .read(false)
+                .build();
+
         notificationRepository.save(notification);
     }
-    
-    @Transactional
-    public void notifyNewModule(User user, String moduleTitle, UUID moduleId) {
-        createModuleNotification(
-            user,
-            NotificationType.MODULE_NEW,
-            "Novo Módulo Disponível",
-            "Um novo módulo foi criado: " + moduleTitle,
-            moduleId,
-            moduleTitle
-        );
+
+    @Caching(evict = {
+        @CacheEvict(value = "notifications", key = "#user.id + '_unread'"),
+        @CacheEvict(value = "notifications", key = "#user.id + '_all'"),
+        @CacheEvict(value = "notifications", key = "#user.id + '_count'"),
+        @CacheEvict(value = "notifications", allEntries = true)
+    })
+    public void notifyNewModule(Module module) {
+        if (module.getVisibility() == ContentVisibility.GENERAL) {
+            // Notificar todos os pacientes ativos
+            List<User> patients = userRepository.findByRoleAndIsActiveTrue(Role.PATIENT);
+            for (User patient : patients) {
+                createModuleNotification(patient, module.getTitle(), module.getId());
+            }
+        } else if (module.getVisibility() == ContentVisibility.SPECIFIC) {
+            // Notificar apenas pacientes específicos
+            for (User patient : module.getAllowedPatients()) {
+                createModuleNotification(patient, module.getTitle(), module.getId());
+            }
+        }
     }
-    
-    @Transactional
-    public void notifyModuleUpdate(User user, String moduleTitle, UUID moduleId) {
-        createModuleNotification(
-            user,
-            NotificationType.MODULE_UPDATED,
-            "Módulo Atualizado",
-            "O módulo foi atualizado: " + moduleTitle,
-            moduleId,
-            moduleTitle
-        );
+
+    @Caching(evict = {
+        @CacheEvict(value = "notifications", key = "#user.id + '_unread'"),
+        @CacheEvict(value = "notifications", key = "#user.id + '_all'"),
+        @CacheEvict(value = "notifications", key = "#user.id + '_count'"),
+        @CacheEvict(value = "notifications", allEntries = true)
+    })
+    public void notifyModuleUpdate(Module module) {
+        if (module.getVisibility() == ContentVisibility.GENERAL) {
+            // Notificar todos os pacientes ativos
+            List<User> patients = userRepository.findByRoleAndIsActiveTrue(Role.PATIENT);
+            for (User patient : patients) {
+                Notification notification = Notification.builder()
+                        .user(patient)
+                        .type(NotificationType.MODULE_UPDATED)
+                        .title("Módulo Atualizado")
+                        .message("O módulo '" + module.getTitle() + "' foi atualizado")
+                        .moduleId(module.getId())
+                        .moduleTitle(module.getTitle())
+                        .read(false)
+                        .build();
+
+                notificationRepository.save(notification);
+            }
+        } else if (module.getVisibility() == ContentVisibility.SPECIFIC) {
+            // Notificar apenas pacientes específicos
+            for (User patient : module.getAllowedPatients()) {
+                Notification notification = Notification.builder()
+                        .user(patient)
+                        .type(NotificationType.MODULE_UPDATED)
+                        .title("Módulo Atualizado")
+                        .message("O módulo '" + module.getTitle() + "' foi atualizado")
+                        .moduleId(module.getId())
+                        .moduleTitle(module.getTitle())
+                        .read(false)
+                        .build();
+
+                notificationRepository.save(notification);
+            }
+        }
     }
     
     @Transactional

@@ -2,11 +2,19 @@ package br.rafaalmeida1.nutri_thata_api.entities;
 
 import br.rafaalmeida1.nutri_thata_api.enums.NotificationType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "notifications")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Notification {
     
     @Id
@@ -54,8 +62,6 @@ public class Notification {
     }
     
     // Constructors
-    public Notification() {}
-    
     public Notification(User user, NotificationType type, String title, String message) {
         this.user = user;
         this.type = type;

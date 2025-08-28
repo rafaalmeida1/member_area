@@ -29,24 +29,25 @@ public class ModuleController {
     private final ModuleService moduleService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<ModuleSummaryResponse>>> getModules(
+    public ResponseEntity<ApiResponse<Page<ModuleResponse>>> getModules(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String search,
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @AuthenticationPrincipal User user) {
         
-        Page<ModuleSummaryResponse> modules = moduleService.getModules(category, search, pageable);
+        Page<ModuleResponse> modules = moduleService.getModules(user, pageable);
         return ResponseEntity.ok(ApiResponse.success("Lista de módulos", modules));
     }
 
     @GetMapping("/categories")
-    public ResponseEntity<ApiResponse<List<String>>> getCategories() {
-        List<String> categories = moduleService.getCategories();
+    public ResponseEntity<ApiResponse<List<String>>> getCategories(@AuthenticationPrincipal User user) {
+        List<String> categories = moduleService.getCategories(user);
         return ResponseEntity.ok(ApiResponse.success("Categorias disponíveis", categories));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ModuleResponse>> getModuleById(
-            @PathVariable UUID id) {
+            @PathVariable String id) {
         
         ModuleResponse module = moduleService.getModuleById(id);
         return ResponseEntity.ok(ApiResponse.success("Módulo encontrado", module));
@@ -57,24 +58,24 @@ public class ModuleController {
             @Valid @RequestBody CreateModuleRequest request,
             @AuthenticationPrincipal User user) {
         
-        ModuleResponse module = moduleService.createModule(request, user);
+        ModuleResponse module = moduleService.createModule(user, request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Módulo criado com sucesso", module));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<ModuleResponse>> updateModule(
-            @PathVariable UUID id,
+            @PathVariable String id,
             @Valid @RequestBody UpdateModuleRequest request,
             @AuthenticationPrincipal User user) {
         
-        ModuleResponse module = moduleService.updateModule(id, request, user);
+        ModuleResponse module = moduleService.updateModule(id, user, request);
         return ResponseEntity.ok(ApiResponse.success("Módulo atualizado com sucesso", module));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteModule(
-            @PathVariable UUID id,
+            @PathVariable String id,
             @AuthenticationPrincipal User user) {
         
         moduleService.deleteModule(id, user);

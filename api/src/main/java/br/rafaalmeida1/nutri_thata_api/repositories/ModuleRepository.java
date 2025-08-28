@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -36,4 +37,20 @@ public interface ModuleRepository extends JpaRepository<Module, UUID> {
 
     @Query("SELECT DISTINCT m.category FROM Module m ORDER BY m.category")
     java.util.List<String> findDistinctCategories();
+
+    // Métodos adicionados para suportar o ModuleService
+    Page<Module> findByCreatedByOrderByCreatedAtDesc(User createdBy, Pageable pageable);
+
+    @Query("SELECT m FROM Module m WHERE " +
+           "m.visibility = 'GENERAL' OR " +
+           "(m.visibility = 'SPECIFIC' AND EXISTS (SELECT 1 FROM m.allowedPatients p WHERE p.id = :userId))")
+    Page<Module> findVisibleModulesForUser(@Param("userId") Long userId, Pageable pageable);
+
+    @Query("SELECT DISTINCT m.category FROM Module m WHERE m.createdBy = :createdBy ORDER BY m.category")
+    List<String> findDistinctCategoriesByCreatedBy(@Param("createdBy") User createdBy);
+
+    @Query("SELECT DISTINCT m.category FROM Module m WHERE " +
+           "m.visibility = 'GENERAL' OR " +
+           "(m.visibility = 'SPECIFIC' AND EXISTS (SELECT 1 FROM m.allowedPatients p WHERE p.id = :userId))")
+    List<String> findDistinctCategoriesForUser(@Param("userId") Long userId);
 }

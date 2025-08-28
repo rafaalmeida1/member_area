@@ -2,6 +2,7 @@ package br.rafaalmeida1.nutri_thata_api.dto.request.module;
 
 import br.rafaalmeida1.nutri_thata_api.enums.ContentType;
 import jakarta.validation.Valid;
+import br.rafaalmeida1.nutri_thata_api.enums.ContentVisibility;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +13,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -33,6 +36,10 @@ public class CreateModuleRequest {
     @Valid
     @NotEmpty(message = "Conteúdo é obrigatório")
     private List<ContentBlockData> content;
+
+    // Visibilidade e pacientes específicos
+    private ContentVisibility visibility;
+    private List<Long> allowedPatientIds;
 
     public String getTitle() {
         return title;
@@ -72,6 +79,22 @@ public class CreateModuleRequest {
 
     public void setContent(List<ContentBlockData> content) {
         this.content = content;
+    }
+
+    public ContentVisibility getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(ContentVisibility visibility) {
+        this.visibility = visibility;
+    }
+
+    public List<Long> getAllowedPatientIds() {
+        return allowedPatientIds;
+    }
+
+    public void setAllowedPatientIds(List<Long> allowedPatientIds) {
+        this.allowedPatientIds = allowedPatientIds;
     }
 
     @Data

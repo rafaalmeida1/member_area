@@ -31,7 +31,7 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine htmlTemplateEngine;
 
-    @Value("${nutri.invite.base-url}")
+    @Value("${FRONTEND_URL}")
     private String frontendBaseUrl;
 
     public void sendInviteEmail(String toEmail, String inviteToken, String inviterName, String prefillName) {

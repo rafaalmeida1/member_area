@@ -88,6 +88,11 @@ public class ContentBlock {
         this.orderIndex = orderIndex;
     }
 
+    // Método setOrder para compatibilidade com ModuleService
+    public void setOrder(Integer order) {
+        this.orderIndex = order;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }

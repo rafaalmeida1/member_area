@@ -42,6 +42,34 @@ public class ProfessionalProfile {
     @Column(name = "background_image")
     private String backgroundImage;
 
+    // Posição da imagem de fundo (percentual 0-100)
+    @Column(name = "background_position_x")
+    private Integer backgroundPositionX;
+
+    @Column(name = "background_position_y")
+    private Integer backgroundPositionY;
+
+    // Cores personalizadas do tema
+    @Column(name = "theme_primary_color")
+    private String themePrimaryColor;
+
+    @Column(name = "theme_secondary_color")
+    private String themeSecondaryColor;
+
+    @Column(name = "theme_accent_color")
+    private String themeAccentColor;
+
+    @Column(name = "theme_background_color")
+    private String themeBackgroundColor;
+
+    @Column(name = "theme_surface_color")
+    private String themeSurfaceColor;
+
+    @Column(name = "theme_text_color")
+    private String themeTextColor;
+
+    @Column(name = "theme_text_secondary_color")
+    private String themeTextSecondaryColor;
 
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -117,6 +145,77 @@ public class ProfessionalProfile {
         this.backgroundImage = backgroundImage;
     }
 
+    public Integer getBackgroundPositionX() {
+        return backgroundPositionX;
+    }
+
+    public void setBackgroundPositionX(Integer backgroundPositionX) {
+        this.backgroundPositionX = backgroundPositionX;
+    }
+
+    public Integer getBackgroundPositionY() {
+        return backgroundPositionY;
+    }
+
+    public void setBackgroundPositionY(Integer backgroundPositionY) {
+        this.backgroundPositionY = backgroundPositionY;
+    }
+
+    public String getThemePrimaryColor() {
+        return themePrimaryColor;
+    }
+
+    public void setThemePrimaryColor(String themePrimaryColor) {
+        this.themePrimaryColor = themePrimaryColor;
+    }
+
+    public String getThemeSecondaryColor() {
+        return themeSecondaryColor;
+    }
+
+    public void setThemeSecondaryColor(String themeSecondaryColor) {
+        this.themeSecondaryColor = themeSecondaryColor;
+    }
+
+    public String getThemeAccentColor() {
+        return themeAccentColor;
+    }
+
+    public void setThemeAccentColor(String themeAccentColor) {
+        this.themeAccentColor = themeAccentColor;
+    }
+
+    public String getThemeBackgroundColor() {
+        return themeBackgroundColor;
+    }
+
+    public void setThemeBackgroundColor(String themeBackgroundColor) {
+        this.themeBackgroundColor = themeBackgroundColor;
+    }
+
+    public String getThemeSurfaceColor() {
+        return themeSurfaceColor;
+    }
+
+    public void setThemeSurfaceColor(String themeSurfaceColor) {
+        this.themeSurfaceColor = themeSurfaceColor;
+    }
+
+    public String getThemeTextColor() {
+        return themeTextColor;
+    }
+
+    public void setThemeTextColor(String themeTextColor) {
+        this.themeTextColor = themeTextColor;
+    }
+
+    public String getThemeTextSecondaryColor() {
+        return themeTextSecondaryColor;
+    }
+
+    public void setThemeTextSecondaryColor(String themeTextSecondaryColor) {
+        this.themeTextSecondaryColor = themeTextSecondaryColor;
+    }
 
 
     public List<String> getSpecialties() {

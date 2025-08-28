@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 @Slf4j
 public class StaticFileController {
 
-    @Value("${nutri.upload.directory:uploads}")
+    @Value("${UPLOAD_DIRECTORY}")
     private String uploadDirectory;
 
     @GetMapping("/**")

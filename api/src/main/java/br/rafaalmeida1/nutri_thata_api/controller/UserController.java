@@ -47,29 +47,26 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(
-            @PathVariable Long id,
-            @AuthenticationPrincipal User currentUser) {
+            @PathVariable Long id) {
         
-        UserResponse userResponse = userService.getUserById(id, currentUser);
+        UserResponse userResponse = userService.getUserById(id);
         return ResponseEntity.ok(ApiResponse.success("Dados do usuário", userResponse));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateUserRequest request,
-            @AuthenticationPrincipal User currentUser) {
+            @Valid @RequestBody UpdateUserRequest request) {
         
-        UserResponse userResponse = userService.updateUser(id, request, currentUser);
+        UserResponse userResponse = userService.updateUser(id, request);
         return ResponseEntity.ok(ApiResponse.success("Usuário atualizado com sucesso", userResponse));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteUser(
-            @PathVariable Long id,
-            @AuthenticationPrincipal User currentUser) {
+            @PathVariable Long id) {
         
-        userService.deleteUser(id, currentUser);
+        userService.deactivateUser(id);
         return ResponseEntity.ok(ApiResponse.success("Usuário excluído com sucesso", null));
     }
 
@@ -78,7 +75,7 @@ public class UserController {
             @AuthenticationPrincipal User user,
             @Valid @RequestBody ChangePasswordRequest request) {
         
-        userService.changePassword(user, request);
+        userService.changePassword(user.getId(), request);
         return ResponseEntity.ok(ApiResponse.success("Senha alterada com sucesso", null));
     }
 
@@ -88,7 +85,7 @@ public class UserController {
             return ResponseEntity.status(403).body(ApiResponse.error("Acesso negado"));
         }
         
-        List<UserResponse> patients = userService.getPatientsList();
+        List<UserResponse> patients = userService.getAllPatients();
         return ResponseEntity.ok(ApiResponse.success("Lista de pacientes", patients));
     }
 
@@ -98,13 +95,13 @@ public class UserController {
             return ResponseEntity.status(403).body(ApiResponse.error("Acesso negado"));
         }
         
-        List<UserResponse> patients = userService.getPatientsWithStats();
+        List<UserResponse> patients = userService.getAllPatients();
         return ResponseEntity.ok(ApiResponse.success("Lista de pacientes com estatísticas", patients));
     }
 
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<UserStatsResponse>> getUserStats(@AuthenticationPrincipal User user) {
-        UserStatsResponse stats = userService.getUserStats(user);
+        UserStatsResponse stats = userService.getUserStats(user.getId());
         return ResponseEntity.ok(ApiResponse.success("Estatísticas do usuário", stats));
     }
 }

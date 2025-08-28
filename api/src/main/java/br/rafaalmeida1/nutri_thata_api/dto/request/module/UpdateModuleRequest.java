@@ -2,6 +2,7 @@ package br.rafaalmeida1.nutri_thata_api.dto.request.module;
 
 import br.rafaalmeida1.nutri_thata_api.enums.ContentType;
 import jakarta.validation.Valid;
+import br.rafaalmeida1.nutri_thata_api.enums.ContentVisibility;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,6 +24,9 @@ public class UpdateModuleRequest {
 
     @Valid
     private List<ContentBlockUpdateData> content;
+
+    private ContentVisibility visibility;
+    private List<Long> allowedPatientIds;
 
     public String getTitle() {
         return title;
@@ -62,6 +66,22 @@ public class UpdateModuleRequest {
 
     public void setContent(List<ContentBlockUpdateData> content) {
         this.content = content;
+    }
+
+    public ContentVisibility getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(ContentVisibility visibility) {
+        this.visibility = visibility;
+    }
+
+    public List<Long> getAllowedPatientIds() {
+        return allowedPatientIds;
+    }
+
+    public void setAllowedPatientIds(List<Long> allowedPatientIds) {
+        this.allowedPatientIds = allowedPatientIds;
     }
 
     @Data

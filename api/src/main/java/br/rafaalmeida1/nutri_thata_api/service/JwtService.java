@@ -21,13 +21,13 @@ import java.util.function.Function;
 @Slf4j
 public class JwtService {
 
-    @Value("${nutri.jwt.secret}")
+    @Value("${JWT_SECRET}")
     private String secretKey;
 
-    @Value("${nutri.jwt.expiration}")
+    @Value("${JWT_EXPIRATION}")
     private long jwtExpiration;
 
-    @Value("${nutri.jwt.refresh-expiration}")
+    @Value("${JWT_REFRESH_EXPIRATION}")
     private long refreshExpiration;
 
     public String extractUsername(String token) {

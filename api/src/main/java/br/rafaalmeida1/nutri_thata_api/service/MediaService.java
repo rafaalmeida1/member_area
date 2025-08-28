@@ -42,13 +42,13 @@ public class MediaService {
     private final MediaAssetRepository mediaAssetRepository;
     private final MediaAssetMapper mediaAssetMapper;
 
-    @Value("${nutri.upload.directory}")
+    @Value("${UPLOAD_DIRECTORY}")
     private String uploadDirectory;
 
-    @Value("${nutri.upload.base-url}")
+    @Value("${FRONTEND_URL}")
     private String baseUrl;
 
-    @Value("${nutri.upload.max-file-size:10MB}")
+    @Value("${UPLOAD_MAX_FILE_SIZE}")
     private String maxFileSize;
 
     private static final List<String> ALLOWED_IMAGE_TYPES = Arrays.asList(

@@ -43,11 +43,11 @@ public class InviteService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${nutri.invite.expiration-days}")
-    private int inviteExpirationDays;
+    @Value("${INVITE_EXPIRATION_HOURS}")
+    private int expirationHours;
 
-    @Value("${nutri.invite.base-url}")
-    private String frontendBaseUrl;
+    @Value("${FRONTEND_URL}")
+    private String baseUrl;
 
     @Transactional
     public InviteResponse createInvite(CreateInviteRequest request, User creator) {
@@ -75,7 +75,7 @@ public class InviteService {
                 .role(Role.PATIENT)
                 .prefill(request.getPrefill())
                 .status(InviteStatus.PENDING)
-                .expiresAt(LocalDateTime.now().plusDays(inviteExpirationDays))
+                .expiresAt(LocalDateTime.now().plusDays(expirationHours))
                 .createdBy(creator)
                 .build();
 
@@ -187,7 +187,7 @@ public class InviteService {
 
         if (invite.isExpired()) {
             // Extend expiration
-            invite.setExpiresAt(LocalDateTime.now().plusDays(inviteExpirationDays));
+            invite.setExpiresAt(LocalDateTime.now().plusDays(expirationHours));
             invite.setStatus(InviteStatus.PENDING);
             inviteRepository.save(invite);
         }
@@ -235,7 +235,7 @@ public class InviteService {
                 prefillName = (String) invite.getPrefill().get("name");
             }
             
-            String inviteUrl = frontendBaseUrl + "/invite/" + invite.getToken();
+            String inviteUrl = baseUrl + "/invite/" + invite.getToken();
             emailService.sendInviteEmail(
                 invite.getEmail(),
                 invite.getToken(),

@@ -15,8 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +31,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final CacheService cacheService;
 
     public UserResponse getCurrentUser(User user) {
         return userMapper.toUserResponse(user);
@@ -49,68 +55,104 @@ public class UserService {
         return userMapper.toUserResponse(updatedUser);
     }
 
-    public UserResponse getUserById(Long userId, User currentUser) {
+    @Cacheable(value = "users", key = "#id")
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
+        
+        return UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .isActive(user.getIsActive())
+                .createdAt(user.getCreatedAt())
+                .build();
+    }
 
-        // Check permissions: user can only see their own profile unless professional
-        if (!currentUser.getRole().equals(Role.PROFESSIONAL) && !currentUser.getId().equals(userId)) {
-            throw new BusinessException("Acesso negado para visualizar este usuário");
-        }
+    @Cacheable(value = "users", key = "#email")
+    public UserResponse getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
+        
+        return UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .isActive(user.getIsActive())
+                .createdAt(user.getCreatedAt())
+                .build();
+    }
 
+    @Cacheable(value = "users", key = "'patients'")
+    public List<UserResponse> getAllPatients() {
+        List<User> patients = userRepository.findByRoleAndIsActiveTrue(Role.PATIENT);
+        
+        return patients.stream()
+                .map(user -> UserResponse.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .role(user.getRole())
+                        .isActive(user.getIsActive())
+                        .createdAt(user.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Cacheable(value = "users", key = "'patients_stats'")
+    public UserStatsResponse getUserStats(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
 
-        return userMapper.toUserResponse(user);
+        // Implementar lógica de estatísticas do usuário
+        return UserStatsResponse.builder()
+                .totalModulesViewed(0) // Implementar
+                .totalTimeSpent(0) // Implementar
+                .modulesCompleted(0) // Implementar
+                .averageSessionTime(0) // Implementar
+                .favoriteCategories(new ArrayList<>()) // Implementar
+                .progressPercentage(0) // Implementar
+                .build();
     }
 
-    @Transactional
-    public UserResponse updateUser(Long userId, UpdateUserRequest request, User currentUser) {
-
-        // Only professional can update other users
-        if (!currentUser.getRole().equals(Role.PROFESSIONAL)) {
-            throw new BusinessException("Apenas profissionais podem atualizar outros usuários");
-        }
-
-        User user = userRepository.findById(userId)
+    @Caching(evict = {
+        @CacheEvict(value = "users", key = "#id"),
+        @CacheEvict(value = "users", key = "#user.email"),
+        @CacheEvict(value = "users", allEntries = true)
+    })
+    public UserResponse updateUser(Long id, UpdateUserRequest request) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
 
         if (request.getName() != null) {
             user.setName(request.getName());
         }
-        if (request.getPhone() != null) {
-            user.setPhone(request.getPhone());
-        }
-        if (request.getBirthDate() != null) {
-            user.setBirthDate(request.getBirthDate());
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
         }
 
-        User updatedUser = userRepository.save(user);
-
-        return userMapper.toUserResponse(updatedUser);
+        user = userRepository.save(user);
+        
+        return UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .isActive(user.getIsActive())
+                .createdAt(user.getCreatedAt())
+                .build();
     }
 
-    @Transactional
-    public void deleteUser(Long userId, User currentUser) {
-
-        // Only professional can delete users
-        if (!currentUser.getRole().equals(Role.PROFESSIONAL)) {
-            throw new BusinessException("Apenas profissionais podem excluir usuários");
-        }
-
-        User user = userRepository.findById(userId)
+    @Caching(evict = {
+        @CacheEvict(value = "users", key = "#id"),
+        @CacheEvict(value = "users", key = "#user.email"),
+        @CacheEvict(value = "users", allEntries = true)
+    })
+    public void changePassword(Long id, ChangePasswordRequest request) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
-
-        // Prevent professional from deleting themselves
-        if (user.getId().equals(currentUser.getId())) {
-            throw new BusinessException("Não é possível excluir sua própria conta");
-        }
-
-        // Soft delete by deactivating
-        user.setIsActive(false);
-        userRepository.save(user);
-    }
-
-    @Transactional
-    public void changePassword(User user, ChangePasswordRequest request) {
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new BusinessException("Senha atual incorreta");
@@ -120,29 +162,16 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public List<UserResponse> getPatientsList() {
-        List<User> patients = userRepository.findByRoleAndIsActiveTrue(Role.PATIENT);
-        return userMapper.toUserResponseList(patients);
-    }
+    @Caching(evict = {
+        @CacheEvict(value = "users", key = "#id"),
+        @CacheEvict(value = "users", key = "#user.email"),
+        @CacheEvict(value = "users", allEntries = true)
+    })
+    public void deactivateUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
 
-    public List<UserResponse> getPatientsWithStats() {
-        List<User> patients = userRepository.findByRoleAndIsActiveTrue(Role.PATIENT);
-        // TODO: Implementar lógica para adicionar estatísticas aos pacientes
-        return userMapper.toUserResponseList(patients);
-    }
-
-    public UserStatsResponse getUserStats(User user) {
-        // TODO: Implementar lógica para buscar estatísticas do usuário
-        return UserStatsResponse.builder()
-                .id(user.getId())
-                .totalModulesViewed(0)
-                .totalTimeSpent(0)
-                .lastActivity("2024-01-01T00:00:00")
-                .modulesCompleted(0)
-                .averageSessionTime(0)
-                .favoriteCategories(List.of())
-                .progressPercentage(0)
-                .weeklyActivity(List.of())
-                .build();
+        user.setIsActive(false);
+        userRepository.save(user);
     }
 }

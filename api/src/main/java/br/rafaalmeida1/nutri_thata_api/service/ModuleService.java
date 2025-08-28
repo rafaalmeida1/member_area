@@ -22,6 +22,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +32,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -36,163 +41,201 @@ import java.util.stream.Collectors;
 public class ModuleService {
 
     private final ModuleRepository moduleRepository;
-    private final ModuleMapper moduleMapper;
     private final UserRepository userRepository;
+    private final ModuleMapper moduleMapper;
+    private final FileCleanupService fileCleanupService;
+    private final CacheService cacheService;
     private final NotificationService notificationService;
 
-    public Page<ModuleSummaryResponse> getModules(String category, String search, Pageable pageable) {
-        // Obter usuário atual do contexto de segurança
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = auth.getName();
-        User currentUser = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    @Cacheable(value = "modules", key = "#user.id + '_all'")
+    public Page<ModuleResponse> getModules(User user, Pageable pageable) {
+        log.info("Buscando módulos para usuário: {} (role: {})", user.getEmail(), user.getRole());
         
         Page<Module> modules;
-        
-        // PROFISSIONAL vê todos os módulos
-        if (currentUser.getRole() == Role.PROFESSIONAL) {
-            if (category != null) {
-                modules = moduleRepository.findByCategory(category, pageable);
-            } else {
-                modules = moduleRepository.findAll(pageable);
-            }
-        } 
-        // PACIENTE vê apenas módulos GENERAL + SPECIFIC para ele
-        else {
-            if (category != null) {
-                modules = moduleRepository.findByCategoryVisibleToPatient(category, currentUser, pageable);
-            } else {
-                modules = moduleRepository.findVisibleToPatient(currentUser, pageable);
-            }
+        if (user.getRole().equals(Role.PROFESSIONAL)) {
+            modules = moduleRepository.findByCreatedByOrderByCreatedAtDesc(user, pageable);
+        } else {
+            // Para pacientes, buscar módulos visíveis
+            modules = moduleRepository.findVisibleModulesForUser(user.getId(), pageable);
         }
         
-        return modules.map(moduleMapper::toModuleSummaryResponse);
+        return modules.map(moduleMapper::toModuleResponse);
     }
 
-    public ModuleResponse getModuleById(UUID moduleId) {
-
-        Module module = moduleRepository.findById(moduleId)
+    @Cacheable(value = "modules", key = "#id")
+    public ModuleResponse getModuleById(String id) {
+        log.info("Buscando módulo por ID: {}", id);
+        
+        Module module = moduleRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new NotFoundException("Módulo não encontrado"));
-
+        
         return moduleMapper.toModuleResponse(module);
     }
 
-    @Transactional
-    public ModuleResponse createModule(CreateModuleRequest request, User user) {
-
+    @Caching(evict = {
+        @CacheEvict(value = "modules", key = "#user.id + '_all'"),
+        @CacheEvict(value = "modules", key = "#user.id + '_categories'"),
+        @CacheEvict(value = "modules", allEntries = true)
+    })
+    public ModuleResponse createModule(User user, CreateModuleRequest request) {
+        log.info("Criando novo módulo para usuário: {}", user.getEmail());
+        
+        // Validar se o usuário é profissional
         if (!user.getRole().equals(Role.PROFESSIONAL)) {
-            throw new BusinessException("Apenas profissionais e administradores podem criar módulos");
+            throw new BusinessException("Apenas profissionais podem criar módulos");
         }
 
-        Module module = Module.builder()
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .coverImage(request.getCoverImage())
-                .category(request.getCategory())
-                .createdBy(user)
-                .build();
-
-        module = moduleRepository.save(module);
-
-        // Create content blocks
-        List<ContentBlock> contentBlocks = new ArrayList<>();
-        for (CreateModuleRequest.ContentBlockData contentData : request.getContent()) {
-            ContentBlock contentBlock = ContentBlock.builder()
-                    .module(module)
-                    .type(contentData.getType())
-                    .content(contentData.getContent())
-                    .orderIndex(contentData.getOrder())
-                    .build();
-            contentBlocks.add(contentBlock);
+        // Criar módulo
+        Module module = new Module();
+        module.setTitle(request.getTitle());
+        module.setDescription(request.getDescription());
+        module.setCoverImage(request.getCoverImage());
+        module.setCategory(request.getCategory());
+        module.setCreatedBy(user);
+        module.setVisibility(request.getVisibility());
+        
+        // Configurar pacientes específicos se necessário
+        if (request.getVisibility() == ContentVisibility.SPECIFIC && request.getAllowedPatientIds() != null) {
+            Set<User> allowedPatients = userRepository.findAllById(request.getAllowedPatientIds())
+                    .stream()
+                    .filter(u -> u.getRole().equals(Role.PATIENT))
+                    .collect(Collectors.toSet());
+            module.setAllowedPatients(allowedPatients);
         }
 
+        // Processar conteúdo
+        List<ContentBlock> contentBlocks = request.getContent().stream()
+                .map(contentDto -> {
+                    ContentBlock block = new ContentBlock();
+                    block.setType(contentDto.getType());
+                    block.setContent(contentDto.getContent());
+                    block.setOrderIndex(contentDto.getOrder());
+                    return block;
+                })
+                .collect(Collectors.toList());
+        
         module.setContent(contentBlocks);
+
         module = moduleRepository.save(module);
-
-        // Notificar pacientes sobre novo módulo
-        if (module.getVisibility() == ContentVisibility.GENERAL) {
-            List<User> patients = userRepository.findByRoleAndIsActiveTrue(Role.PATIENT);
-            for (User patient : patients) {
-                notificationService.notifyNewModule(patient, module.getTitle(), module.getId());
-            }
-        }
-
+        
+        log.info("Módulo criado com sucesso: {}", module.getId());
         return moduleMapper.toModuleResponse(module);
     }
 
-    @Transactional
-    public ModuleResponse updateModule(UUID moduleId, UpdateModuleRequest request, User user) {
-
-        Module module = moduleRepository.findById(moduleId)
+    @Caching(evict = {
+        @CacheEvict(value = "modules", key = "#id"),
+        @CacheEvict(value = "modules", key = "#user.id + '_all'"),
+        @CacheEvict(value = "modules", key = "#user.id + '_categories'"),
+        @CacheEvict(value = "modules", allEntries = true)
+    })
+    public ModuleResponse updateModule(String id, User user, UpdateModuleRequest request) {
+        log.info("Atualizando módulo: {} para usuário: {}", id, user.getEmail());
+        
+        Module module = moduleRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new NotFoundException("Módulo não encontrado"));
 
-        if (!user.getRole().equals(Role.PROFESSIONAL) && !module.getCreatedBy().getId().equals(user.getId())) {
-            throw new BusinessException("Apenas o criador do módulo ou administradores podem editá-lo");
+        // Validar permissão
+        if (!module.getCreatedBy().getId().equals(user.getId())) {
+            throw new BusinessException("Você não tem permissão para editar este módulo");
         }
 
-        if (request.getTitle() != null) {
-            module.setTitle(request.getTitle());
-        }
-        if (request.getDescription() != null) {
-            module.setDescription(request.getDescription());
-        }
-        if (request.getCoverImage() != null) {
-            module.setCoverImage(request.getCoverImage());
-        }
-        if (request.getCategory() != null) {
-            module.setCategory(request.getCategory());
+        // Guardar dados antigos para limpeza de arquivos
+        String oldCoverImage = module.getCoverImage();
+        List<String> oldContentFiles = module.getContent().stream()
+                .filter(block -> block.getContent() != null && block.getContent().contains("/static/"))
+                .map(ContentBlock::getContent)
+                .collect(Collectors.toList());
+
+        // Atualizar dados básicos
+        module.setTitle(request.getTitle());
+        module.setDescription(request.getDescription());
+        module.setCoverImage(request.getCoverImage());
+        module.setCategory(request.getCategory());
+        module.setVisibility(request.getVisibility());
+        
+        // Atualizar pacientes específicos se necessário
+        if (request.getVisibility() == ContentVisibility.SPECIFIC && request.getAllowedPatientIds() != null) {
+            Set<User> allowedPatients = userRepository.findAllById(request.getAllowedPatientIds())
+                    .stream()
+                    .filter(u -> u.getRole().equals(Role.PATIENT))
+                    .collect(Collectors.toSet());
+            module.setAllowedPatients(allowedPatients);
+        } else {
+            module.setAllowedPatients(new HashSet<>());
         }
 
-        if (request.getContent() != null) {
-            Map<Integer, ContentBlock> existingContentMap = module.getContent().stream()
-                    .collect(Collectors.toMap(ContentBlock::getOrderIndex, Function.identity()));
+        // Atualizar conteúdo
+        List<ContentBlock> contentBlocks = request.getContent().stream()
+                .map(contentDto -> {
+                    ContentBlock block = new ContentBlock();
+                    block.setType(contentDto.getType());
+                    block.setContent(contentDto.getContent());
+                    block.setOrderIndex(contentDto.getOrder());
+                    return block;
+                })
+                .collect(Collectors.toList());
+        
+        module.setContent(contentBlocks);
 
-            List<ContentBlock> newContentList = new ArrayList<>();
+        module = moduleRepository.save(module);
 
-            for (UpdateModuleRequest.ContentBlockUpdateData contentData : request.getContent()) {
-                ContentBlock existingBlock = existingContentMap.get(contentData.getOrder());
-                if (existingBlock != null) {
-                    existingBlock.setType(contentData.getType());
-                    existingBlock.setContent(contentData.getContent());
-                    newContentList.add(existingBlock);
-                    existingContentMap.remove(contentData.getOrder());
-                } else {
-                    // Create new block
-                    ContentBlock newBlock = ContentBlock.builder()
-                            .module(module)
-                            .type(contentData.getType())
-                            .content(contentData.getContent())
-                            .orderIndex(contentData.getOrder())
-                            .build();
-                    newContentList.add(newBlock);
+        // Limpar arquivos antigos
+        if (oldCoverImage != null && !oldCoverImage.equals(request.getCoverImage())) {
+            fileCleanupService.deleteByPublicUrl(oldCoverImage);
+        }
+        
+        for (String oldFile : oldContentFiles) {
+            if (!request.getContent().stream().anyMatch(c -> oldFile.equals(c.getContent()))) {
+                fileCleanupService.deleteByPublicUrl(oldFile);
+            }
+        }
+        
+        log.info("Módulo atualizado com sucesso: {}", module.getId());
+        return moduleMapper.toModuleResponse(module);
+    }
+
+    @Caching(evict = {
+        @CacheEvict(value = "modules", key = "#id"),
+        @CacheEvict(value = "modules", key = "#user.id + '_all'"),
+        @CacheEvict(value = "modules", key = "#user.id + '_categories'"),
+        @CacheEvict(value = "modules", allEntries = true)
+    })
+    public void deleteModule(String id, User user) {
+        log.info("Deletando módulo: {} por usuário: {}", id, user.getEmail());
+        
+        Module module = moduleRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new NotFoundException("Módulo não encontrado"));
+
+        // Validar permissão
+        if (!module.getCreatedBy().getId().equals(user.getId())) {
+            throw new BusinessException("Você não tem permissão para deletar este módulo");
+        }
+
+        // Limpar arquivos associados
+        if (module.getCoverImage() != null && !module.getCoverImage().isBlank()) {
+            fileCleanupService.deleteByPublicUrl(module.getCoverImage());
+        }
+        
+        if (module.getContent() != null) {
+            for (ContentBlock block : module.getContent()) {
+                if (block.getContent() != null && block.getContent().contains("/static/")) {
+                    fileCleanupService.deleteByPublicUrl(block.getContent());
                 }
             }
-
-            module.getContent().clear();
-            module.getContent().addAll(newContentList);
-        }
-
-        Module updatedModule = moduleRepository.save(module);
-
-        return moduleMapper.toModuleResponse(updatedModule);
-    }
-
-    @Transactional
-    public void deleteModule(UUID moduleId, User user) {
-
-        Module module = moduleRepository.findById(moduleId)
-                .orElseThrow(() -> new NotFoundException("Módulo não encontrado"));
-
-        // Check permissions: owner or admin
-        if (!user.getRole().equals(Role.PROFESSIONAL) && !module.getCreatedBy().getId().equals(user.getId())) {
-            throw new BusinessException("Apenas o criador do módulo ou administradores podem excluí-lo");
         }
 
         moduleRepository.delete(module);
-
+        log.info("Módulo deletado com sucesso: {}", id);
     }
 
-    public List<String> getCategories() {
-        return moduleRepository.findDistinctCategories();
+    @Cacheable(value = "modules", key = "#user.id + '_categories'")
+    public List<String> getCategories(User user) {
+        log.info("Buscando categorias para usuário: {}", user.getEmail());
+        
+        if (user.getRole().equals(Role.PROFESSIONAL)) {
+            return moduleRepository.findDistinctCategoriesByCreatedBy(user);
+        } else {
+            return moduleRepository.findDistinctCategoriesForUser(user.getId());
+        }
     }
 }

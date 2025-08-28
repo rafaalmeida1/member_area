@@ -1,12 +1,15 @@
 #!/bin/sh
 
-# Aguardar o banco de dados estar disponível
-echo "Aguardando banco de dados estar disponível..."
-while ! nc -z $DB_HOST $DB_PORT; do
-  sleep 1
-done
-echo "Banco de dados está disponível!"
+echo "🚀 Iniciando Nutri Thata API..."
 
-# Iniciar a aplicação (o Spring Boot executará as migrations automaticamente)
-echo "Iniciando aplicação..."
+# Aguardar Redis
+echo "⏳ Aguardando Redis estar disponível..."
+while ! nc -z redis 6379; do
+    echo "   Tentando conectar em redis:6379..."
+    sleep 2
+done
+echo "✅ Redis está disponível!"
+
+# Iniciar aplicação Spring Boot
+echo "🚀 Iniciando aplicação Spring Boot..."
 exec java -jar app.jar 

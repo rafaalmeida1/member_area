@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { parseApiError } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -18,6 +20,16 @@ export function Login() {
   
   const { login } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
+
+  // Pré-preencher e-mail se vier na query string
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const emailParam = params.get('email');
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, [location.search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,9 +52,10 @@ export function Login() {
         description: "Bem-vindo de volta!",
       });
     } catch (error) {
+      const parsed = parseApiError(error);
       toast({
-        title: "Erro no login",
-        description: error instanceof Error ? error.message : "Credenciais inválidas",
+        title: parsed.title,
+        description: parsed.description,
         variant: "destructive",
       });
     } finally {

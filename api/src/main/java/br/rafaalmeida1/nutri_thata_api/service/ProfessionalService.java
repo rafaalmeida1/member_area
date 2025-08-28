@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +33,10 @@ public class ProfessionalService {
     private final ProfessionalProfileRepository professionalProfileRepository;
     private final InviteRepository inviteRepository;
     private final ProfessionalMapper professionalMapper;
+    private final FileCleanupService fileCleanupService;
+    private final CacheService cacheService;
 
+    @Cacheable(value = "professional_profiles", key = "#user.id")
     public ProfessionalProfileResponse getProfessionalProfile(User user) {
         if (!user.getRole().equals(Role.PROFESSIONAL)) {
             throw new BusinessException("Apenas profissionais podem acessar este recurso");
@@ -39,11 +45,14 @@ public class ProfessionalService {
         ProfessionalProfile profile = professionalProfileRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new NotFoundException("Perfil profissional não encontrado"));
 
-
-
         return professionalMapper.toProfessionalProfileResponse(profile);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "professional_profiles", key = "#user.id"),
+        @CacheEvict(value = "professional_profiles", key = "'banner_' + #user.id"),
+        @CacheEvict(value = "professional_profiles", allEntries = true)
+    })
     @Transactional
     public ProfessionalProfileResponse updateProfessionalProfile(User user, UpdateProfessionalProfileRequest request) {
         if (!user.getRole().equals(Role.PROFESSIONAL)) {
@@ -51,7 +60,11 @@ public class ProfessionalService {
         }
 
         ProfessionalProfile profile = professionalProfileRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new NotFoundException("Perfil profissional não encontrado"));;
+                .orElseThrow(() -> new NotFoundException("Perfil profissional não encontrado"));
+
+        // Guardar URLs antigas para remoção se forem substituídas
+        String oldImage = profile.getImage();
+        String oldBackgroundImage = profile.getBackgroundImage();
 
         // Atualizar campos básicos
         profile.setName(request.getName());
@@ -59,19 +72,49 @@ public class ProfessionalService {
         profile.setBio(request.getBio());
         profile.setImage(request.getImage());
         profile.setBackgroundImage(request.getBackgroundImage());
-
-
-        // Atualizar especialidades
-        if (request.getSpecialties() != null) {
-            profile.getSpecialties().clear();
-            List<String> validSpecialties = request.getSpecialties().stream()
-                    .filter(specialty -> specialty != null && !specialty.trim().isEmpty())
-                    .map(String::trim)
-                    .collect(Collectors.toList());
-            profile.getSpecialties().addAll(validSpecialties);
+        if (request.getBackgroundPositionX() != null) {
+            int x = Math.max(0, Math.min(100, request.getBackgroundPositionX()));
+            profile.setBackgroundPositionX(x);
+        }
+        if (request.getBackgroundPositionY() != null) {
+            int y = Math.max(0, Math.min(100, request.getBackgroundPositionY()));
+            profile.setBackgroundPositionY(y);
         }
 
+        // Atualizar cores personalizadas do tema
+        if (request.getThemePrimaryColor() != null && isValidHexColor(request.getThemePrimaryColor())) {
+            profile.setThemePrimaryColor(request.getThemePrimaryColor());
+        }
+        if (request.getThemeSecondaryColor() != null && isValidHexColor(request.getThemeSecondaryColor())) {
+            profile.setThemeSecondaryColor(request.getThemeSecondaryColor());
+        }
+        if (request.getThemeAccentColor() != null && isValidHexColor(request.getThemeAccentColor())) {
+            profile.setThemeAccentColor(request.getThemeAccentColor());
+        }
+        if (request.getThemeBackgroundColor() != null && isValidHexColor(request.getThemeBackgroundColor())) {
+            profile.setThemeBackgroundColor(request.getThemeBackgroundColor());
+        }
+        if (request.getThemeSurfaceColor() != null && isValidHexColor(request.getThemeSurfaceColor())) {
+            profile.setThemeSurfaceColor(request.getThemeSurfaceColor());
+        }
+        if (request.getThemeTextColor() != null && isValidHexColor(request.getThemeTextColor())) {
+            profile.setThemeTextColor(request.getThemeTextColor());
+        }
+        if (request.getThemeTextSecondaryColor() != null && isValidHexColor(request.getThemeTextSecondaryColor())) {
+            profile.setThemeTextSecondaryColor(request.getThemeTextSecondaryColor());
+        }
+
+        profile.setSpecialties(request.getSpecialties());
+
         profile = professionalProfileRepository.save(profile);
+
+        // Remover arquivos substituídos (se diferentes e locais)
+        if (oldImage != null && request.getImage() != null && !request.getImage().equals(oldImage)) {
+            fileCleanupService.deleteByPublicUrl(oldImage);
+        }
+        if (oldBackgroundImage != null && request.getBackgroundImage() != null && !request.getBackgroundImage().equals(oldBackgroundImage)) {
+            fileCleanupService.deleteByPublicUrl(oldBackgroundImage);
+        }
 
         log.info("Perfil profissional atualizado para usuário: {}", user.getEmail());
         
@@ -82,6 +125,7 @@ public class ProfessionalService {
         return professionalMapper.toProfessionalProfileResponse(profile);
     }
 
+    @Cacheable(value = "professional_profiles", key = "#userId")
     public ProfessionalProfileResponse getProfessionalProfileById(Long userId) {
         ProfessionalProfile profile = professionalProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new NotFoundException("Perfil profissional não encontrado"));
@@ -89,6 +133,7 @@ public class ProfessionalService {
         return professionalMapper.toProfessionalProfileResponse(profile);
     }
 
+    @Cacheable(value = "professional_profiles", key = "'banner_' + #user.id")
     public ProfessionalProfileResponse getBannerData(User user) {
         log.info("Buscando dados do banner para usuário: {} (role: {})", user.getEmail(), user.getRole());
         
@@ -121,6 +166,26 @@ public class ProfessionalService {
         }
         
         log.info("Usando perfil de fallback: {}", profiles.get(0).getName());
+        return professionalMapper.toProfessionalProfileResponse(profiles.get(0));
+    }
+
+    /**
+     * Valida se uma string é uma cor hexadecimal válida
+     */
+    private boolean isValidHexColor(String color) {
+        if (color == null || color.trim().isEmpty()) {
+            return false;
+        }
+        return color.matches("^#[0-9A-Fa-f]{6}$");
+    }
+
+    @Cacheable(value = "professional_profiles", key = "'theme_data'")
+    public ProfessionalProfileResponse getThemeData() {
+        List<ProfessionalProfile> profiles = professionalProfileRepository.findAll();
+        if (profiles.isEmpty()) {
+            throw new NotFoundException("Nenhum perfil profissional encontrado");
+        }
+        
         return professionalMapper.toProfessionalProfileResponse(profiles.get(0));
     }
 }

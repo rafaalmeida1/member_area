@@ -1,52 +1,40 @@
-# Multi-stage build para otimizar o tamanho da imagem
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+# Build stage
+FROM maven:3.9.5-eclipse-temurin-21-alpine AS build
 
-# Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar arquivos de dependências primeiro (para aproveitar cache do Docker)
+# Copy pom.xml and download dependencies
 COPY pom.xml .
-COPY .mvn .mvn
-COPY mvnw .
-
-# Baixar dependências (isso será cacheado se o pom.xml não mudar)
 RUN mvn dependency:go-offline -B
 
-# Copiar código fonte
+# Copy source code and build
 COPY src ./src
-
-# Build da aplicação
 RUN mvn clean package -DskipTests
 
-# Stage de produção
+# Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 
-# Instalar netcat para verificar conectividade
+# Install netcat for health checks
 RUN apk add --no-cache netcat-openbsd
 
-# Criar usuário não-root para segurança
-RUN addgroup -g 1001 -S appgroup && \
-    adduser -u 1001 -S appuser -G appgroup
-
-# Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar o JAR da aplicação do stage de build
+# Copy the built JAR
 COPY --from=build /app/target/nutri_thata_api-0.0.1-SNAPSHOT.jar app.jar
 
-# Copiar script de entrypoint
-COPY entrypoint.sh entrypoint.sh
+# Copy entrypoint script
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
-# Criar diretórios necessários e definir permissões
-RUN mkdir -p /app/uploads /app/storage && \
-    chown -R appuser:appgroup /app && \
-    chmod +x entrypoint.sh
+# Create uploads directory
+RUN mkdir -p uploads
 
-# Mudar para usuário não-root
-USER appuser
-
-# Expor porta da aplicação
+# Expose port
 EXPOSE 8081
 
-# Comando para executar a aplicação
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD nc -z localhost 8081 || exit 1
+
+# Run the application
 ENTRYPOINT ["./entrypoint.sh"]

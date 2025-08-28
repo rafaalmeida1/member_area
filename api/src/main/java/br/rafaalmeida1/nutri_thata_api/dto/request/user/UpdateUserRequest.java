@@ -18,6 +18,8 @@ public class UpdateUserRequest {
     @Size(min = 2, max = 255, message = "Nome deve ter entre 2 e 255 caracteres")
     private String name;
 
+    private String email;
+
     private String phone;
 
     private LocalDate birthDate;
@@ -28,6 +30,14 @@ public class UpdateUserRequest {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPhone() {

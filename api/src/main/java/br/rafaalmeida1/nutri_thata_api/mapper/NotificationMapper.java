@@ -37,4 +37,9 @@ public class NotificationMapper {
             .map(this::toResponse)
             .collect(Collectors.toList());
     }
+
+    // Método toNotificationResponse para compatibilidade com NotificationService
+    public NotificationResponse toNotificationResponse(Notification notification) {
+        return toResponse(notification);
+    }
 } 

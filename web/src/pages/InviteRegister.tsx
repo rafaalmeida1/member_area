@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Key } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { apiService, InvitePreview } from '@/services/api';
+import { parseApiError } from '@/lib/utils';
 import './InviteRegister.css';
 import NutriotinistImage from '@/components/NutriotinistImage';
 
@@ -119,16 +120,18 @@ export function InviteRegister() {
         password: formData.password,
         email: invite.email,
       });
-      
-      updateUser(authResponse.user);
+
+      // Após criar a conta, redirecionar para o login já com o e-mail preenchido
       toast({
         title: "Conta criada!",
         description: "Bem-vindo! Sua conta foi criada com sucesso.",
       });
+      navigate(`/login?email=${encodeURIComponent(invite.email)}`);
     } catch (error) {
+      const parsed = parseApiError(error);
       toast({
-        title: "Erro no registro",
-        description: error instanceof Error ? error.message : "Erro ao criar conta",
+        title: parsed.title,
+        description: parsed.description,
         variant: "destructive",
       });
     } finally {

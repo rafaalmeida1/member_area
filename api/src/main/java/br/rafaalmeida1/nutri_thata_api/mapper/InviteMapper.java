@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class InviteMapper {
 
-    @Value("${nutri.invite.base-url}")
-    private String baseUrl;
+    @Value("${FRONTEND_URL}")
+    private String frontendBaseUrl;
 
     @Mapping(source = "createdBy.id", target = "createdBy.id")
     @Mapping(source = "createdBy.name", target = "createdBy.name")
@@ -27,6 +27,6 @@ public abstract class InviteMapper {
     public abstract InvitePreviewResponse toInvitePreviewResponse(Invite invite);
 
     protected String buildFullLink(Invite invite) {
-        return baseUrl + "/invite/" + invite.getToken();
+        return frontendBaseUrl + "/invite/" + invite.getToken();
     }
 }

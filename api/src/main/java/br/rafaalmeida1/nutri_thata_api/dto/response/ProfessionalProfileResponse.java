@@ -20,6 +20,17 @@ public class ProfessionalProfileResponse {
     private String bio;
     private String image;
     private String backgroundImage;
+    private Integer backgroundPositionX;
+    private Integer backgroundPositionY;
+
+    // Cores personalizadas do tema
+    private String themePrimaryColor;
+    private String themeSecondaryColor;
+    private String themeAccentColor;
+    private String themeBackgroundColor;
+    private String themeSurfaceColor;
+    private String themeTextColor;
+    private String themeTextSecondaryColor;
 
     private List<String> specialties;
     private LocalDateTime createdAt;
