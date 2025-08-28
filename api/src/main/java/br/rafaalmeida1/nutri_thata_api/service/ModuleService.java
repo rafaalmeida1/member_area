@@ -2,6 +2,7 @@ package br.rafaalmeida1.nutri_thata_api.service;
 
 import br.rafaalmeida1.nutri_thata_api.dto.request.module.CreateModuleRequest;
 import br.rafaalmeida1.nutri_thata_api.dto.request.module.UpdateModuleRequest;
+import br.rafaalmeida1.nutri_thata_api.dto.request.module.ModuleReorderRequest;
 import br.rafaalmeida1.nutri_thata_api.dto.response.module.ModuleResponse;
 import br.rafaalmeida1.nutri_thata_api.dto.response.module.ModuleSummaryResponse;
 import br.rafaalmeida1.nutri_thata_api.entities.ContentBlock;
@@ -54,11 +55,11 @@ public class ModuleService {
         
         Page<Module> modules;
         if (user.getRole().equals(Role.PROFESSIONAL)) {
-            // Para profissionais, buscar todos os módulos criados por eles
-            modules = moduleRepository.findByCreatedByOrderByCreatedAtDesc(user, pageable);
+            // Para profissionais, buscar todos os módulos criados por eles ordenados por ordem
+            modules = moduleRepository.findByCreatedByOrderByOrderIndexAsc(user, pageable);
             log.info("Profissional vendo {} módulos criados por ele", modules.getTotalElements());
         } else {
-            // Para pacientes, buscar módulos visíveis (GENERAL + SPECIFIC para ele)
+            // Para pacientes, buscar módulos visíveis (GENERAL + SPECIFIC para ele) ordenados por ordem
             modules = moduleRepository.findVisibleModulesForUser(user.getId(), pageable);
             log.info("Paciente vendo {} módulos visíveis", modules.getTotalElements());
         }
@@ -104,20 +105,32 @@ public class ModuleService {
     public ModuleResponse createModule(User user, CreateModuleRequest request) {
         log.info("Criando novo módulo para usuário: {}", user.getEmail());
         
-        // Validar se o usuário é profissional
-        if (!user.getRole().equals(Role.PROFESSIONAL)) {
-            throw new BusinessException("Apenas profissionais podem criar módulos");
+        // Determinar a ordem do novo módulo
+        Integer newOrderIndex = 0;
+        if (request.getOrderIndex() != null) {
+            newOrderIndex = request.getOrderIndex();
+        } else {
+            // Se não especificado, colocar no final
+            List<Module> existingModules = moduleRepository.findByCreatedByOrderByOrderIndexAsc(user);
+            if (!existingModules.isEmpty()) {
+                newOrderIndex = existingModules.get(existingModules.size() - 1).getOrderIndex() + 1;
+            }
         }
-
-        // Criar módulo
-        Module module = new Module();
-        module.setTitle(request.getTitle());
-        module.setDescription(request.getDescription());
-        module.setCoverImage(request.getCoverImage());
-        module.setCategory(request.getCategory());
-        module.setCreatedBy(user);
-        module.setVisibility(request.getVisibility());
         
+        log.info("Criando módulo com ordem: {}", newOrderIndex);
+
+        Module module = Module.builder()
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .coverImage(request.getCoverImage())
+                .category(request.getCategory())
+                .orderIndex(newOrderIndex)
+                .visibility(request.getVisibility() != null ? request.getVisibility() : ContentVisibility.GENERAL)
+                .createdBy(user)
+                .content(new ArrayList<>())
+                .allowedPatients(new HashSet<>())
+                .build();
+
         // Configurar pacientes específicos se necessário
         if (request.getVisibility() == ContentVisibility.SPECIFIC && request.getAllowedPatientIds() != null) {
             Set<User> allowedPatients = userRepository.findAllById(request.getAllowedPatientIds())
@@ -127,10 +140,9 @@ public class ModuleService {
             module.setAllowedPatients(allowedPatients);
         }
 
-        // Salvar módulo primeiro
         module = moduleRepository.save(module);
 
-        // Processar e salvar content blocks
+        // Criar content blocks
         List<ContentBlock> contentBlocks = new ArrayList<>();
         for (var contentDto : request.getContent()) {
             ContentBlock block = new ContentBlock();
@@ -148,8 +160,8 @@ public class ModuleService {
         
         module.setContent(contentBlocks);
         module = moduleRepository.save(module);
-        
-        log.info("Módulo criado com sucesso: {}", module.getId());
+
+        log.info("Módulo criado com sucesso: {} (ordem: {})", module.getId(), module.getOrderIndex());
         return moduleMapper.toModuleResponse(module);
     }
 
@@ -185,6 +197,12 @@ public class ModuleService {
         module.setCoverImage(request.getCoverImage());
         module.setCategory(request.getCategory());
         module.setVisibility(request.getVisibility());
+        
+        // Atualizar ordem se fornecida
+        if (request.getOrderIndex() != null) {
+            module.setOrderIndex(request.getOrderIndex());
+            log.info("Ordem atualizada para: {}", request.getOrderIndex());
+        }
         
         log.info("Dados básicos atualizados: visibility={}", module.getVisibility());
         
@@ -291,5 +309,35 @@ public class ModuleService {
         } else {
             return moduleRepository.findDistinctCategoriesForUser(user.getId());
         }
+    }
+
+    @Caching(evict = {
+        @CacheEvict(value = "modules", key = "#user.id + '_all'"),
+        @CacheEvict(value = "modules", allEntries = true)
+    })
+    public List<ModuleResponse> reorderModules(User user, List<ModuleReorderRequest> reorderRequests) {
+        log.info("Reordenando {} módulos para usuário: {}", reorderRequests.size(), user.getEmail());
+        
+        List<ModuleResponse> reorderedModules = new ArrayList<>();
+        
+        for (ModuleReorderRequest request : reorderRequests) {
+            Module module = moduleRepository.findById(request.getModuleId())
+                    .orElseThrow(() -> new NotFoundException("Módulo não encontrado: " + request.getModuleId()));
+            
+            // Validar permissão
+            if (!module.getCreatedBy().getId().equals(user.getId())) {
+                throw new BusinessException("Você não tem permissão para reordenar este módulo");
+            }
+            
+            // Atualizar ordem
+            module.setOrderIndex(request.getNewOrderIndex());
+            module = moduleRepository.save(module);
+            
+            reorderedModules.add(moduleMapper.toModuleResponse(module));
+            log.info("Módulo {} reordenado para posição {}", module.getId(), request.getNewOrderIndex());
+        }
+        
+        log.info("Reordenação concluída com sucesso");
+        return reorderedModules;
     }
 }

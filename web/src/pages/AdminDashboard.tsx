@@ -11,6 +11,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { FileUpload } from '@/components/FileUpload';
 import { LoadingWrapper, InlineLoading } from '@/components/LoadingSpinner';
 import { DraggableContentList } from '@/components/DraggableContentList';
+import { DraggableModuleList } from '@/components/DraggableModuleList';
 import { Layout } from '@/components/Layout';
 import { PatientSelector } from '@/components/PatientSelector';
 import { ArrowLeft, Plus, FileText, Video, Volume2, Save, Trash2, User, Settings, LogOut, Mail, UserCog, Users } from 'lucide-react';
@@ -510,71 +511,15 @@ export function AdminDashboard({ professionalName }: AdminDashboardProps) {
           card={true}
           size="lg"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {modules.map((module) => (
-            <Card key={module.id} className="group hover:shadow-elegant transition-all duration-300 hover:scale-[1.02]">
-              <div className="relative h-32 overflow-hidden rounded-t-lg">
-                <img
-                  src={module.coverImage}
-                  alt={module.title}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-              </div>
-
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <Badge variant="secondary" className="mb-2 text-xs">
-                      {module.category}
-                    </Badge>
-                    <CardTitle className="text-lg leading-tight">
-                      {module.title}
-                    </CardTitle>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {module.description}
-                </p>
-                
-                <div className="text-xs text-muted-foreground">
-                  {module.contentCount} conteúdos • {new Date(module.createdAt).toLocaleDateString('pt-BR')}
-                </div>
-                
-                <div className="text-xs text-muted-foreground flex items-center gap-1">
-                  <User className="w-3 h-3" />
-                  <span>Por {module.createdBy.name}</span>
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEditModule(module)}
-                    className="flex-1"
-                    disabled={isLoading || isDeleting === module.id}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeleteModule(module.id)}
-                    className="text-destructive hover:text-destructive"
-                    disabled={isLoading || isDeleting === module.id}
-                  >
-                    <InlineLoading loading={isDeleting === module.id}>
-                      <Trash2 className="w-4 h-4" />
-                    </InlineLoading>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-            ))}
-          </div>
+          <DraggableModuleList
+            modules={modules}
+            onModulesChange={setModules}
+            onSaveOrder={loadModules}
+            onEdit={handleEditModule}
+            onDelete={handleDeleteModule}
+            isProfessional={true}
+            isDeleting={isDeleting}
+          />
 
           {modules.length === 0 && !isLoading && (
             <div className="text-center py-12">

@@ -33,6 +33,8 @@ public class CreateModuleRequest {
     @NotBlank(message = "Categoria é obrigatória")
     private String category;
 
+    private Integer orderIndex;
+
     @Valid
     @NotEmpty(message = "Conteúdo é obrigatório")
     private List<ContentBlockData> content;
@@ -71,6 +73,14 @@ public class CreateModuleRequest {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public Integer getOrderIndex() {
+        return orderIndex;
+    }
+
+    public void setOrderIndex(Integer orderIndex) {
+        this.orderIndex = orderIndex;
     }
 
     public List<ContentBlockData> getContent() {

@@ -33,6 +33,7 @@ export interface Module {
   description: string;
   coverImage?: string;
   category: string;
+  orderIndex: number;
   contentCount: number;
   createdBy: {
     id: number;
@@ -40,6 +41,7 @@ export interface Module {
   };
   createdAt: string;
   visibility?: 'GENERAL' | 'SPECIFIC';
+  allowedPatients?: User[];
 }
 
 export interface ModuleDetail extends Module {
@@ -861,6 +863,16 @@ class ApiService {
     }
   }
 
+  // Module Reorder Methods
+  async reorderModules(reorderRequests: Array<{ moduleId: string; newOrderIndex: number }>): Promise<Module[]> {
+    const response: AxiosResponse<ApiResponse<Module[]>> = await this.api.patch('/modules/reorder', reorderRequests);
+
+    if (response.data.status === 'success' && response.data.data) {
+      return response.data.data;
+    }
+
+    throw new Error(response.data.message || 'Erro ao reordenar módulos');
+  }
 
 }
 

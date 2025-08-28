@@ -23,14 +23,16 @@ public interface ModuleRepository extends JpaRepository<Module, UUID> {
     // Query para módulos visíveis por paciente (GENERAL + SPECIFIC para ele)
     @Query("SELECT m FROM Module m WHERE " +
            "m.visibility = 'GENERAL' OR " +
-           "(m.visibility = 'SPECIFIC' AND :patient MEMBER OF m.allowedPatients)")
+           "(m.visibility = 'SPECIFIC' AND :patient MEMBER OF m.allowedPatients) " +
+           "ORDER BY m.orderIndex ASC")
     Page<Module> findVisibleToPatient(@Param("patient") User patient, Pageable pageable);
     
     // Query para módulos por categoria visíveis ao paciente
     @Query("SELECT m FROM Module m WHERE " +
            "m.category = :category AND " +
            "(m.visibility = 'GENERAL' OR " +
-           "(m.visibility = 'SPECIFIC' AND :patient MEMBER OF m.allowedPatients))")
+           "(m.visibility = 'SPECIFIC' AND :patient MEMBER OF m.allowedPatients)) " +
+           "ORDER BY m.orderIndex ASC")
     Page<Module> findByCategoryVisibleToPatient(@Param("category") String category, 
                                                @Param("patient") User patient, 
                                                Pageable pageable);
@@ -41,9 +43,12 @@ public interface ModuleRepository extends JpaRepository<Module, UUID> {
     // Métodos adicionados para suportar o ModuleService
     Page<Module> findByCreatedByOrderByCreatedAtDesc(User createdBy, Pageable pageable);
 
+    Page<Module> findByCreatedByOrderByOrderIndexAsc(User createdBy, Pageable pageable);
+
     @Query("SELECT m FROM Module m WHERE " +
            "m.visibility = 'GENERAL' OR " +
-           "(m.visibility = 'SPECIFIC' AND EXISTS (SELECT 1 FROM m.allowedPatients p WHERE p.id = :userId))")
+           "(m.visibility = 'SPECIFIC' AND EXISTS (SELECT 1 FROM m.allowedPatients p WHERE p.id = :userId)) " +
+           "ORDER BY m.orderIndex ASC")
     Page<Module> findVisibleModulesForUser(@Param("userId") Long userId, Pageable pageable);
 
     @Query("SELECT DISTINCT m.category FROM Module m WHERE m.createdBy = :createdBy ORDER BY m.category")
@@ -57,8 +62,11 @@ public interface ModuleRepository extends JpaRepository<Module, UUID> {
     // Métodos para cache (sem paginação)
     List<Module> findByCreatedBy(User createdBy);
 
+    List<Module> findByCreatedByOrderByOrderIndexAsc(User createdBy);
+
     @Query("SELECT m FROM Module m WHERE " +
            "m.visibility = 'GENERAL' OR " +
-           "(m.visibility = 'SPECIFIC' AND :patient MEMBER OF m.allowedPatients)")
+           "(m.visibility = 'SPECIFIC' AND :patient MEMBER OF m.allowedPatients) " +
+           "ORDER BY m.orderIndex ASC")
     List<Module> findVisibleToPatient(@Param("patient") User patient);
 }

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import br.rafaalmeida1.nutri_thata_api.dto.request.module.ModuleReorderRequest;
 
 @RestController
 @RequestMapping("/modules")
@@ -80,5 +81,14 @@ public class ModuleController {
         
         moduleService.deleteModule(id, user);
         return ResponseEntity.ok(ApiResponse.success("Módulo excluído com sucesso", null));
+    }
+
+    @PatchMapping("/reorder")
+    public ResponseEntity<ApiResponse<List<ModuleResponse>>> reorderModules(
+            @RequestBody List<ModuleReorderRequest> reorderRequests,
+            @AuthenticationPrincipal User user) {
+        
+        List<ModuleResponse> reorderedModules = moduleService.reorderModules(user, reorderRequests);
+        return ResponseEntity.ok(ApiResponse.success("Módulos reordenados com sucesso", reorderedModules));
     }
 }

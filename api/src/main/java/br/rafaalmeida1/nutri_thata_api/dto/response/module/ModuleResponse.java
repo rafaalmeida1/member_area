@@ -22,6 +22,7 @@ public class ModuleResponse {
     private String description;
     private String coverImage;
     private String category;
+    private Integer orderIndex;
     private List<ContentBlockResponse> content;
     private ContentVisibility visibility;
     private List<AllowedPatientInfo> allowedPatients;

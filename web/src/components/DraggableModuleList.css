@@ -1,0 +1,194 @@
+/* Draggable Module List Styles */
+.draggable-module-list {
+  position: relative;
+}
+
+.draggable-module-list .module-card {
+  transition: all 0.3s ease;
+  cursor: grab;
+}
+
+.draggable-module-list .module-card:active {
+  cursor: grabbing;
+}
+
+.draggable-module-list .module-card.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg) scale(1.05);
+  z-index: 1000;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.draggable-module-list .module-card.drag-over {
+  transform: scale(1.02);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+/* Grid Layout Responsive */
+.draggable-module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .draggable-module-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0.5rem;
+  }
+  
+  .draggable-module-list .module-card {
+    min-height: 200px;
+  }
+}
+
+/* Drag Handle Styles */
+.drag-handle {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+
+.drag-handle:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
+}
+
+/* Action Buttons */
+.module-actions {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.module-action-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.module-action-btn:hover {
+  transform: scale(1.1);
+}
+
+.module-action-btn.edit {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
+}
+
+.module-action-btn.delete {
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+}
+
+.module-action-btn.delete:hover {
+  background: rgba(239, 68, 68, 1);
+}
+
+/* Order Controls */
+.order-controls {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+.order-controls .controls-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.order-controls .controls-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Loading States */
+.module-card.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.module-card.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--color-border);
+  border-top: 2px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Smooth Transitions */
+.module-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.module-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px var(--color-shadow);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-secondary);
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+}
+
+.empty-state p {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+} 

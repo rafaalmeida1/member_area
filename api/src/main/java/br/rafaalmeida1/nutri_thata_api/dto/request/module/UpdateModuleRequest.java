@@ -21,6 +21,7 @@ public class UpdateModuleRequest {
     private String description;
     private String coverImage;
     private String category;
+    private Integer orderIndex;
 
     @Valid
     private List<ContentBlockUpdateData> content;
@@ -58,6 +59,14 @@ public class UpdateModuleRequest {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public Integer getOrderIndex() {
+        return orderIndex;
+    }
+
+    public void setOrderIndex(Integer orderIndex) {
+        this.orderIndex = orderIndex;
     }
 
     public List<ContentBlockUpdateData> getContent() {

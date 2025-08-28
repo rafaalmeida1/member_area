@@ -40,6 +40,10 @@ public class Module {
     @Column(nullable = false)
     private String category;
 
+    @Column(name = "order_index", nullable = false)
+    @Builder.Default
+    private Integer orderIndex = 0;
+
     @OneToMany(mappedBy = "module", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("orderIndex ASC")
     private List<ContentBlock> content;
@@ -109,6 +113,14 @@ public class Module {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public Integer getOrderIndex() {
+        return orderIndex;
+    }
+
+    public void setOrderIndex(Integer orderIndex) {
+        this.orderIndex = orderIndex;
     }
 
     public List<ContentBlock> getContent() {
