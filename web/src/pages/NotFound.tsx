@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, ArrowLeft } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import './NotFound.css';
 
 const NotFound = () => {
@@ -17,10 +16,6 @@ const NotFound = () => {
 
   return (
     <div className="not-found-container">
-      {/* Theme Toggle */}
-      {/* <div className="theme-toggle-container">
-        <ThemeToggle />
-      </div> */}
       
       {/* Background Image */}
       <div className="not-found-background">

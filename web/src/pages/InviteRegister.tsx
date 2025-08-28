@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Key } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { apiService, InvitePreview } from '@/services/api';
 import { parseApiError } from '@/lib/utils';
 import './InviteRegister.css';
@@ -177,10 +176,6 @@ export function InviteRegister() {
 
   return (
     <div className="invite-register-container">
-      {/* Theme Toggle */}
-      {/* <div className="theme-toggle-container">
-        <ThemeToggle />
-      </div> */}
       
       {/* Background Image */}
       <NutriotinistImage />

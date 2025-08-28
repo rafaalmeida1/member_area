@@ -3,7 +3,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { Separator } from '@/components/ui/separator';
 import { useMobile } from '@/hooks/use-mobile';
@@ -47,7 +46,7 @@ export function Layout({
   const navigate = useNavigate();
   const location = useLocation();
   const { isMobile } = useMobile();
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = React.useState(!isMobile);
 
   const handleLogout = () => {
     logout();
@@ -57,6 +56,15 @@ export function Layout({
   const closeSidebar = () => {
     setSidebarOpen(false);
   };
+
+  // Ajustar sidebar quando mudar o tamanho da tela
+  React.useEffect(() => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    } else {
+      setSidebarOpen(true);
+    }
+  }, [isMobile]);
 
   // Layout sem sidebar (para páginas de login, registro, etc.)
   if (!showSidebar) {

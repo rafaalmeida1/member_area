@@ -158,7 +158,8 @@ public class ModuleService {
                 .map(block -> contentBlockRepository.save(block))
                 .collect(Collectors.toList());
         
-        module.setContent(contentBlocks);
+        // Adicionar content blocks ao módulo
+        module.getContent().addAll(contentBlocks);
         module = moduleRepository.save(module);
 
         log.info("Módulo criado com sucesso: {} (ordem: {})", module.getId(), module.getOrderIndex());
@@ -221,11 +222,13 @@ public class ModuleService {
             module.setAllowedPatients(new HashSet<>());
         }
 
-        // Limpar content blocks antigos
+        // Limpar content blocks antigos de forma segura
         if (module.getContent() != null) {
             log.info("Limpando {} content blocks antigos", module.getContent().size());
-            contentBlockRepository.deleteAll(module.getContent());
-            module.setContent(new ArrayList<>());
+            // Deletar os content blocks do banco primeiro
+            contentBlockRepository.deleteByModule(module);
+            // Limpar a lista no módulo
+            module.getContent().clear();
         }
         
         // Criar novos content blocks
@@ -246,7 +249,8 @@ public class ModuleService {
                 .map(block -> contentBlockRepository.save(block))
                 .collect(Collectors.toList());
         
-        module.setContent(contentBlocks);
+        // Atualizar a lista de content blocks no módulo
+        module.getContent().addAll(contentBlocks);
 
         log.info("Salvando módulo com visibilidade: {}", module.getVisibility());
         module = moduleRepository.save(module);

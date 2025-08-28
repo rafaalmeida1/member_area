@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { parseApiError } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,10 +70,6 @@ export function Login() {
 
   return (
     <div className="login-container">
-      {/* Theme Toggle */}
-      {/* <div className="theme-toggle-container">
-        <ThemeToggle />
-      </div> */}
       
       {/* Background Image no meio do espaço do background */}
      <NutriotinistImage />

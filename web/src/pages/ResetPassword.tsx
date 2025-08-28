@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Lock, CheckCircle, AlertCircle } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { apiService } from '@/services/api';
 import './ResetPassword.css';
 import NutriotinistImage from '@/components/NutriotinistImage';
@@ -205,10 +204,7 @@ export function ResetPassword() {
 
   return (
     <div className="reset-password-container">
-      {/* Theme Toggle */}
-      {/* <div className="theme-toggle-container">
-        <ThemeToggle />
-      </div> */}
+
       
       {/* Background Image */}
       <NutriotinistImage />

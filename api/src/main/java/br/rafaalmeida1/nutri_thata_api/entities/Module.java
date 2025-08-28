@@ -44,7 +44,7 @@ public class Module {
     @Builder.Default
     private Integer orderIndex = 0;
 
-    @OneToMany(mappedBy = "module", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "module", cascade = CascadeType.ALL)
     @OrderBy("orderIndex ASC")
     private List<ContentBlock> content;
 

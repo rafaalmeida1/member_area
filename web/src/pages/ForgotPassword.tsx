@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { apiService } from '@/services/api';
 import './ForgotPassword.css';
 import NutriotinistImage from '@/components/NutriotinistImage';
@@ -87,10 +86,6 @@ export function ForgotPassword() {
 
   return (
     <div className="forgot-password-container">
-      {/* Theme Toggle */}
-      <div className="theme-toggle-container">
-        <ThemeToggle />
-      </div>
       
       {/* Background Image */}
       <NutriotinistImage />
