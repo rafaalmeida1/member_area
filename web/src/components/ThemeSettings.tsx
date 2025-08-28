@@ -60,10 +60,18 @@ export function ThemeSettings() {
   const [localTheme, setLocalTheme] = useState<ThemeColors>(theme);
 
   const handleColorChange = (key: keyof ThemeColors, value: string) => {
-    setLocalTheme(prev => ({
-      ...prev,
+    const newTheme = {
+      ...localTheme,
       [key]: value
-    }));
+    };
+    setLocalTheme(newTheme);
+    
+    // Salvar no localStorage imediatamente
+    try {
+      localStorage.setItem('nutri-thata-theme', JSON.stringify(newTheme));
+    } catch (error) {
+      console.error('Erro ao salvar tema no localStorage:', error);
+    }
   };
 
   const handleSave = async () => {
@@ -88,6 +96,12 @@ export function ThemeSettings() {
 
   const handleReset = () => {
     setLocalTheme(theme);
+    // Salvar o tema original no localStorage
+    try {
+      localStorage.setItem('nutri-thata-theme', JSON.stringify(theme));
+    } catch (error) {
+      console.error('Erro ao salvar tema no localStorage:', error);
+    }
   };
 
   const hasChanges = JSON.stringify(localTheme) !== JSON.stringify(theme);

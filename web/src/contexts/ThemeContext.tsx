@@ -25,7 +25,7 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setTheme] = useState<ThemeColors>(defaultTheme);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const applyThemeToCSS = (themeColors: ThemeColors) => {
     const root = document.documentElement;
@@ -66,32 +66,110 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     document.body.style.setProperty('--color-text-secondary', themeColors.textSecondaryColor);
   };
 
+  const saveThemeToLocalStorage = (themeColors: ThemeColors) => {
+    try {
+      localStorage.setItem('nutri-thata-theme', JSON.stringify(themeColors));
+    } catch (error) {
+      console.error('Erro ao salvar tema no localStorage:', error);
+    }
+  };
+
+  const loadThemeFromLocalStorage = (): ThemeColors | null => {
+    try {
+      const saved = localStorage.getItem('nutri-thata-theme');
+      return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+      console.error('Erro ao carregar tema do localStorage:', error);
+      return null;
+    }
+  };
+
+  const isFirstVisit = (): boolean => {
+    try {
+      return !localStorage.getItem('nutri-thata-first-visit');
+    } catch (error) {
+      return true;
+    }
+  };
+
+  const markAsVisited = () => {
+    try {
+      localStorage.setItem('nutri-thata-first-visit', 'true');
+    } catch (error) {
+      console.error('Erro ao marcar primeira visita:', error);
+    }
+  };
+
   const loadTheme = async () => {
     try {
-      setIsLoading(true);
+      // Verificar se é a primeira visita
+      const firstVisit = isFirstVisit();
       
-      // Simular um delay mínimo para mostrar a animação
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (firstVisit) {
+        // Primeira visita: mostrar animação
+        setIsLoading(true);
+        markAsVisited();
+        
+        // Simular um delay mínimo para mostrar a animação
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+
+      // Tentar carregar do localStorage primeiro
+      const savedTheme = loadThemeFromLocalStorage();
       
+      if (savedTheme) {
+        // Usar tema salvo
+        setTheme(savedTheme);
+        applyThemeToCSS(savedTheme);
+        
+        if (firstVisit) {
+          // Delay adicional para garantir que a animação seja vista
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 500);
+        }
+        return;
+      }
+
+      // Se não há tema salvo, carregar do servidor
       const { apiService } = await import('@/services/api');
       const themeColors = await apiService.getTheme();
+      
       setTheme(themeColors);
       applyThemeToCSS(themeColors);
+      saveThemeToLocalStorage(themeColors);
+      
+      if (firstVisit) {
+        // Delay adicional para garantir que a animação seja vista
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
+      }
     } catch (error) {
       console.error('Erro ao carregar tema:', error);
       // Usar tema padrão em caso de erro
       setTheme(defaultTheme);
       applyThemeToCSS(defaultTheme);
-    } finally {
-      // Delay adicional para garantir que a animação seja vista
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
+      
+      if (isFirstVisit()) {
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
+      }
     }
   };
 
   const refreshTheme = async () => {
-    await loadTheme();
+    try {
+      const { apiService } = await import('@/services/api');
+      const themeColors = await apiService.getTheme();
+      
+      setTheme(themeColors);
+      applyThemeToCSS(themeColors);
+      saveThemeToLocalStorage(themeColors);
+    } catch (error) {
+      console.error('Erro ao atualizar tema:', error);
+    }
   };
 
   useEffect(() => {

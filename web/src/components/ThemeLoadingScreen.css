@@ -234,7 +234,7 @@
   height: 100%;
   background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
   border-radius: 3px;
-  animation: progressFill 3s ease-in-out infinite;
+  animation: progressFill 2s ease-in-out infinite;
   position: relative;
 }
 
@@ -246,7 +246,7 @@
   right: 0;
   bottom: 0;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  animation: shimmer 2s ease-in-out infinite;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
 
 /* Animações */

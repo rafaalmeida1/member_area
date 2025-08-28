@@ -31,7 +31,7 @@ export function LoadingSpinner({
 
   const content = (
     <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
-      <Loader2 className={`${sizeClasses[size]} animate-spin text-color-secondary`} />
+      <Loader2 className={`${sizeClasses[size]} animate-spin text-[var(--color-secondary)]`} />
       <p className={`${textSizes[size]} text-muted-foreground font-medium`}>
         {message}
       </p>
