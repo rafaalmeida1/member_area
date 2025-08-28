@@ -9,15 +9,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[#D8C4A4] text-white hover:bg-[#DBCFCB] hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
+        default: "bg-[var(--color-secondary)] text-[var(--color-background)] hover:bg-[var(--color-primary)] hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
         destructive:
           "bg-red-500 text-white hover:bg-red-600 hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
         outline:
-          "border border-[#D8C4A4] bg-transparent text-[#D8C4A4] hover:bg-[#D8C4A4] hover:text-white hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
+          "border border-[var(--color-secondary)] bg-transparent text-[var(--color-secondary)] hover:bg-[var(--color-secondary)] hover:text-[var(--color-background)] hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
         secondary:
-          "bg-[#DBCFCB] text-white hover:bg-[#D8C4A4] hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
-        ghost: "text-[#D8C4A4] hover:bg-[#D8C4A4]/10 hover:transform hover:-translate-y-0.5 disabled:transform-none",
-        link: "text-[#D8C4A4] underline-offset-4 hover:underline hover:text-[#DBCFCB]",
+          "bg-[var(--color-primary)] text-[var(--color-background)] hover:bg-[var(--color-secondary)] hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
+        ghost: "text-[var(--color-secondary)] hover:bg-[var(--color-secondary)]/10 hover:transform hover:-translate-y-0.5 disabled:transform-none",
+        link: "text-[var(--color-secondary)] underline-offset-4 hover:underline hover:text-[var(--color-primary)]",
       },
       size: {
         default: "h-10 px-4 py-2",
