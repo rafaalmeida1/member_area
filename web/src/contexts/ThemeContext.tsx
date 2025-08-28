@@ -39,15 +39,40 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     root.style.setProperty('--color-text', themeColors.textColor);
     root.style.setProperty('--color-text-secondary', themeColors.textSecondaryColor);
     
+    // Definir cores derivadas
+    root.style.setProperty('--color-border', themeColors.backgroundColor === '#FFFFFF' ? '#e5e5e5' : '#333333');
+    root.style.setProperty('--color-muted', themeColors.backgroundColor === '#FFFFFF' ? '#f5f5f5' : '#2c2c2c');
+    root.style.setProperty('--color-shadow', themeColors.backgroundColor === '#FFFFFF' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 0, 0, 0.5)');
+    root.style.setProperty('--color-overlay', themeColors.backgroundColor === '#FFFFFF' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.8)');
+    
     // Aplicar também para compatibilidade com Tailwind
     root.style.setProperty('--tw-color-primary', themeColors.primaryColor);
     root.style.setProperty('--tw-color-secondary', themeColors.secondaryColor);
     root.style.setProperty('--tw-color-accent', themeColors.accentColor);
+    root.style.setProperty('--tw-color-background', themeColors.backgroundColor);
+    root.style.setProperty('--tw-color-surface', themeColors.surfaceColor);
+    root.style.setProperty('--tw-color-text', themeColors.textColor);
+    root.style.setProperty('--tw-color-text-secondary', themeColors.textSecondaryColor);
+    root.style.setProperty('--tw-color-border', themeColors.backgroundColor === '#FFFFFF' ? '#e5e5e5' : '#333333');
+    root.style.setProperty('--tw-color-muted', themeColors.backgroundColor === '#FFFFFF' ? '#f5f5f5' : '#2c2c2c');
+    
+    // Forçar re-render de todos os elementos
+    document.body.style.setProperty('--color-primary', themeColors.primaryColor);
+    document.body.style.setProperty('--color-secondary', themeColors.secondaryColor);
+    document.body.style.setProperty('--color-accent', themeColors.accentColor);
+    document.body.style.setProperty('--color-background', themeColors.backgroundColor);
+    document.body.style.setProperty('--color-surface', themeColors.surfaceColor);
+    document.body.style.setProperty('--color-text', themeColors.textColor);
+    document.body.style.setProperty('--color-text-secondary', themeColors.textSecondaryColor);
   };
 
   const loadTheme = async () => {
     try {
       setIsLoading(true);
+      
+      // Simular um delay mínimo para mostrar a animação
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
       const { apiService } = await import('@/services/api');
       const themeColors = await apiService.getTheme();
       setTheme(themeColors);
@@ -58,7 +83,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       setTheme(defaultTheme);
       applyThemeToCSS(defaultTheme);
     } finally {
-      setIsLoading(false);
+      // Delay adicional para garantir que a animação seja vista
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
     }
   };
 

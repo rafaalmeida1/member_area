@@ -1,18 +1,12 @@
-/* Reset e configurações globais */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* Variáveis CSS globais para o tema */
 :root {
-  /* Cores do tema light - agora usando CSS custom properties */
+  /* Cores padrão do tema */
   --color-primary: #DBCFCB;
   --color-secondary: #D8C4A4;
   --color-accent: #A67B5B;
-  --color-background: #ffffff;
-  --color-surface: #fafafa;
-  --color-text: #2c2c2c;
+  --color-background: #FFFFFF;
+  --color-surface: #FAFAFA;
+  --color-text: #2C2C2C;
   --color-text-secondary: #666666;
   --color-border: #e5e5e5;
   --color-muted: #f5f5f5;
@@ -32,14 +26,14 @@
 }
 
 [data-theme="dark"] {
-  /* Cores do tema dark - bem escuro */
-  --color-primary: #1a1a1a;
-  --color-secondary: #2c2c2c;
+  /* Cores do tema escuro */
+  --color-primary: #DBCFCB;
+  --color-secondary: #D8C4A4;
   --color-accent: #A67B5B;
-  --color-background: #0a0a0a;
-  --color-surface: #1a1a1a;
+  --color-background: #1a1a1a;
+  --color-surface: #2c2c2c;
   --color-text: #ffffff;
-  --color-text-secondary: #a0a0a0;
+  --color-text-secondary: #cccccc;
   --color-border: #333333;
   --color-muted: #2c2c2c;
   --color-shadow: rgba(0, 0, 0, 0.5);
@@ -57,48 +51,60 @@
   --tw-color-muted: var(--color-muted);
 }
 
-/* Garantir que o dark mode seja aplicado em todos os elementos */
-[data-theme="dark"] * {
-  color-scheme: dark;
-}
-
-[data-theme="dark"] body {
-  background-color: var(--color-background);
-  color: var(--color-text);
-}
-
-[data-theme="dark"] input,
-[data-theme="dark"] textarea,
-[data-theme="dark"] select {
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  border-color: var(--color-border);
-}
-
-[data-theme="dark"] button {
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  border-color: var(--color-border);
-}
-
-/* Remover cores verdes de todos os elementos */
-[data-theme="dark"] .bg-green-500,
-[data-theme="dark"] .bg-green-600,
-[data-theme="dark"] .text-green-500,
-[data-theme="dark"] .text-green-600,
-[data-theme="dark"] .border-green-500,
-[data-theme="dark"] .border-green-600 {
-  background-color: var(--color-surface) !important;
-  color: var(--color-text) !important;
-  border-color: var(--color-border) !important;
+/* Estilos globais */
+* {
+  box-sizing: border-box;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background-color: var(--color-background);
   color: var(--color-text);
-  line-height: 1.6;
-  transition: all 0.3s ease;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Garantir que todos os elementos usem as variáveis de tema */
+button, input, select, textarea {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+/* Estilos para toasts */
+.toast {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+/* Estilos para selects */
+select {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+/* Estilos para inputs */
+input {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+/* Estilos para textareas */
+textarea {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-border) !important;
 }
 
 /* Utilitários */

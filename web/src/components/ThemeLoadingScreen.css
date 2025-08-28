@@ -1,0 +1,423 @@
+/* Loading Screen Animado */
+.theme-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-accent));
+  background-size: 400% 400%;
+  animation: gradientShift 3s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.theme-loading-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  max-width: 500px;
+  text-align: center;
+}
+
+/* Círculo de fundo animado */
+.loading-circle {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle-ring {
+  position: absolute;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  animation: rotate 2s linear infinite;
+}
+
+.circle-ring:nth-child(1) {
+  width: 120px;
+  height: 120px;
+  border-top-color: rgba(255, 255, 255, 0.8);
+  animation-delay: 0s;
+}
+
+.circle-ring:nth-child(2) {
+  width: 160px;
+  height: 160px;
+  border-right-color: rgba(255, 255, 255, 0.6);
+  animation-delay: 0.3s;
+}
+
+.circle-ring:nth-child(3) {
+  width: 200px;
+  height: 200px;
+  border-bottom-color: rgba(255, 255, 255, 0.4);
+  animation-delay: 0.6s;
+}
+
+/* Ícone central */
+.loading-icon {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.palette-icon {
+  width: 40px;
+  height: 40px;
+  color: white;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.sparkles-icon {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 20px;
+  height: 20px;
+  color: var(--color-accent);
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+/* Texto animado */
+.loading-text {
+  margin-top: 1rem;
+}
+
+.loading-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
+}
+
+.char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Animação das letras com delay */
+.char:nth-child(1) { animation-delay: 0.1s; }
+.char:nth-child(2) { animation-delay: 0.2s; }
+.char:nth-child(3) { animation-delay: 0.3s; }
+.char:nth-child(4) { animation-delay: 0.4s; }
+.char:nth-child(5) { animation-delay: 0.5s; }
+.char:nth-child(6) { animation-delay: 0.6s; }
+.char:nth-child(7) { animation-delay: 0.7s; }
+.char:nth-child(8) { animation-delay: 0.8s; }
+.char:nth-child(9) { animation-delay: 0.9s; }
+.char:nth-child(10) { animation-delay: 1.0s; }
+.char:nth-child(11) { animation-delay: 1.1s; }
+.char:nth-child(12) { animation-delay: 1.2s; }
+.char:nth-child(13) { animation-delay: 1.3s; }
+.char:nth-child(14) { animation-delay: 1.4s; }
+.char:nth-child(15) { animation-delay: 1.5s; }
+.char:nth-child(16) { animation-delay: 1.6s; }
+.char:nth-child(17) { animation-delay: 1.7s; }
+.char:nth-child(18) { animation-delay: 1.8s; }
+.char:nth-child(19) { animation-delay: 1.9s; }
+.char:nth-child(20) { animation-delay: 2.0s; }
+.char:nth-child(21) { animation-delay: 2.1s; }
+.char:nth-child(22) { animation-delay: 2.2s; }
+.char:nth-child(23) { animation-delay: 2.3s; }
+.char:nth-child(24) { animation-delay: 2.4s; }
+.char:nth-child(25) { animation-delay: 2.5s; }
+.char:nth-child(26) { animation-delay: 2.6s; }
+.char:nth-child(27) { animation-delay: 2.7s; }
+.char:nth-child(28) { animation-delay: 2.8s; }
+.char:nth-child(29) { animation-delay: 2.9s; }
+.char:nth-child(30) { animation-delay: 3.0s; }
+.char:nth-child(31) { animation-delay: 3.1s; }
+.char:nth-child(32) { animation-delay: 3.2s; }
+.char:nth-child(33) { animation-delay: 3.3s; }
+.char:nth-child(34) { animation-delay: 3.4s; }
+.char:nth-child(35) { animation-delay: 3.5s; }
+.char:nth-child(36) { animation-delay: 3.6s; }
+.char:nth-child(37) { animation-delay: 3.7s; }
+.char:nth-child(38) { animation-delay: 3.8s; }
+.char:nth-child(39) { animation-delay: 3.9s; }
+.char:nth-child(40) { animation-delay: 4.0s; }
+.char:nth-child(41) { animation-delay: 4.1s; }
+.char:nth-child(42) { animation-delay: 4.2s; }
+
+/* Partículas flutuantes */
+.floating-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: float 4s ease-in-out infinite;
+}
+
+.particle-1 {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.particle-2 {
+  top: 60%;
+  left: 80%;
+  animation-delay: 0.5s;
+}
+
+.particle-3 {
+  top: 80%;
+  left: 20%;
+  animation-delay: 1s;
+}
+
+.particle-4 {
+  top: 30%;
+  left: 70%;
+  animation-delay: 1.5s;
+}
+
+.particle-5 {
+  top: 70%;
+  left: 30%;
+  animation-delay: 2s;
+}
+
+.particle-6 {
+  top: 40%;
+  left: 60%;
+  animation-delay: 2.5s;
+}
+
+/* Barra de progresso */
+.progress-container {
+  width: 300px;
+  margin-top: 2rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
+  border-radius: 3px;
+  animation: progressFill 3s ease-in-out infinite;
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* Animações */
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 0.7;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.8;
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-10px) translateX(-10px);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateY(-30px) translateX(5px);
+    opacity: 0.9;
+  }
+}
+
+@keyframes progressFill {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .loading-title {
+    font-size: 1.2rem;
+  }
+  
+  .loading-circle {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .circle-ring:nth-child(1) {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .circle-ring:nth-child(2) {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .circle-ring:nth-child(3) {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .loading-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .palette-icon {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .progress-container {
+    width: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .loading-title {
+    font-size: 1rem;
+  }
+  
+  .loading-circle {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .circle-ring:nth-child(1) {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .circle-ring:nth-child(2) {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .circle-ring:nth-child(3) {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .loading-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .palette-icon {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .progress-container {
+    width: 200px;
+  }
+} 

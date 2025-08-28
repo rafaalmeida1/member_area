@@ -465,6 +465,18 @@ export function AdminDashboard({ professionalName }: AdminDashboardProps) {
             </CardContent>
           </Card>
         </div>
+
+        {/* Modal do PatientSelector */}
+        <PatientSelector
+          isOpen={showPatientSelector}
+          onClose={() => setShowPatientSelector(false)}
+          onSave={(selectedIds) => {
+            setSelectedPatientIds(selectedIds);
+            setShowPatientSelector(false);
+          }}
+          initialSelectedIds={selectedPatientIds}
+          title="Selecionar Pacientes para o Módulo"
+        />
       </Layout>
     );
   }
@@ -576,18 +588,6 @@ export function AdminDashboard({ professionalName }: AdminDashboardProps) {
             </div>
           )}
         </LoadingWrapper>
-
-        {/* Modal do PatientSelector */}
-        <PatientSelector
-          isOpen={showPatientSelector}
-          onClose={() => setShowPatientSelector(false)}
-          onSave={(selectedIds) => {
-            setSelectedPatientIds(selectedIds);
-            setShowPatientSelector(false);
-          }}
-          initialSelectedIds={selectedPatientIds}
-          title="Selecionar Pacientes para o Módulo"
-        />
       </div>
     </Layout>
   );
