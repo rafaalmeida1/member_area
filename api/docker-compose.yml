@@ -54,12 +54,6 @@ services:
       - api_storage:/app/storage
       - api_logs:/app/logs
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
 volumes:
   api_uploads:

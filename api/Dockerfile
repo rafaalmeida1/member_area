@@ -17,6 +17,8 @@ COPY src ./src
 
 # Build da aplicação
 RUN mvn clean package -DskipTests
+RUN mvn flyway:repair
+RUN mvn flyway:migrate
 
 # Stage de produção
 FROM eclipse-temurin:21-jre-alpine
