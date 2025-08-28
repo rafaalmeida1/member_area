@@ -52,6 +52,7 @@ public class SecurityConfig {
         "/invites/*",
         "/test/**",
         "/api/test/**",
+        "/api/theme",
         "/static/**",
         "/v3/api-docs/**",
         "/swagger-ui/**",
