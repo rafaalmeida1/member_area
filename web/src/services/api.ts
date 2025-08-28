@@ -720,7 +720,7 @@ class ApiService {
       totalPages: number;
       totalElements: number;
       currentPage: number;
-    }>> = await this.api.get(`/api/notifications/all?page=${page}&size=${size}`);
+    }>> = await this.api.get(`/notifications/all?page=${page}&size=${size}`);
     
     if (response.data.status === 'success' && response.data.data) {
       return response.data.data;
