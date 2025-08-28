@@ -190,15 +190,26 @@ public class ModuleService {
             module.setAllowedPatients(new HashSet<>());
         }
 
-        // Atualizar conteúdo
-        List<ContentBlock> contentBlocks = request.getContent().stream()
-                .map(contentDto -> {
-                    ContentBlock block = new ContentBlock();
-                    block.setType(contentDto.getType());
-                    block.setContent(contentDto.getContent());
-                    block.setOrderIndex(contentDto.getOrder());
-                    return block;
-                })
+        // Limpar content blocks antigos
+        if (module.getContent() != null) {
+            contentBlockRepository.deleteAll(module.getContent());
+            module.setContent(new ArrayList<>());
+        }
+        
+        // Criar novos content blocks
+        List<ContentBlock> contentBlocks = new ArrayList<>();
+        for (var contentDto : request.getContent()) {
+            ContentBlock block = new ContentBlock();
+            block.setType(contentDto.getType());
+            block.setContent(contentDto.getContent());
+            block.setOrderIndex(contentDto.getOrder());
+            block.setModule(module);
+            contentBlocks.add(block);
+        }
+        
+        // Salvar content blocks
+        contentBlocks = contentBlocks.stream()
+                .map(block -> contentBlockRepository.save(block))
                 .collect(Collectors.toList());
         
         module.setContent(contentBlocks);

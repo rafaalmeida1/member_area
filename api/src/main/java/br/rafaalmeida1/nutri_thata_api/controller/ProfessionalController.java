@@ -12,6 +12,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/professional")
 @RequiredArgsConstructor
@@ -52,5 +54,15 @@ public class ProfessionalController {
         
         ProfessionalProfileResponse response = professionalService.getBannerData(user);
         return ResponseEntity.ok(ApiResponse.success("Dados do banner encontrados", response));
+    }
+
+    @PatchMapping("/profile/theme")
+    @PreAuthorize("hasRole('PROFESSIONAL')")
+    public ResponseEntity<ApiResponse<Void>> updateTheme(
+            @RequestBody Map<String, String> themeData,
+            @AuthenticationPrincipal User user) {
+        
+        professionalService.updateTheme(user, themeData);
+        return ResponseEntity.ok(ApiResponse.success("Tema atualizado com sucesso", null));
     }
 }

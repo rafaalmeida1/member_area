@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
@@ -187,5 +188,45 @@ public class ProfessionalService {
         }
         
         return professionalMapper.toProfessionalProfileResponse(profiles.get(0));
+    }
+
+    @Caching(evict = {
+        @CacheEvict(value = "theme_data", key = "'global'"),
+        @CacheEvict(value = "theme", key = "'global'")
+    })
+    @Transactional
+    public void updateTheme(User user, Map<String, String> themeData) {
+        if (!user.getRole().equals(Role.PROFESSIONAL)) {
+            throw new BusinessException("Apenas profissionais podem atualizar o tema");
+        }
+
+        ProfessionalProfile profile = professionalProfileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new NotFoundException("Perfil profissional não encontrado"));
+
+        // Atualizar cores do tema
+        if (themeData.containsKey("primaryColor") && isValidHexColor(themeData.get("primaryColor"))) {
+            profile.setThemePrimaryColor(themeData.get("primaryColor"));
+        }
+        if (themeData.containsKey("secondaryColor") && isValidHexColor(themeData.get("secondaryColor"))) {
+            profile.setThemeSecondaryColor(themeData.get("secondaryColor"));
+        }
+        if (themeData.containsKey("accentColor") && isValidHexColor(themeData.get("accentColor"))) {
+            profile.setThemeAccentColor(themeData.get("accentColor"));
+        }
+        if (themeData.containsKey("backgroundColor") && isValidHexColor(themeData.get("backgroundColor"))) {
+            profile.setThemeBackgroundColor(themeData.get("backgroundColor"));
+        }
+        if (themeData.containsKey("surfaceColor") && isValidHexColor(themeData.get("surfaceColor"))) {
+            profile.setThemeSurfaceColor(themeData.get("surfaceColor"));
+        }
+        if (themeData.containsKey("textColor") && isValidHexColor(themeData.get("textColor"))) {
+            profile.setThemeTextColor(themeData.get("textColor"));
+        }
+        if (themeData.containsKey("textSecondaryColor") && isValidHexColor(themeData.get("textSecondaryColor"))) {
+            profile.setThemeTextSecondaryColor(themeData.get("textSecondaryColor"));
+        }
+
+        professionalProfileRepository.save(profile);
+        log.info("Tema atualizado para usuário: {}", user.getEmail());
     }
 }

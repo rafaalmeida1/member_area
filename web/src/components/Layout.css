@@ -391,4 +391,101 @@
   .sidebar-content {
     padding: 1rem;
   }
+  
+  .sidebar-branding {
+    margin-bottom: 1.5rem;
+  }
+  
+  .brand-logo {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.875rem;
+  }
+  
+  .brand-name {
+    font-size: 1.125rem;
+  }
+  
+  .nav-item {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .nav-item svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+  
+  .header-actions {
+    gap: 0.5rem;
+  }
+  
+  .header-actions button {
+    padding: 0.5rem;
+    min-width: 40px;
+    min-height: 40px;
+  }
+  
+  .header-actions .user-info {
+    display: none;
+  }
+  
+  .header-actions .user-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-header {
+    padding: 0 0.75rem;
+    min-height: 56px;
+  }
+  
+  .header-title {
+    font-size: 1rem;
+    max-width: 150px;
+  }
+  
+  .content-container {
+    padding: 0.25rem;
+  }
+  
+  .sidebar-content {
+    padding: 0.75rem;
+  }
+  
+  .brand-logo {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .brand-name {
+    font-size: 1rem;
+  }
+  
+  .nav-item {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .nav-item svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  .header-actions button {
+    padding: 0.375rem;
+    min-width: 36px;
+    min-height: 36px;
+  }
+  
+  .header-actions .user-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.625rem;
+  }
 } 

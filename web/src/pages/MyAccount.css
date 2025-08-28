@@ -337,19 +337,29 @@
 
 @media (max-width: 768px) {
   .my-account-container {
-    padding: 0;
+    padding: 0 1rem;
   }
   
   .tabs-list {
-    grid-template-columns: 1fr;
-    gap: 0.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
     margin-bottom: 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--color-background);
+    padding: 0.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
   
   .tabs-trigger {
-    padding: 1rem;
-    min-height: 48px;
-    font-size: 1rem;
+    padding: 0.75rem 0.5rem;
+    min-height: 44px;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .form-grid {
@@ -451,10 +461,22 @@
 }
 
 @media (max-width: 480px) {
+  .my-account-container {
+    padding: 0 0.5rem;
+  }
+  
+  .tabs-list {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    padding: 0.25rem;
+  }
+  
   .tabs-trigger {
-    padding: 0.875rem;
-    min-height: 44px;
-    font-size: 0.875rem;
+    padding: 0.75rem;
+    min-height: 40px;
+    font-size: 0.75rem;
+    text-align: center;
   }
   
   .form-grid {

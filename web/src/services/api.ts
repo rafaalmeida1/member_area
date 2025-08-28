@@ -849,6 +849,18 @@ class ApiService {
     }
   }
 
+  async updateTheme(theme: ThemeColors): Promise<void> {
+    try {
+      const response = await this.api.patch('/professional/profile/theme', theme);
+      if (response.data.status !== 'success') {
+        throw new Error(response.data.message || 'Erro ao atualizar tema');
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar tema:', error);
+      throw error;
+    }
+  }
+
 
 }
 

@@ -33,6 +33,7 @@ import { Layout } from '@/components/Layout';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { FileUpload } from '@/components/FileUpload';
 import { BannerPreview } from '@/components/BannerPreview';
+import { ThemeSettings } from '@/components/ThemeSettings';
 import './MyAccount.css';
 
 interface UserStats {
@@ -282,9 +283,10 @@ export function MyAccount({
     >
       <div className="my-account-container">
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-1 md:grid-cols-5">
             <TabsTrigger value="profile">Meu Perfil</TabsTrigger>
             {isProfessional && <TabsTrigger value="professional">Perfil Profissional</TabsTrigger>}
+            {isProfessional && <TabsTrigger value="theme">Tema</TabsTrigger>}
             <TabsTrigger value="stats">Minhas Estatísticas</TabsTrigger>
             <TabsTrigger value="security">Segurança</TabsTrigger>
           </TabsList>
@@ -472,6 +474,12 @@ export function MyAccount({
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+          )}
+          
+          {isProfessional && (
+            <TabsContent value="theme" className="space-y-6">
+              <ThemeSettings />
             </TabsContent>
           )}
           
