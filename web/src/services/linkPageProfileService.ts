@@ -12,7 +12,4 @@ export const linkPageProfileService = {
     return response.data;
   },
 
-  async copySiteColors(): Promise<void> {
-    await privateApi.post('/api/professional/link-page-profile/copy-site-colors');
-  },
 };

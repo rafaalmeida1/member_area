@@ -86,11 +86,6 @@ public class LinkPageProfileService {
         // Atualizar os campos
         linkPageProfileMapper.updateEntity(request, linkPageProfile);
 
-        // Se mudou para usar cores do site, copiar as cores
-        if (Boolean.TRUE.equals(request.getUseSiteColors())) {
-            copyColorsFromProfessionalProfile(linkPageProfile, professionalProfile);
-        }
-
         LinkPageProfile saved = linkPageProfileRepository.save(linkPageProfile);
         log.info("Perfil da página atualizado para usuário: {}", userId);
 
@@ -128,29 +123,9 @@ public class LinkPageProfileService {
             return linkPageProfileMapper.toResponse(tempProfile);
         }
 
-        // Verificar se deve usar cores do site
-        if (Boolean.TRUE.equals(linkPageProfile.getUseSiteColors())) {
-            copyColorsFromProfessionalProfile(linkPageProfile, linkPageProfile.getProfessionalProfile());
-        }
-
         return linkPageProfileMapper.toResponse(linkPageProfile);
     }
 
-    public void copyColorsFromSite(Long userId) {
-        log.info("Copiando cores do site para página de links do usuário: {}", userId);
-
-        ProfessionalProfile professionalProfile = professionalProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Perfil profissional não encontrado"));
-
-        LinkPageProfile linkPageProfile = linkPageProfileRepository.findByProfessionalProfile(professionalProfile)
-                .orElseThrow(() -> new RuntimeException("Perfil da página não encontrado"));
-
-        copyColorsFromProfessionalProfile(linkPageProfile, professionalProfile);
-        linkPageProfile.setUseSiteColors(true);
-
-        linkPageProfileRepository.save(linkPageProfile);
-        log.info("Cores copiadas do site para página de links do usuário: {}", userId);
-    }
 
     private void copyColorsFromProfessionalProfile(LinkPageProfile linkPageProfile, ProfessionalProfile professionalProfile) {
         linkPageProfile.setPagePrimaryColor(professionalProfile.getThemePrimaryColor());

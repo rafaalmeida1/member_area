@@ -56,15 +56,4 @@ public class LinkPageProfileController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/copy-site-colors")
-    public ResponseEntity<Void> copySiteColors(
-            Authentication authentication,
-            HttpServletRequest request) {
-        log.info("Copiando cores do site para página de links do usuário: {}", authentication.getName());
-        
-        Long userId = extractUserIdFromRequest(request);
-        linkPageProfileService.copyColorsFromSite(userId);
-        
-        return ResponseEntity.ok().build();
-    }
 }

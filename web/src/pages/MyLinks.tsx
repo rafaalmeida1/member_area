@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Edit2, Trash2, GripVertical, ExternalLink, BarChart3, Palette, Upload, Eye, MessageCircle, Phone, Mail, Instagram, Youtube, Linkedin, Facebook, Twitter, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -201,12 +201,6 @@ const MyLinks: React.FC = () => {
 
   const watchLinkType = watch('linkType');
 
-  useEffect(() => {
-    loadLinks();
-    loadProfessionalProfile();
-    loadPageProfile();
-  }, []);
-
   const loadProfessionalProfile = async () => {
     try {
       const data = await apiService.getProfessionalProfile();
@@ -218,7 +212,7 @@ const MyLinks: React.FC = () => {
     }
   };
 
-  const loadLinks = async () => {
+  const loadLinks = useCallback(async () => {
     try {
       console.log('MyLinks: Iniciando carregamento de links...');
       setLoading(true);
@@ -273,7 +267,7 @@ const MyLinks: React.FC = () => {
       console.log('MyLinks: Finalizando carregamento de links...');
       setLoading(false);
     }
-  };
+  }, []);
 
   const onSubmit = async (data: LinkFormData) => {
     try {
@@ -613,7 +607,7 @@ const MyLinks: React.FC = () => {
     }
   };
 
-  const loadPageProfile = async () => {
+  const loadPageProfile = useCallback(async () => {
     try {
       setPageProfileLoading(true);
       const data = await linkPageProfileService.getLinkPageProfile();
@@ -647,7 +641,13 @@ const MyLinks: React.FC = () => {
     } finally {
       setPageProfileLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadLinks();
+    loadProfessionalProfile();
+    loadPageProfile();
+  }, [loadLinks, loadPageProfile]);
 
   const savePageProfile = async (data: LinkPageProfileRequest) => {
     try {
@@ -695,8 +695,22 @@ const MyLinks: React.FC = () => {
 
   const copySiteColors = async () => {
     try {
-      await linkPageProfileService.copySiteColors();
-      await loadPageProfile(); // Recarregar para pegar as novas cores
+      // Buscar as cores do tema do site principal
+      const professionalProfile = await apiService.getProfessionalProfile();
+      
+      // Copiar as cores do site para o preview
+      setPreviewData(prev => ({
+        ...prev,
+        pagePrimaryColor: professionalProfile.themePrimaryColor || '#3b82f6',
+        pageSecondaryColor: professionalProfile.themeSecondaryColor || '#64748b',
+        pageBackgroundColor: professionalProfile.themeBackgroundColor || '#ffffff',
+        pageSurfaceColor: professionalProfile.themeSurfaceColor || '#f8fafc',
+        pageTextPrimaryColor: professionalProfile.themeTextColor || '#1e293b',
+        pageTextSecondaryColor: professionalProfile.themeTextSecondaryColor || '#64748b',
+        pageBorderColor: '#e2e8f0', // Cor padrão para bordas
+        pageHoverColor: '#f1f5f9', // Cor padrão para hover
+      }));
+      
       showSuccessToast('Cores do site copiadas com sucesso!');
     } catch (error: unknown) {
       console.error('Erro ao copiar cores do site:', error);
@@ -986,7 +1000,7 @@ const MyLinks: React.FC = () => {
                 <div className="space-y-2">
                   {links.map((link) => (
                     <SortableItem key={link.id} id={link.id}>
-                      {({ dragHandleProps }: { dragHandleProps?: React.RefAttributes<HTMLDivElement> & Record<string, any> }) => (
+                      {({ dragHandleProps }: { dragHandleProps?: React.RefAttributes<HTMLDivElement> & Record<string, unknown> }) => (
                         <Card className="hover:shadow-md transition-shadow">
                           <CardContent className="p-4">
                             <div className="flex items-center gap-4">
