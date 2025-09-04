@@ -140,16 +140,17 @@ const PublicLinks: React.FC = () => {
         }
         
         setData(response);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Erro ao carregar links:', err);
         
-        if (err.response?.status === 404) {
+        const axiosError = err as { response?: { status: number }; code?: string };
+        if (axiosError.response?.status === 404) {
           setError('Profissional não encontrado. Verifique se o link está correto.');
-        } else if (err.response?.status === 403) {
+        } else if (axiosError.response?.status === 403) {
           setError('Esta página não está disponível publicamente.');
-        } else if (err.response?.status >= 500) {
+        } else if (axiosError.response?.status && axiosError.response.status >= 500) {
           setError('Erro interno do servidor. Tente novamente mais tarde.');
-        } else if (err.code === 'NETWORK_ERROR' || !err.response) {
+        } else if (axiosError.code === 'NETWORK_ERROR' || !axiosError.response) {
           setError('Erro de conexão. Verifique sua internet e tente novamente.');
         } else {
           setError('Erro inesperado ao carregar a página. Tente recarregar.');
@@ -267,176 +268,191 @@ const PublicLinks: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen relative">
-      {/* Seção superior com background */}
-      <div 
-        className="relative min-h-[65vh] flex flex-col justify-center"
-        style={{
-          ...backgroundStyle,
-          backgroundImage: data.backgroundImage 
-            ? `url(${data.backgroundImage})` 
-            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}
-      >
-        {/* Overlay para melhor legibilidade */}
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        
-        <div className="relative z-10 max-w-sm mx-auto px-6 text-center">
-          {/* Avatar */}
-          <div className="mb-6">
-            <Avatar className="w-32 h-32 mx-auto border-4 border-white shadow-2xl">
+    <div className="min-h-screen bg-white">
+      {/* Header with background image */}
+      <div className="relative">
+        <div
+          className="h-64 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: data.backgroundImage 
+              ? `url('${data.backgroundImage}')` 
+              : `linear-gradient(135deg, ${data.themePrimaryColor || '#667eea'} 0%, ${data.themeSecondaryColor || '#764ba2'} 100%)`,
+            ...backgroundStyle
+          }}
+        />
+
+        {/* SVG Curve */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 120" className="w-full h-8" preserveAspectRatio="none">
+            <path 
+              d="M0,0 C480,120 960,120 1440,0 L1440,120 L0,120 Z" 
+              fill={data.themeBackgroundColor || "white"} 
+            />
+          </svg>
+        </div>
+
+        {/* Profile Picture */}
+        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
+            <Avatar className="w-full h-full">
               <AvatarImage src={data.image} alt={data.name} className="object-cover" />
               <AvatarFallback 
-                className="text-3xl font-bold text-white"
-                style={{ backgroundColor: data.themePrimaryColor || '#8B5A3C' }}
+                className="text-2xl font-bold text-white w-full h-full flex items-center justify-center"
+                style={{ backgroundColor: data.themePrimaryColor || '#667eea' }}
               >
                 {data.name?.charAt(0)?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </div>
-          
-          {/* Nome */}
-          <h1 className="text-2xl font-bold mb-2 text-white">
-            {data.name}
-          </h1>
-          
-          {/* Título */}
-          {data.title && (
-            <p className="text-base mb-4 text-white/90 font-medium">
-              {data.title}
-            </p>
-          )}
-          
-          {/* Bio */}
-          {data.bio && (
-            <p className="text-sm leading-relaxed mb-8 text-white/80 max-w-xs mx-auto">
-              {data.bio}
-            </p>
-          )}
-
-          {/* Links Sociais (Ícones) */}
-          {socialLinks.length > 0 && (
-            <div className="flex justify-center space-x-4 mb-8">
-              {socialLinks.map((link) => (
-                <div
-                  key={link.id}
-                  className="cursor-pointer transform hover:scale-110 transition-transform duration-200"
-                  onClick={() => handleLinkClick(link)}
-                >
-                  <LinkIcon linkType={link.linkType} icon={link.icon} size={24} isSmall={true} />
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Seção inferior curvada com links normais */}
-      <div className="relative -mt-8">
-        {/* Curva */}
-        <div 
-          className="h-8 rounded-t-3xl"
-          style={{ backgroundColor: data.themeBackgroundColor || '#ffffff' }}
-        ></div>
-        
-        {/* Conteúdo dos links */}
-        <div 
-          className="px-6 pb-12"
-          style={{ backgroundColor: data.themeBackgroundColor || '#ffffff' }}
-        >
-          <div className="max-w-sm mx-auto">
-            {regularLinks.length > 0 ? (
-              <div className="space-y-4 pt-4">
-                {regularLinks.map((link) => (
-                  <div
-                    key={link.id}
-                    className="w-full rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-[1.02]"
-                    style={{
-                      backgroundColor: data.themeSurfaceColor || '#f8fafc',
-                      border: `1px solid ${data.themeBorderColor || '#e2e8f0'}`
-                    }}
-                    onClick={() => handleLinkClick(link)}
-                  >
-                    <div className="p-4 flex items-center justify-between">
-                      <div className="flex items-center flex-1">
-                        <div className="mr-4 flex-shrink-0">
-                          <LinkIcon linkType={link.linkType} icon={link.icon} />
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <h3 
-                            className="font-semibold text-base mb-1 truncate"
-                            style={{ color: data.themeTextPrimaryColor || '#1e293b' }}
-                          >
-                            {link.title}
-                          </h3>
-                          
-                          {link.description && (
-                            <p 
-                              className="text-sm leading-relaxed line-clamp-2"
-                              style={{ color: data.themeTextSecondaryColor || '#64748b' }}
-                            >
-                              {link.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="ml-3 flex-shrink-0">
-                        <ExternalLink 
-                          size={18} 
-                          style={{ color: data.themeSecondaryColor || '#64748b' }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p 
-                  className="text-base"
-                  style={{ color: data.themeTextSecondaryColor || '#64748b' }}
-                >
-                  Nenhum link disponível no momento.
-                </p>
-              </div>
-            )}
-
-            {/* Footer com botão "Create a free bio site" */}
-            <div className="text-center mt-12 pt-6">
-              <div 
-                className="inline-flex items-center px-6 py-3 rounded-full border-2 transition-all duration-200 hover:shadow-md cursor-pointer"
-                style={{ 
-                  borderColor: data.themeBorderColor || '#e2e8f0',
-                  backgroundColor: data.themeBackgroundColor || '#ffffff'
-                }}
-                onClick={() => window.open('/', '_blank')}
+      <div className="px-6 pt-12 pb-8">
+        <div className="w-full max-w-sm mx-auto">
+          {/* Name and title */}
+          <div className="text-center mb-6">
+            <h1 
+              className="text-2xl font-semibold mb-1"
+              style={{ color: data.themeTextPrimaryColor || '#111827' }}
+            >
+              {data.name}
+            </h1>
+            {data.title && (
+              <p 
+                className="text-sm font-medium tracking-wider uppercase"
+                style={{ color: data.themeTextSecondaryColor || '#6b7280' }}
               >
-                <div 
-                  className="w-3 h-3 rounded-full mr-3"
-                  style={{ backgroundColor: data.themePrimaryColor || '#8B5A3C' }}
-                ></div>
-                <span 
-                  className="text-sm font-medium"
-                  style={{ color: data.themeTextPrimaryColor || '#1e293b' }}
+                {data.title}
+              </p>
+            )}
+          </div>
+
+          {/* Bio */}
+          {data.bio && (
+            <div className="text-center mb-6">
+              <p 
+                className="text-sm leading-relaxed"
+                style={{ color: data.themeTextSecondaryColor || '#6b7280' }}
+              >
+                {data.bio}
+              </p>
+            </div>
+          )}
+
+          {/* Social media icons */}
+          {socialLinks.length > 0 && (
+            <div className="flex justify-center gap-6 mb-8">
+              {socialLinks.map((link) => (
+                <button 
+                  key={link.id}
+                  className="p-2 hover:scale-110 transition-transform duration-200"
+                  onClick={() => handleLinkClick(link)}
                 >
-                  CREATE A FREE BIO SITE
-                </span>
-                <ExternalLink 
-                  size={16} 
-                  className="ml-3"
-                  style={{ color: data.themeTextSecondaryColor || '#64748b' }}
-                />
-              </div>
+                  <div style={{ color: data.themeTextPrimaryColor || '#374151' }}>
+                    {renderSocialIcon(link.linkType, 24)}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Action buttons */}
+          {regularLinks.length > 0 ? (
+            <div className="space-y-4">
+              {regularLinks.map((link) => (
+                <button
+                  key={link.id}
+                  className="w-full py-4 rounded-lg font-medium border-0 transition-all duration-200 hover:scale-[1.02] text-center"
+                  style={{
+                    backgroundColor: data.themeSurfaceColor || '#f3f4f6',
+                    color: data.themeTextPrimaryColor || '#374151'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = data.themeHoverColor || '#e5e7eb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = data.themeSurfaceColor || '#f3f4f6';
+                  }}
+                  onClick={() => handleLinkClick(link)}
+                >
+                  <span className="text-balance leading-tight">
+                    {link.title}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p 
+                className="text-base"
+                style={{ color: data.themeTextSecondaryColor || '#6b7280' }}
+              >
+                Nenhum link disponível no momento.
+              </p>
+            </div>
+          )}
+
+          {/* Footer com botão "Create a free bio site" */}
+          <div className="text-center mt-12 pt-6">
+            <div 
+              className="inline-flex items-center px-6 py-3 rounded-full border-2 transition-all duration-200 hover:shadow-md cursor-pointer"
+              style={{ 
+                borderColor: data.themeBorderColor || '#e5e7eb',
+                backgroundColor: data.themeBackgroundColor || '#ffffff'
+              }}
+              onClick={() => window.open('/', '_blank')}
+            >
+              <div 
+                className="w-3 h-3 rounded-full mr-3"
+                style={{ backgroundColor: data.themePrimaryColor || '#667eea' }}
+              ></div>
+              <span 
+                className="text-sm font-medium"
+                style={{ color: data.themeTextPrimaryColor || '#111827' }}
+              >
+                CREATE A FREE BIO SITE
+              </span>
+              <ExternalLink 
+                size={16} 
+                className="ml-3"
+                style={{ color: data.themeTextSecondaryColor || '#6b7280' }}
+              />
             </div>
           </div>
         </div>
       </div>
     </div>
   );
+
+  // Função para renderizar ícones sociais
+  function renderSocialIcon(linkType: LinkType, size: number) {
+    const iconProps = { size, className: "text-current" };
+    
+    switch (linkType) {
+      case 'WHATSAPP':
+        return <MessageCircle {...iconProps} />;
+      case 'EMAIL':
+        return <Mail {...iconProps} />;
+      case 'PHONE':
+        return <Phone {...iconProps} />;
+      case 'INSTAGRAM':
+        return <Instagram {...iconProps} />;
+      case 'YOUTUBE':
+        return <Youtube {...iconProps} />;
+      case 'LINKEDIN':
+        return <Linkedin {...iconProps} />;
+      case 'FACEBOOK':
+        return <Facebook {...iconProps} />;
+      case 'TWITTER':
+        return <Twitter {...iconProps} />;
+      case 'TELEGRAM':
+        return <Send {...iconProps} />;
+      case 'TIKTOK':
+        return <div className="text-current font-bold text-sm">TT</div>;
+      default:
+        return <ExternalLink {...iconProps} />;
+    }
+  }
 };
 
 export default PublicLinks;

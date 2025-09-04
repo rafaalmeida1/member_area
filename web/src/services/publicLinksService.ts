@@ -1,57 +1,5 @@
-import axios from 'axios';
+import { publicApi, privateApi } from './apiConfig';
 import { PublicLinksData, LinkRequest, LinkResponse, ReorderLinksRequest } from '@/types/publicLinks';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-
-// Cliente axios sem autenticação para rotas públicas
-const publicApi = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Cliente axios com autenticação para rotas privadas
-const privateApi = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Interceptor para adicionar token nas requisições privadas
-privateApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  console.log('PublicLinksService: Token encontrado?', !!token);
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Interceptor para tratar respostas de erro
-privateApi.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Log do erro para debugging
-    console.error('API Error:', {
-      status: error.response?.status,
-      message: error.response?.data?.message,
-      url: error.config?.url,
-      method: error.config?.method
-    });
-
-    // Se token expirou, limpar localStorage mas NÃO redirecionar automaticamente
-    if (error.response?.status === 401) {
-      console.log('PublicLinksService: Token expirado, limpando localStorage');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      // Não redirecionar automaticamente - deixar o componente tratar
-    }
-
-    return Promise.reject(error);
-  }
-);
 
 // Interceptor para API pública também
 publicApi.interceptors.response.use(

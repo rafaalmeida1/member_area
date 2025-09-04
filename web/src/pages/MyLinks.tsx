@@ -458,7 +458,19 @@ const MyLinks: React.FC = () => {
       setPreviewData(data);
     } catch (error: unknown) {
       console.error('Erro ao carregar configurações da página:', error);
-      // Não mostrar erro para o usuário, apenas usar configurações padrão
+      
+      const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
+      if (axiosError.response?.status === 401) {
+        toast.error('Sessão expirada. Redirecionando para login...');
+        // O interceptor já vai redirecionar
+      } else if (axiosError.response?.status === 403) {
+        toast.error('Você não tem permissão para acessar essas configurações.');
+      } else {
+        // Para outros erros, usar configurações padrão sem mostrar erro
+        console.warn('Usando configurações padrão devido ao erro:', error);
+      }
+      
+      // Usar configurações padrão
       setPageProfile(null);
       setPreviewData(null);
     } finally {
@@ -1169,26 +1181,34 @@ const MyLinks: React.FC = () => {
                         </div>
                         
                         {/* Conteúdo da página */}
-                        <div 
-                          className="relative min-h-[600px]"
-                          style={{
-                            backgroundImage: previewData?.backgroundImageUrl ? `url(${previewData.backgroundImageUrl})` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center'
-                          }}
-                        >
-                          {/* Overlay para melhor legibilidade */}
-                          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                          
-                          {/* Conteúdo */}
-                          <div className="relative z-10 px-6 py-8">
-                            {/* Seção superior com perfil */}
-                            <div className="text-center mb-8">
-                              {/* Avatar */}
-                              {(previewData?.showProfileImage !== false) && (
-                                <div className="mb-4">
+                        <div className="bg-white min-h-[600px]">
+                          {/* Header with background image */}
+                          <div className="relative">
+                            <div
+                              className="h-48 bg-cover bg-center bg-no-repeat"
+                              style={{
+                                backgroundImage: previewData?.backgroundImageUrl 
+                                  ? `url('${previewData.backgroundImageUrl}')` 
+                                  : `linear-gradient(135deg, ${previewData?.pagePrimaryColor || '#667eea'} 0%, ${previewData?.pageSecondaryColor || '#764ba2'} 100%)`,
+                              }}
+                            />
+
+                            {/* SVG Curve */}
+                            <div className="absolute bottom-0 left-0 right-0">
+                              <svg viewBox="0 0 1440 120" className="w-full h-6" preserveAspectRatio="none">
+                                <path 
+                                  d="M0,0 C480,120 960,120 1440,0 L1440,120 L0,120 Z" 
+                                  fill={previewData?.pageBackgroundColor || "white"} 
+                                />
+                              </svg>
+                            </div>
+
+                            {/* Profile Picture */}
+                            {(previewData?.showProfileImage !== false) && (
+                              <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 z-10">
+                                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-lg">
                                   <div 
-                                    className="w-28 h-28 mx-auto rounded-full border-4 border-white shadow-2xl bg-gray-200 flex items-center justify-center overflow-hidden"
+                                    className="w-full h-full bg-gray-200 flex items-center justify-center"
                                     style={{
                                       backgroundImage: previewData?.displayImageUrl ? `url(${previewData.displayImageUrl})` : undefined,
                                       backgroundSize: 'cover',
@@ -1197,123 +1217,96 @@ const MyLinks: React.FC = () => {
                                   >
                                     {!previewData?.displayImageUrl && (
                                       <span 
-                                        className="text-3xl font-bold text-white"
+                                        className="text-lg font-bold text-white"
+                                        style={{ color: previewData?.pagePrimaryColor || '#667eea' }}
                                       >
                                         {(previewData?.displayName || professionalName || 'U').charAt(0).toUpperCase()}
                                       </span>
                                     )}
                                   </div>
                                 </div>
-                              )}
+                              </div>
+                            )}
+                          </div>
 
-                              {/* Nome */}
-                              <h1 className="text-xl font-bold mb-2 text-white">
-                                {previewData?.displayName || professionalName || 'Seu Nome'}
-                              </h1>
-
-                              {/* Título */}
-                              {previewData?.displayTitle && (previewData?.showTitle !== false) && (
-                                <p className="text-sm mb-3 text-white/90 font-medium">
-                                  {previewData.displayTitle}
-                                </p>
-                              )}
+                          <div className="px-4 pt-8 pb-6">
+                            <div className="w-full">
+                              {/* Name and title */}
+                              <div className="text-center mb-4">
+                                <h1 
+                                  className="text-lg font-semibold mb-1"
+                                  style={{ color: previewData?.pageTextPrimaryColor || '#111827' }}
+                                >
+                                  {previewData?.displayName || professionalName || 'Seu Nome'}
+                                </h1>
+                                {previewData?.displayTitle && (previewData?.showTitle !== false) && (
+                                  <p 
+                                    className="text-xs font-medium tracking-wider uppercase"
+                                    style={{ color: previewData?.pageTextSecondaryColor || '#6b7280' }}
+                                  >
+                                    {previewData.displayTitle}
+                                  </p>
+                                )}
+                              </div>
 
                               {/* Bio */}
                               {previewData?.displayBio && (previewData?.showBio !== false) && (
-                                <p className="text-xs leading-relaxed mb-6 text-white/80 max-w-xs mx-auto">
-                                  {previewData.displayBio}
-                                </p>
+                                <div className="text-center mb-4">
+                                  <p 
+                                    className="text-xs leading-relaxed"
+                                    style={{ color: previewData?.pageTextSecondaryColor || '#6b7280' }}
+                                  >
+                                    {previewData.displayBio}
+                                  </p>
+                                </div>
                               )}
 
-                              {/* Links Sociais (Ícones) */}
-                              <div className="flex justify-center space-x-4 mb-6">
-                                {links.filter(link => ['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).slice(0, 5).map((link) => (
+                              {/* Social media icons */}
+                              <div className="flex justify-center gap-4 mb-6">
+                                {links.filter(link => ['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).slice(0, 4).map((link) => (
                                   <div
                                     key={link.id}
-                                    className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center hover:bg-white/30 transition-colors cursor-pointer"
+                                    className="p-1 hover:scale-110 transition-transform duration-200 cursor-pointer"
                                   >
-                                    {renderSocialIcon(link.linkType, 20)}
+                                    <div style={{ color: previewData?.pageTextPrimaryColor || '#374151' }}>
+                                      {renderSocialIcon(link.linkType, 16)}
+                                    </div>
                                   </div>
                                 ))}
                                 {links.filter(link => ['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).length === 0 && (
-                                  <div className="text-white/60 text-xs">Links sociais aparecerão aqui</div>
+                                  <div className="text-xs" style={{ color: previewData?.pageTextSecondaryColor || '#6b7280' }}>
+                                    Links sociais aparecerão aqui
+                                  </div>
                                 )}
                               </div>
-                            </div>
 
-                            {/* Seção curvada para links normais */}
-                            <div className="relative">
-                              {/* Curva */}
-                              <div 
-                                className="absolute -top-6 left-0 right-0 h-6 rounded-t-3xl"
-                                style={{ backgroundColor: previewData?.pageBackgroundColor || '#ffffff' }}
-                              ></div>
-                              
-                              {/* Conteúdo dos links */}
-                              <div 
-                                className="rounded-t-3xl pt-8 pb-6 px-4"
-                                style={{ backgroundColor: previewData?.pageBackgroundColor || '#ffffff' }}
-                              >
-                                <div className="space-y-3">
-                                  {links.filter(link => !['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).slice(0, 3).map((link) => (
-                                    <div
-                                      key={link.id}
-                                      className="w-full rounded-2xl shadow-sm p-4 border hover:shadow-md transition-shadow cursor-pointer"
-                                      style={{
-                                        backgroundColor: previewData?.pageSurfaceColor || '#f8fafc',
-                                        borderColor: previewData?.pageBorderColor || '#e2e8f0'
-                                      }}
+                              {/* Action buttons */}
+                              <div className="space-y-3">
+                                {links.filter(link => !['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).slice(0, 3).map((link) => (
+                                  <div
+                                    key={link.id}
+                                    className="w-full py-3 rounded-lg font-medium text-center text-xs cursor-pointer hover:scale-[1.02] transition-transform"
+                                    style={{
+                                      backgroundColor: previewData?.pageSurfaceColor || '#f3f4f6',
+                                      color: previewData?.pageTextPrimaryColor || '#374151'
+                                    }}
+                                  >
+                                    <span className="text-balance leading-tight">
+                                      {link.title}
+                                    </span>
+                                  </div>
+                                ))}
+                                
+                                {links.filter(link => !['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).length === 0 && (
+                                  <div className="text-center py-6">
+                                    <p 
+                                      className="text-xs"
+                                      style={{ color: previewData?.pageTextSecondaryColor || '#6b7280' }}
                                     >
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center flex-1">
-                                          <div 
-                                            className="w-8 h-8 rounded-full mr-3 flex items-center justify-center"
-                                            style={{ backgroundColor: previewData?.pagePrimaryColor || '#3b82f6' }}
-                                          >
-                                            <ExternalLink size={16} className="text-white" />
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                            <h3 
-                                              className="font-semibold text-sm truncate"
-                                              style={{ color: previewData?.pageTextPrimaryColor || '#1e293b' }}
-                                            >
-                                              {link.title}
-                                            </h3>
-                                            {link.description && (
-                                              <p 
-                                                className="text-xs text-gray-500 truncate"
-                                                style={{ color: previewData?.pageTextSecondaryColor || '#64748b' }}
-                                              >
-                                                {link.description}
-                                              </p>
-                                            )}
-                                          </div>
-                                        </div>
-                                        <ExternalLink 
-                                          size={14} 
-                                          style={{ color: previewData?.pageSecondaryColor || '#64748b' }}
-                                        />
-                                      </div>
-                                    </div>
-                                  ))}
-                                  
-                                  {links.filter(link => !['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).length === 0 && (
-                                    <div
-                                      className="w-full rounded-2xl shadow-sm p-4 text-center border"
-                                      style={{
-                                        backgroundColor: previewData?.pageSurfaceColor || '#f8fafc',
-                                        borderColor: previewData?.pageBorderColor || '#e2e8f0'
-                                      }}
-                                    >
-                                      <p 
-                                        className="text-sm"
-                                        style={{ color: previewData?.pageTextSecondaryColor || '#64748b' }}
-                                      >
-                                        Seus links aparecerão aqui
-                                      </p>
-                                    </div>
-                                  )}
-                                </div>
+                                      Seus links aparecerão aqui
+                                    </p>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
