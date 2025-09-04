@@ -146,6 +146,7 @@ const renderSocialIcon = (linkType: LinkType, size = 20) => {
   }
 };
 
+
 const MyLinks: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -985,54 +986,67 @@ const MyLinks: React.FC = () => {
                 <div className="space-y-2">
                   {links.map((link) => (
                     <SortableItem key={link.id} id={link.id}>
-                      <Card className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-4">
-                            <GripVertical className="w-5 h-5 text-gray-400 cursor-grab" />
-                            
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-semibold truncate">{link.title}</h3>
-                                <Badge variant={link.isActive ? "default" : "secondary"}>
-                                  {link.isActive ? 'Ativo' : 'Inativo'}
-                                </Badge>
-                                <Badge variant="outline">
-                                  {link.clickCount} cliques
-                                </Badge>
+                      {({ dragHandleProps }: { dragHandleProps?: React.RefAttributes<HTMLElement> & Record<string, any> }) => (
+                        <Card className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-4">
+                              <div
+                                {...dragHandleProps}
+                                className="cursor-grab active:cursor-grabbing"
+                              >
+                                <GripVertical className="w-5 h-5 text-gray-400" />
                               </div>
                               
-                              {link.description && (
-                                <p className="text-sm text-gray-600 truncate">
-                                  {link.description}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="font-semibold truncate">{link.title}</h3>
+                                  <Badge variant={link.isActive ? "default" : "secondary"}>
+                                    {link.isActive ? 'Ativo' : 'Inativo'}
+                                  </Badge>
+                                  <Badge variant="outline">
+                                    {link.clickCount} cliques
+                                  </Badge>
+                                </div>
+                                
+                                {link.description && (
+                                  <p className="text-sm text-gray-600 truncate">
+                                    {link.description}
+                                  </p>
+                                )}
+                                
+                                <p className="text-xs text-gray-500 truncate">
+                                  {link.url}
                                 </p>
-                              )}
-                              
-                              <p className="text-xs text-gray-500 truncate">
-                                {link.url}
-                              </p>
-                            </div>
+                              </div>
 
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEdit(link)}
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </Button>
-                              
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDelete(link.id)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEdit(link);
+                                  }}
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </Button>
+                                
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(link.id);
+                                  }}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
+                      )}
                     </SortableItem>
                   ))}
                 </div>
@@ -1257,6 +1271,25 @@ const MyLinks: React.FC = () => {
                         </div>
 
                         <div>
+                          <Label htmlFor="pageSurfaceColor">Cor de Superfície</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="pageSurfaceColor"
+                              type="color"
+                              value={previewData?.pageSurfaceColor || '#f8fafc'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageSurfaceColor: e.target.value }))}
+                              className="w-12 h-10 p-1"
+                            />
+                            <Input
+                              value={previewData?.pageSurfaceColor || '#f8fafc'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageSurfaceColor: e.target.value }))}
+                              placeholder="#f8fafc"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Cor para cards e superfícies elevadas</p>
+                        </div>
+
+                        <div>
                           <Label htmlFor="pageTextPrimaryColor">Cor do Texto Principal</Label>
                           <div className="flex gap-2">
                             <Input
@@ -1273,6 +1306,63 @@ const MyLinks: React.FC = () => {
                             />
                           </div>
                           <p className="text-xs text-gray-500 mt-1">Cor dos títulos e textos principais</p>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="pageTextSecondaryColor">Cor do Texto Secundário</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="pageTextSecondaryColor"
+                              type="color"
+                              value={previewData?.pageTextSecondaryColor || '#64748b'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageTextSecondaryColor: e.target.value }))}
+                              className="w-12 h-10 p-1"
+                            />
+                            <Input
+                              value={previewData?.pageTextSecondaryColor || '#64748b'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageTextSecondaryColor: e.target.value }))}
+                              placeholder="#64748b"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Cor para subtítulos e textos secundários</p>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="pageHoverColor">Cor de Hover</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="pageHoverColor"
+                              type="color"
+                              value={previewData?.pageHoverColor || '#f1f5f9'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageHoverColor: e.target.value }))}
+                              className="w-12 h-10 p-1"
+                            />
+                            <Input
+                              value={previewData?.pageHoverColor || '#f1f5f9'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageHoverColor: e.target.value }))}
+                              placeholder="#f1f5f9"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Cor quando o mouse passa sobre botões</p>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="pageBorderColor">Cor das Bordas</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="pageBorderColor"
+                              type="color"
+                              value={previewData?.pageBorderColor || '#e2e8f0'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageBorderColor: e.target.value }))}
+                              className="w-12 h-10 p-1"
+                            />
+                            <Input
+                              value={previewData?.pageBorderColor || '#e2e8f0'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageBorderColor: e.target.value }))}
+                              placeholder="#e2e8f0"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Cor para bordas e divisores</p>
                         </div>
                       </div>
                     </div>
@@ -1456,10 +1546,14 @@ const MyLinks: React.FC = () => {
                                 {links.filter(link => ['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).slice(0, 4).map((link) => (
                                   <div
                                     key={link.id}
-                                    className="p-1 hover:scale-110 transition-transform duration-200 cursor-pointer"
+                                    className="hover:scale-110 transition-transform duration-200 cursor-pointer"
                                   >
-                                    <div style={{ color: previewData?.pageTextPrimaryColor || '#374151' }}>
-                                      {renderSocialIcon(link.linkType, 16)}
+                                    {/* Usar mini versão dos ícones com cores personalizadas */}
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm" 
+                                         style={{ 
+                                           backgroundColor: previewData?.pagePrimaryColor || '#667eea',
+                                         }}>
+                                      {renderSocialIcon(link.linkType, 14)}
                                     </div>
                                   </div>
                                 ))}
@@ -1475,10 +1569,16 @@ const MyLinks: React.FC = () => {
                                 {links.filter(link => !['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).slice(0, 3).map((link) => (
                                   <div
                                     key={link.id}
-                                    className="w-full py-3 rounded-lg font-medium text-center text-xs cursor-pointer hover:scale-[1.02] transition-transform"
+                                    className="w-full py-3 rounded-lg font-medium text-center text-xs cursor-pointer hover:scale-[1.02] transition-all duration-200"
                                     style={{
                                       backgroundColor: previewData?.pagePrimaryColor || '#667eea',
                                       color: '#ffffff'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.backgroundColor = previewData?.pageHoverColor || '#5a67d8';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.backgroundColor = previewData?.pagePrimaryColor || '#667eea';
                                     }}
                                   >
                                     <span className="text-balance leading-tight">

@@ -7,109 +7,74 @@ import { ExternalLink, MessageCircle, Phone, Mail, Instagram, Youtube, Linkedin,
 import { publicLinksService } from '@/services/publicLinksService';
 import { PublicLinksData, PublicLink, LinkType } from '@/types/publicLinks';
 
-const LinkIcon = ({ linkType, icon, size = 20, isSmall = false }: { linkType: LinkType; icon?: string; size?: number; isSmall?: boolean }) => {
+const LinkIcon = ({ linkType, icon, size = 20, isSmall = false, customColor }: { linkType: LinkType; icon?: string; size?: number; isSmall?: boolean; customColor?: string }) => {
   const containerSize = isSmall ? "w-12 h-12" : "w-10 h-10";
   
-  switch (linkType) {
-    case 'WHATSAPP':
-      return (
-        <div className={`${containerSize} rounded-full bg-green-500 flex items-center justify-center shadow-lg`}>
-          <MessageCircle size={size} className="text-white" />
-        </div>
-      );
-    case 'EMAIL':
-      return (
-        <div className={`${containerSize} rounded-full bg-blue-500 flex items-center justify-center shadow-lg`}>
-          <Mail size={size} className="text-white" />
-        </div>
-      );
-    case 'PHONE':
-      return (
-        <div className={`${containerSize} rounded-full bg-gray-600 flex items-center justify-center shadow-lg`}>
-          <Phone size={size} className="text-white" />
-        </div>
-      );
-    case 'INSTAGRAM':
-      return (
-        <div className={`${containerSize} rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center shadow-lg`}>
-          <Instagram size={size} className="text-white" />
-        </div>
-      );
-    case 'YOUTUBE':
-      return (
-        <div className={`${containerSize} rounded-full bg-red-500 flex items-center justify-center shadow-lg`}>
-          <Youtube size={size} className="text-white" />
-        </div>
-      );
-    case 'LINKEDIN':
-      return (
-        <div className={`${containerSize} rounded-full bg-blue-600 flex items-center justify-center shadow-lg`}>
-          <Linkedin size={size} className="text-white" />
-        </div>
-      );
-    case 'FACEBOOK':
-      return (
-        <div className={`${containerSize} rounded-full bg-blue-700 flex items-center justify-center shadow-lg`}>
-          <Facebook size={size} className="text-white" />
-        </div>
-      );
-    case 'TWITTER':
-      return (
-        <div className={`${containerSize} rounded-full bg-black flex items-center justify-center shadow-lg`}>
-          <Twitter size={size} className="text-white" />
-        </div>
-      );
-    case 'TELEGRAM':
-      return (
-        <div className={`${containerSize} rounded-full bg-blue-400 flex items-center justify-center shadow-lg`}>
-          <Send size={size} className="text-white" />
-        </div>
-      );
-    case 'TIKTOK':
-      return (
-        <div className={`${containerSize} rounded-full bg-black flex items-center justify-center shadow-lg`}>
-          <div className="text-white font-bold text-sm">TT</div>
-        </div>
-      );
-    case 'SOCIAL_MEDIA':
-      // Fallback para redes sociais genéricas
-      if (icon?.toLowerCase().includes('instagram')) {
-        return (
-          <div className={`${containerSize} rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg`}>
-            <Instagram size={size} className="text-white" />
-          </div>
-        );
-      } else if (icon?.toLowerCase().includes('youtube')) {
-        return (
-          <div className={`${containerSize} rounded-full bg-red-500 flex items-center justify-center shadow-lg`}>
-            <Youtube size={size} className="text-white" />
-          </div>
-        );
-      } else if (icon?.toLowerCase().includes('linkedin')) {
-        return (
-          <div className={`${containerSize} rounded-full bg-blue-600 flex items-center justify-center shadow-lg`}>
-            <Linkedin size={size} className="text-white" />
-          </div>
-        );
-      } else if (icon?.toLowerCase().includes('facebook')) {
-        return (
-          <div className={`${containerSize} rounded-full bg-blue-700 flex items-center justify-center shadow-lg`}>
-            <Facebook size={size} className="text-white" />
-          </div>
-        );
-      }
-      return (
-        <div className={`${containerSize} rounded-full bg-gray-500 flex items-center justify-center shadow-lg`}>
-          <ExternalLink size={size} className="text-white" />
-        </div>
-      );
-    default:
-      return (
-        <div className={`${containerSize} rounded-full bg-gray-500 flex items-center justify-center shadow-lg`}>
-          <ExternalLink size={size} className="text-white" />
-        </div>
-      );
-  }
+  // Se customColor for fornecida, usar ela. Senão, usar as cores padrão das redes sociais
+  const getIconContent = () => {
+    switch (linkType) {
+      case 'WHATSAPP':
+        return <MessageCircle size={size} className="text-white" />;
+      case 'EMAIL':
+        return <Mail size={size} className="text-white" />;
+      case 'PHONE':
+        return <Phone size={size} className="text-white" />;
+      case 'INSTAGRAM':
+        return <Instagram size={size} className="text-white" />;
+      case 'YOUTUBE':
+        return <Youtube size={size} className="text-white" />;
+      case 'LINKEDIN':
+        return <Linkedin size={size} className="text-white" />;
+      case 'FACEBOOK':
+        return <Facebook size={size} className="text-white" />;
+      case 'TWITTER':
+        return <Twitter size={size} className="text-white" />;
+      case 'TELEGRAM':
+        return <Send size={size} className="text-white" />;
+      case 'TIKTOK':
+        return <div className="text-white font-bold text-sm">TT</div>;
+      default:
+        return <ExternalLink size={size} className="text-white" />;
+    }
+  };
+
+  const getDefaultBackgroundClass = () => {
+    if (customColor) return '';
+    
+    switch (linkType) {
+      case 'WHATSAPP':
+        return 'bg-green-500';
+      case 'EMAIL':
+        return 'bg-blue-500';
+      case 'PHONE':
+        return 'bg-gray-600';
+      case 'INSTAGRAM':
+        return 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500';
+      case 'YOUTUBE':
+        return 'bg-red-500';
+      case 'LINKEDIN':
+        return 'bg-blue-600';
+      case 'FACEBOOK':
+        return 'bg-blue-700';
+      case 'TWITTER':
+        return 'bg-black';
+      case 'TELEGRAM':
+        return 'bg-blue-400';
+      case 'TIKTOK':
+        return 'bg-black';
+      default:
+        return 'bg-gray-500';
+    }
+  };
+
+  return (
+    <div 
+      className={`${containerSize} rounded-full flex items-center justify-center shadow-lg ${getDefaultBackgroundClass()}`}
+      style={customColor ? { backgroundColor: customColor } : {}}
+    >
+      {getIconContent()}
+    </div>
+  );
 };
 
 const PublicLinks: React.FC = () => {
@@ -392,6 +357,7 @@ const PublicLinks: React.FC = () => {
                     icon={link.icon} 
                     size={20} 
                     isSmall={false}
+                    customColor={data.themePrimaryColor}
                   />
                 </button>
               ))}
@@ -426,7 +392,7 @@ const PublicLinks: React.FC = () => {
                     e.currentTarget.style.backgroundColor = data.themeHoverColor || '#5a67d8';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = data.themePrimaryColor || '#667eea';
+                    e.currentTarget.style.backgroundColor = buttonBgColor;
                   }}
                   onClick={() => handleLinkClick(link)}
                 >
