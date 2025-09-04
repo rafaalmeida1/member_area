@@ -12,6 +12,7 @@ import br.rafaalmeida1.nutri_thata_api.mapper.ProfessionalLinkMapper;
 import br.rafaalmeida1.nutri_thata_api.mapper.PublicLinksMapper;
 import br.rafaalmeida1.nutri_thata_api.repository.ProfessionalLinkRepository;
 import br.rafaalmeida1.nutri_thata_api.repositories.ProfessionalProfileRepository;
+import br.rafaalmeida1.nutri_thata_api.service.LinkPageProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -28,6 +29,7 @@ public class ProfessionalLinkService {
     private final ProfessionalProfileRepository profileRepository;
     private final ProfessionalLinkMapper linkMapper;
     private final PublicLinksMapper publicLinksMapper;
+    private final LinkPageProfileService linkPageProfileService;
 
     @Transactional(readOnly = true)
     public List<LinkResponse> getAllLinks(User user) {
