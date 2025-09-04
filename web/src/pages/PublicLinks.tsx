@@ -8,7 +8,7 @@ import { publicLinksService } from '@/services/publicLinksService';
 import { PublicLinksData, PublicLink, LinkType } from '@/types/publicLinks';
 
 const LinkIcon = ({ linkType, icon }: { linkType: LinkType; icon?: string }) => {
-  const iconProps = { size: 20, className: "mr-3" };
+  const iconProps = { size: 24, className: "flex-shrink-0" };
   
   if (icon) {
     // Se tiver ícone customizado, poderia renderizar aqui
@@ -17,24 +17,60 @@ const LinkIcon = ({ linkType, icon }: { linkType: LinkType; icon?: string }) => 
   
   switch (linkType) {
     case 'WHATSAPP':
-      return <MessageCircle {...iconProps} className="mr-3 text-green-500" />;
+      return (
+        <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+          <MessageCircle size={20} className="text-white" />
+        </div>
+      );
     case 'EMAIL':
-      return <Mail {...iconProps} className="mr-3 text-blue-500" />;
+      return (
+        <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+          <Mail size={20} className="text-white" />
+        </div>
+      );
     case 'PHONE':
-      return <Phone {...iconProps} className="mr-3 text-gray-600" />;
+      return (
+        <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
+          <Phone size={20} className="text-white" />
+        </div>
+      );
     case 'SOCIAL_MEDIA':
       if (icon?.toLowerCase().includes('instagram')) {
-        return <Instagram {...iconProps} className="mr-3 text-pink-500" />;
+        return (
+          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+            <Instagram size={20} className="text-white" />
+          </div>
+        );
       } else if (icon?.toLowerCase().includes('youtube')) {
-        return <Youtube {...iconProps} className="mr-3 text-red-500" />;
+        return (
+          <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center">
+            <Youtube size={20} className="text-white" />
+          </div>
+        );
       } else if (icon?.toLowerCase().includes('linkedin')) {
-        return <Linkedin {...iconProps} className="mr-3 text-blue-600" />;
+        return (
+          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
+            <Linkedin size={20} className="text-white" />
+          </div>
+        );
       } else if (icon?.toLowerCase().includes('facebook')) {
-        return <Facebook {...iconProps} className="mr-3 text-blue-700" />;
+        return (
+          <div className="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center">
+            <Facebook size={20} className="text-white" />
+          </div>
+        );
       }
-      return <ExternalLink {...iconProps} />;
+      return (
+        <div className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center">
+          <ExternalLink size={20} className="text-white" />
+        </div>
+      );
     default:
-      return <ExternalLink {...iconProps} />;
+      return (
+        <div className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center">
+          <ExternalLink size={20} className="text-white" />
+        </div>
+      );
   }
 };
 
@@ -190,35 +226,41 @@ const PublicLinks: React.FC = () => {
       style={{
         ...backgroundStyle,
         ...themeColors,
-        backgroundColor: data.themeBackgroundColor || '#f8fafc'
+        backgroundColor: data.themeBackgroundColor || '#f5f5f5'
       }}
     >
       {/* Overlay para melhor legibilidade se houver imagem de fundo */}
       {data.backgroundImage && (
-        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
       )}
       
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-md">
+      <div className="relative z-10 max-w-sm mx-auto px-6 py-8">
         {/* Header com perfil */}
         <div className="text-center mb-8">
-          <Avatar className="w-24 h-24 mx-auto mb-4 border-4 border-white shadow-lg">
-            <AvatarImage src={data.image} alt={data.name} />
-            <AvatarFallback style={{ backgroundColor: data.themePrimaryColor || '#3b82f6' }}>
-              {data.name?.charAt(0)?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          {/* Avatar maior e mais centralizado */}
+          <div className="relative mb-6">
+            <Avatar className="w-32 h-32 mx-auto border-4 border-white shadow-xl">
+              <AvatarImage src={data.image} alt={data.name} className="object-cover" />
+              <AvatarFallback 
+                className="text-2xl font-bold text-white"
+                style={{ backgroundColor: data.themePrimaryColor || '#8B5A3C' }}
+              >
+                {data.name?.charAt(0)?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </div>
           
           <h1 
             className="text-2xl font-bold mb-2"
-            style={{ color: data.themeTextPrimaryColor || '#1e293b' }}
+            style={{ color: data.themeTextPrimaryColor || '#2C2C2C' }}
           >
             {data.name}
           </h1>
           
           {data.title && (
             <p 
-              className="text-lg mb-3"
-              style={{ color: data.themeSecondaryColor || '#64748b' }}
+              className="text-base mb-4 font-medium"
+              style={{ color: data.themeTextSecondaryColor || '#666666' }}
             >
               {data.title}
             </p>
@@ -226,8 +268,8 @@ const PublicLinks: React.FC = () => {
           
           {data.bio && (
             <p 
-              className="text-sm leading-relaxed max-w-sm mx-auto"
-              style={{ color: data.themeTextSecondaryColor || '#64748b' }}
+              className="text-sm leading-relaxed mb-6"
+              style={{ color: data.themeTextSecondaryColor || '#666666' }}
             >
               {data.bio}
             </p>
@@ -235,80 +277,89 @@ const PublicLinks: React.FC = () => {
         </div>
 
         {/* Links */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {data.links.map((link) => (
-            <Card 
-              key={link.id} 
-              className="transition-all duration-200 hover:scale-[1.02] hover:shadow-lg cursor-pointer"
+            <div
+              key={link.id}
+              className="w-full rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-[1.02]"
               style={{
                 backgroundColor: data.themeSurfaceColor || '#ffffff',
-                borderColor: data.themeBorderColor || '#e2e8f0'
+                border: `1px solid ${data.themeBorderColor || '#e0e0e0'}`
               }}
               onClick={() => handleLinkClick(link)}
             >
-              <CardContent 
-                className="p-4 hover:bg-opacity-90 transition-colors duration-200"
-                style={{
-                  backgroundColor: 'transparent'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = data.themeHoverColor || '#f1f5f9';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <div className="flex items-center">
-                  <LinkIcon linkType={link.linkType} icon={link.icon} />
+              <div className="p-4 flex items-center justify-between">
+                <div className="flex items-center flex-1">
+                  <div className="mr-3 flex-shrink-0">
+                    <LinkIcon linkType={link.linkType} icon={link.icon} />
+                  </div>
                   
                   <div className="flex-1 min-w-0">
                     <h3 
                       className="font-semibold text-base mb-1 truncate"
-                      style={{ color: data.themeTextPrimaryColor || '#1e293b' }}
+                      style={{ color: data.themeTextPrimaryColor || '#2C2C2C' }}
                     >
                       {link.title}
                     </h3>
                     
                     {link.description && (
                       <p 
-                        className="text-sm leading-relaxed line-clamp-2"
-                        style={{ color: data.themeTextSecondaryColor || '#64748b' }}
+                        className="text-sm leading-relaxed line-clamp-1"
+                        style={{ color: data.themeTextSecondaryColor || '#666666' }}
                       >
                         {link.description}
                       </p>
                     )}
                   </div>
-                  
+                </div>
+                
+                <div className="ml-3 flex-shrink-0">
                   <ExternalLink 
-                    size={16} 
-                    className="ml-2 flex-shrink-0"
-                    style={{ color: data.themeSecondaryColor || '#64748b' }}
+                    size={18} 
+                    style={{ color: data.themeSecondaryColor || '#999999' }}
                   />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
 
         {data.links.length === 0 && (
           <div className="text-center py-12">
             <p 
-              className="text-lg"
-              style={{ color: data.themeTextSecondaryColor || '#64748b' }}
+              className="text-base"
+              style={{ color: data.themeTextSecondaryColor || '#666666' }}
             >
               Nenhum link disponível no momento.
             </p>
           </div>
         )}
 
-        {/* Footer */}
-        <div className="text-center mt-12 pt-8 border-t" style={{ borderColor: data.themeBorderColor || '#e2e8f0' }}>
-          <p 
-            className="text-xs"
-            style={{ color: data.themeTextSecondaryColor || '#64748b' }}
+        {/* Footer com botão "Create a free bio site" */}
+        <div className="text-center mt-12 pt-6">
+          <div 
+            className="inline-flex items-center px-6 py-3 rounded-full border-2 transition-all duration-200 hover:shadow-md"
+            style={{ 
+              borderColor: data.themeBorderColor || '#e0e0e0',
+              backgroundColor: data.themeBackgroundColor || '#ffffff'
+            }}
           >
-            Criado com ❤️ pelo NutriThata
-          </p>
+            <div 
+              className="w-3 h-3 rounded-full mr-3"
+              style={{ backgroundColor: data.themePrimaryColor || '#8B5A3C' }}
+            ></div>
+            <span 
+              className="text-sm font-medium"
+              style={{ color: data.themeTextPrimaryColor || '#2C2C2C' }}
+            >
+              CREATE A FREE BIO SITE
+            </span>
+            <ExternalLink 
+              size={16} 
+              className="ml-3"
+              style={{ color: data.themeTextSecondaryColor || '#666666' }}
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -20,6 +20,8 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @EnableCaching
@@ -108,8 +110,21 @@ public class RedisConfig {
             .disableCachingNullValues()
             .prefixCacheNameWith(cacheKeyPrefix);
 
+        // Configurações específicas de cache
+        Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+        
+        // Cache para links públicos - TTL de 10 minutos (atualização frequente)
+        cacheConfigurations.put("publicLinks", 
+            RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(10))
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
+                .disableCachingNullValues()
+                .prefixCacheNameWith(cacheKeyPrefix));
+
         return RedisCacheManager.builder(connectionFactory)
             .cacheDefaults(cacheConfiguration)
+            .withInitialCacheConfigurations(cacheConfigurations)
             .transactionAware()
             .build();
     }
