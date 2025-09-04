@@ -22,6 +22,7 @@ const privateApi = axios.create({
 // Interceptor para adicionar token nas requisições privadas
 privateApi.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
+  console.log('PublicLinksService: Token encontrado?', !!token);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -40,16 +41,12 @@ privateApi.interceptors.response.use(
       method: error.config?.method
     });
 
-    // Se token expirou, limpar localStorage e redirecionar
+    // Se token expirou, limpar localStorage mas NÃO redirecionar automaticamente
     if (error.response?.status === 401) {
+      console.log('PublicLinksService: Token expirado, limpando localStorage');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // Redirecionar para login após um delay para mostrar a mensagem
-      setTimeout(() => {
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
-        }
-      }, 2000);
+      // Não redirecionar automaticamente - deixar o componente tratar
     }
 
     return Promise.reject(error);

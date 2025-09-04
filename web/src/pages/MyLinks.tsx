@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, GripVertical, ExternalLink, BarChart3 } from 'lucide-react';
+import { Plus, Edit2, Trash2, GripVertical, ExternalLink, BarChart3, Palette, Upload, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -25,6 +25,8 @@ import { apiService } from '@/services/api';
 import { Layout } from '@/components/Layout';
 import { analyticsService } from '@/services/analyticsService';
 import { PageAnalytics } from '@/types/analytics';
+import { linkPageProfileService } from '@/services/linkPageProfileService';
+import { LinkPageProfileRequest, LinkPageProfileResponse } from '@/types/linkPageProfile';
 
 const linkSchema = z.object({
   title: z.string()
@@ -121,6 +123,9 @@ const MyLinks: React.FC = () => {
   const [professionalName, setProfessionalName] = useState('');
   const [analytics, setAnalytics] = useState<PageAnalytics | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [pageProfile, setPageProfile] = useState<LinkPageProfileResponse | null>(null);
+  const [pageProfileLoading, setPageProfileLoading] = useState(false);
+  const [previewData, setPreviewData] = useState<LinkPageProfileRequest | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -148,29 +153,34 @@ const MyLinks: React.FC = () => {
   useEffect(() => {
     loadLinks();
     loadProfessionalProfile();
+    loadPageProfile();
   }, []);
 
   const loadProfessionalProfile = async () => {
-    const data = await apiService.getProfessionalProfile();
-    setProfessionalName(data.name);
-    setProfessionalName(data.name || '');
+    try {
+      const data = await apiService.getProfessionalProfile();
+      setProfessionalName(data.name || '');
+    } catch (error: unknown) {
+      console.error('Erro ao carregar perfil profissional:', error);
+      // Não bloquear a página se não conseguir carregar o perfil
+      setProfessionalName('');
+    }
   };
 
   const loadLinks = async () => {
     try {
+      console.log('MyLinks: Iniciando carregamento de links...');
       setLoading(true);
       const data = await publicLinksService.getAllLinks();
+      console.log('MyLinks: Links carregados com sucesso:', data.length);
       setLinks(data);
     } catch (error: unknown) {
-      console.error('Erro ao carregar links:', error);
+      console.error('MyLinks: Erro ao carregar links:', error);
       
       const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
       if (axiosError.response?.status === 401) {
         toast.error('Sessão expirada. Faça login novamente.');
-        // Redirecionar para login se necessário
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 2000);
+        // Não redirecionar automaticamente - deixar o usuário decidir
       } else if (axiosError.response?.status === 403) {
         toast.error('Você não tem permissão para acessar os links.');
       } else if (axiosError.response?.status === 404) {
@@ -186,6 +196,7 @@ const MyLinks: React.FC = () => {
       // Definir estado vazio em caso de erro
       setLinks([]);
     } finally {
+      console.log('MyLinks: Finalizando carregamento de links...');
       setLoading(false);
     }
   };
@@ -408,13 +419,66 @@ const MyLinks: React.FC = () => {
     }
   };
 
+  const loadPageProfile = async () => {
+    try {
+      setPageProfileLoading(true);
+      const data = await linkPageProfileService.getLinkPageProfile();
+      setPageProfile(data);
+      setPreviewData(data);
+    } catch (error: unknown) {
+      console.error('Erro ao carregar configurações da página:', error);
+      // Não mostrar erro para o usuário, apenas usar configurações padrão
+      setPageProfile(null);
+      setPreviewData(null);
+    } finally {
+      setPageProfileLoading(false);
+    }
+  };
+
+  const savePageProfile = async (data: LinkPageProfileRequest) => {
+    try {
+      const updated = await linkPageProfileService.updateLinkPageProfile(data);
+      setPageProfile(updated);
+      setPreviewData(updated);
+      toast.success('Configurações da página salvas com sucesso!');
+    } catch (error: unknown) {
+      console.error('Erro ao salvar configurações da página:', error);
+      
+      const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
+      if (axiosError.response?.status === 401) {
+        toast.error('Sessão expirada. Faça login novamente.');
+      } else if (axiosError.response?.status === 403) {
+        toast.error('Você não tem permissão para alterar essas configurações.');
+      } else if (axiosError.response?.status >= 500) {
+        toast.error('Erro interno do servidor. Tente novamente mais tarde.');
+      } else if (axiosError.code === 'NETWORK_ERROR' || !axiosError.response) {
+        toast.error('Erro de conexão. Verifique sua internet.');
+      } else {
+        toast.error('Erro inesperado ao salvar configurações.');
+      }
+    }
+  };
+
+  const copySiteColors = async () => {
+    try {
+      await linkPageProfileService.copySiteColors();
+      await loadPageProfile(); // Recarregar para pegar as novas cores
+      toast.success('Cores do site copiadas com sucesso!');
+    } catch (error: unknown) {
+      console.error('Erro ao copiar cores do site:', error);
+      toast.error('Erro ao copiar cores do site. Tente novamente.');
+    }
+  };
+
   if (loading) {
     return (
-      <LoadingState 
-        loading={true} 
-        loadingText="Carregando seus links..." 
-        className="min-h-[400px]" 
-      />
+      <Layout title="Meus Links">
+        <LoadingState 
+          loading={true} 
+          loadingText="Carregando seus links..." 
+          className="min-h-[400px]" 
+        />
+      </Layout>
     );
   }
 
@@ -625,6 +689,10 @@ const MyLinks: React.FC = () => {
       <Tabs defaultValue="links" className="w-full">
         <TabsList>
           <TabsTrigger value="links">Links</TabsTrigger>
+          <TabsTrigger value="customize">
+            <Palette className="w-4 h-4 mr-2" />
+            Personalizar
+          </TabsTrigger>
           <TabsTrigger value="analytics">
             <BarChart3 className="w-4 h-4 mr-2" />
             Analytics
@@ -734,6 +802,430 @@ const MyLinks: React.FC = () => {
                 </div>
               </SortableContext>
             </DndContext>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="customize" className="space-y-4">
+          {pageProfileLoading ? (
+            <LoadingState 
+              loading={true} 
+              loadingText="Carregando configurações..." 
+              className="min-h-[300px]" 
+            />
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Painel de Configurações */}
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Palette className="w-5 h-5" />
+                      Personalizar Página de Links
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 mt-2">
+                      Configure a aparência da sua página de links pública. Estas configurações são independentes do seu site principal.
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Informações Básicas */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Informações da Página de Links</h3>
+                      
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                        <p className="text-sm text-blue-800">
+                          <strong>Personalização Independente:</strong> Estas informações são específicas para sua página de links pública. 
+                          Você pode usar dados diferentes do seu perfil principal do site.
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="displayName">Nome para a página de links</Label>
+                        <Input
+                          id="displayName"
+                          value={previewData?.displayName || ''}
+                          onChange={(e) => setPreviewData(prev => ({ ...prev, displayName: e.target.value }))}
+                          placeholder="Nome que aparecerá na sua página de links (pode ser diferente do site)"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Deixe vazio para usar o nome do seu perfil principal
+                        </p>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="displayTitle">Título/Profissão para a página de links</Label>
+                        <Input
+                          id="displayTitle"
+                          value={previewData?.displayTitle || ''}
+                          onChange={(e) => setPreviewData(prev => ({ ...prev, displayTitle: e.target.value }))}
+                          placeholder="Ex: Nutricionista Especializada em Emagrecimento"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Título específico para sua página de links (independente do site)
+                        </p>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="displayBio">Biografia para a página de links</Label>
+                        <Textarea
+                          id="displayBio"
+                          value={previewData?.displayBio || ''}
+                          onChange={(e) => setPreviewData(prev => ({ ...prev, displayBio: e.target.value }))}
+                          placeholder="Descrição específica para sua página de links..."
+                          rows={3}
+                          maxLength={500}
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>Bio exclusiva para a página de links</span>
+                          <span>{previewData?.displayBio?.length || 0}/500</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Imagens */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Imagens da Página de Links</h3>
+                      
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                        <p className="text-sm text-green-800">
+                          <strong>Imagens Exclusivas:</strong> Use imagens específicas para sua página de links, 
+                          diferentes das do seu site principal se desejar.
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="displayImageUrl">Foto do Perfil para a página de links</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="displayImageUrl"
+                            value={previewData?.displayImageUrl || ''}
+                            onChange={(e) => setPreviewData(prev => ({ ...prev, displayImageUrl: e.target.value }))}
+                            placeholder="https://exemplo.com/foto-para-links.jpg"
+                          />
+                          <Button variant="outline" size="sm">
+                            <Upload className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Deixe vazio para usar a foto do seu perfil principal
+                        </p>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="backgroundImageUrl">Imagem de Fundo da página de links</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="backgroundImageUrl"
+                            value={previewData?.backgroundImageUrl || ''}
+                            onChange={(e) => setPreviewData(prev => ({ ...prev, backgroundImageUrl: e.target.value }))}
+                            placeholder="https://exemplo.com/fundo-links.jpg"
+                          />
+                          <Button variant="outline" size="sm">
+                            <Upload className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Fundo exclusivo para sua página de links (opcional)
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Cores */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold">Cores da Página de Links</h3>
+                        <Button variant="outline" size="sm" onClick={copySiteColors}>
+                          Copiar cores do site principal
+                        </Button>
+                      </div>
+                      
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                        <p className="text-sm text-amber-800">
+                          <strong>Importante:</strong> Estas cores são exclusivas para sua página de links pública. 
+                          Alterar aqui não afeta as cores do seu site principal.
+                        </p>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="pagePrimaryColor">Cor Primária dos Links</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="pagePrimaryColor"
+                              type="color"
+                              value={previewData?.pagePrimaryColor || '#3b82f6'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pagePrimaryColor: e.target.value }))}
+                              className="w-12 h-10 p-1"
+                            />
+                            <Input
+                              value={previewData?.pagePrimaryColor || '#3b82f6'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pagePrimaryColor: e.target.value }))}
+                              placeholder="#3b82f6"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Cor principal dos botões e destaques</p>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="pageSecondaryColor">Cor Secundária dos Links</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="pageSecondaryColor"
+                              type="color"
+                              value={previewData?.pageSecondaryColor || '#64748b'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageSecondaryColor: e.target.value }))}
+                              className="w-12 h-10 p-1"
+                            />
+                            <Input
+                              value={previewData?.pageSecondaryColor || '#64748b'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageSecondaryColor: e.target.value }))}
+                              placeholder="#64748b"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Cor para ícones e elementos secundários</p>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="pageBackgroundColor">Cor de Fundo da Página</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="pageBackgroundColor"
+                              type="color"
+                              value={previewData?.pageBackgroundColor || '#ffffff'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageBackgroundColor: e.target.value }))}
+                              className="w-12 h-10 p-1"
+                            />
+                            <Input
+                              value={previewData?.pageBackgroundColor || '#ffffff'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageBackgroundColor: e.target.value }))}
+                              placeholder="#ffffff"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Cor de fundo da página de links</p>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="pageTextPrimaryColor">Cor do Texto Principal</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="pageTextPrimaryColor"
+                              type="color"
+                              value={previewData?.pageTextPrimaryColor || '#1e293b'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageTextPrimaryColor: e.target.value }))}
+                              className="w-12 h-10 p-1"
+                            />
+                            <Input
+                              value={previewData?.pageTextPrimaryColor || '#1e293b'}
+                              onChange={(e) => setPreviewData(prev => ({ ...prev, pageTextPrimaryColor: e.target.value }))}
+                              placeholder="#1e293b"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Cor dos títulos e textos principais</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Configurações de Exibição */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Configurações de Exibição</h3>
+                      
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="showProfileImage">Mostrar foto do perfil</Label>
+                            <p className="text-xs text-gray-500">Exibir a imagem do perfil na página</p>
+                          </div>
+                          <Switch
+                            id="showProfileImage"
+                            checked={previewData?.showProfileImage !== false}
+                            onCheckedChange={(checked) => setPreviewData(prev => ({ ...prev, showProfileImage: checked }))}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="showTitle">Mostrar título/profissão</Label>
+                            <p className="text-xs text-gray-500">Exibir o título abaixo do nome</p>
+                          </div>
+                          <Switch
+                            id="showTitle"
+                            checked={previewData?.showTitle !== false}
+                            onCheckedChange={(checked) => setPreviewData(prev => ({ ...prev, showTitle: checked }))}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="showBio">Mostrar biografia</Label>
+                            <p className="text-xs text-gray-500">Exibir a descrição na página</p>
+                          </div>
+                          <Switch
+                            id="showBio"
+                            checked={previewData?.showBio !== false}
+                            onCheckedChange={(checked) => setPreviewData(prev => ({ ...prev, showBio: checked }))}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="isPublic">Página pública</Label>
+                            <p className="text-xs text-gray-500">Permitir acesso público à página</p>
+                          </div>
+                          <Switch
+                            id="isPublic"
+                            checked={previewData?.isPublic !== false}
+                            onCheckedChange={(checked) => setPreviewData(prev => ({ ...prev, isPublic: checked }))}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Botões de Ação */}
+                    <div className="flex gap-2 pt-4">
+                      <Button 
+                        onClick={() => previewData && savePageProfile(previewData)}
+                        className="flex-1"
+                      >
+                        Salvar Alterações
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setPreviewData(pageProfile)}
+                        className="flex-1"
+                      >
+                        Resetar
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Preview da Página */}
+              <div className="lg:sticky lg:top-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Eye className="w-5 h-5" />
+                      Preview da Página
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="border rounded-lg overflow-hidden">
+                      {/* Simulação Mobile */}
+                      <div 
+                        className="w-full max-w-sm mx-auto bg-white"
+                        style={{
+                          backgroundColor: previewData?.pageBackgroundColor || '#f5f5f5',
+                          backgroundImage: previewData?.backgroundImageUrl ? `url(${previewData.backgroundImageUrl})` : undefined,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          minHeight: '600px'
+                        }}
+                      >
+                        <div className="p-6 text-center">
+                          {/* Avatar */}
+                          {(previewData?.showProfileImage !== false) && (
+                            <div className="mb-6">
+                              <div 
+                                className="w-24 h-24 mx-auto rounded-full border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center overflow-hidden"
+                                style={{
+                                  backgroundImage: previewData?.displayImageUrl ? `url(${previewData.displayImageUrl})` : undefined,
+                                  backgroundSize: 'cover',
+                                  backgroundPosition: 'center'
+                                }}
+                              >
+                                {!previewData?.displayImageUrl && (
+                                  <span 
+                                    className="text-2xl font-bold"
+                                    style={{ color: previewData?.pagePrimaryColor || '#3b82f6' }}
+                                  >
+                                    {(previewData?.displayName || professionalName || 'U').charAt(0).toUpperCase()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Nome */}
+                          <h1 
+                            className="text-xl font-bold mb-2"
+                            style={{ color: previewData?.pageTextPrimaryColor || '#2C2C2C' }}
+                          >
+                            {previewData?.displayName || professionalName || 'Seu Nome'}
+                          </h1>
+
+                          {/* Título */}
+                          {previewData?.displayTitle && (previewData?.showTitle !== false) && (
+                            <p 
+                              className="text-base mb-4 font-medium"
+                              style={{ color: previewData?.pageTextSecondaryColor || '#666666' }}
+                            >
+                              {previewData.displayTitle}
+                            </p>
+                          )}
+
+                          {/* Bio */}
+                          {previewData?.displayBio && (previewData?.showBio !== false) && (
+                            <p 
+                              className="text-sm leading-relaxed mb-6"
+                              style={{ color: previewData?.pageTextSecondaryColor || '#666666' }}
+                            >
+                              {previewData.displayBio}
+                            </p>
+                          )}
+
+                          {/* Links Exemplo */}
+                          <div className="space-y-3">
+                            {links.slice(0, 3).map((link, index) => (
+                              <div
+                                key={link.id}
+                                className="w-full rounded-2xl shadow-md p-4 flex items-center justify-between"
+                                style={{
+                                  backgroundColor: previewData?.pageSurfaceColor || '#ffffff',
+                                  border: `1px solid ${previewData?.pageBorderColor || '#e0e0e0'}`
+                                }}
+                              >
+                                <div className="flex items-center flex-1">
+                                  <div className="w-8 h-8 rounded-full bg-gray-300 mr-3"></div>
+                                  <div className="flex-1 min-w-0">
+                                    <h3 
+                                      className="font-semibold text-sm truncate"
+                                      style={{ color: previewData?.pageTextPrimaryColor || '#2C2C2C' }}
+                                    >
+                                      {link.title}
+                                    </h3>
+                                  </div>
+                                </div>
+                                <ExternalLink 
+                                  size={16} 
+                                  style={{ color: previewData?.pageSecondaryColor || '#999999' }}
+                                />
+                              </div>
+                            ))}
+                            
+                            {links.length === 0 && (
+                              <div
+                                className="w-full rounded-2xl shadow-md p-4 text-center"
+                                style={{
+                                  backgroundColor: previewData?.pageSurfaceColor || '#ffffff',
+                                  border: `1px solid ${previewData?.pageBorderColor || '#e0e0e0'}`
+                                }}
+                              >
+                                <p 
+                                  className="text-sm"
+                                  style={{ color: previewData?.pageTextSecondaryColor || '#666666' }}
+                                >
+                                  Seus links aparecerão aqui
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           )}
         </TabsContent>
         
