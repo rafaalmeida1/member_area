@@ -986,7 +986,7 @@ const MyLinks: React.FC = () => {
                 <div className="space-y-2">
                   {links.map((link) => (
                     <SortableItem key={link.id} id={link.id}>
-                      {({ dragHandleProps }: { dragHandleProps?: React.RefAttributes<HTMLElement> & Record<string, any> }) => (
+                      {({ dragHandleProps }: { dragHandleProps?: React.RefAttributes<HTMLDivElement> & Record<string, any> }) => (
                         <Card className="hover:shadow-md transition-shadow">
                           <CardContent className="p-4">
                             <div className="flex items-center gap-4">

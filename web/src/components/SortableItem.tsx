@@ -3,7 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
 interface DragHandleProps {
-  ref: React.Ref<HTMLElement>;
+  ref: React.Ref<HTMLDivElement>;
   [key: string]: any;
 }
 
