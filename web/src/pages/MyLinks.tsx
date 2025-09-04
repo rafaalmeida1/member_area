@@ -21,6 +21,8 @@ import { publicLinksService } from '@/services/publicLinksService';
 import { LinkResponse, LinkRequest, LinkType } from '@/types/publicLinks';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { apiService } from '@/services/api';
+import { Layout } from '@/components/Layout';
 
 const linkSchema = z.object({
   title: z.string()
@@ -114,6 +116,7 @@ const MyLinks: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [editingLink, setEditingLink] = useState<LinkResponse | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [professionalName, setProfessionalName] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -140,7 +143,14 @@ const MyLinks: React.FC = () => {
 
   useEffect(() => {
     loadLinks();
+    loadProfessionalProfile();
   }, []);
+
+  const loadProfessionalProfile = async () => {
+    const data = await apiService.getProfessionalProfile();
+    setProfessionalName(data.name);
+    setProfessionalName(data.name || '');
+  };
 
   const loadLinks = async () => {
     try {
@@ -380,6 +390,9 @@ const MyLinks: React.FC = () => {
   }
 
   return (
+    <Layout
+      title="Meus Links"
+    >
     <div className="container mx-auto p-6 max-w-4xl">
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -710,6 +723,7 @@ const MyLinks: React.FC = () => {
         </TabsContent>
       </Tabs>
     </div>
+    </Layout>
   );
 };
 
