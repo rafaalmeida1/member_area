@@ -387,9 +387,12 @@ const PublicLinks: React.FC = () => {
                   className="p-2 hover:scale-110 transition-transform duration-200"
                   onClick={() => handleLinkClick(link)}
                 >
-                  <div style={{ color: data.themeTextPrimaryColor || '#374151' }}>
-                    {renderSocialIcon(link.linkType, 24)}
-                  </div>
+                  <LinkIcon 
+                    linkType={link.linkType} 
+                    icon={link.icon} 
+                    size={20} 
+                    isSmall={false}
+                  />
                 </button>
               ))}
             </div>
@@ -399,14 +402,14 @@ const PublicLinks: React.FC = () => {
           {regularLinks.length > 0 ? (
             <div className="space-y-4">
               {regularLinks.map((link) => {
-                const buttonBgColor = data.themeSurfaceColor || '#667eea';
-                const buttonTextColor = data.themeTextPrimaryColor || '#ffffff';
+                const buttonBgColor = data.themePrimaryColor || '#667eea';
+                const buttonTextColor = '#ffffff';
                 
                 console.log('Cores do botão:', {
                   backgroundColor: buttonBgColor,
                   color: buttonTextColor,
-                  themeSurfaceColor: data.themeSurfaceColor,
-                  themeTextPrimaryColor: data.themeTextPrimaryColor
+                  themePrimaryColor: data.themePrimaryColor,
+                  themeHoverColor: data.themeHoverColor
                 });
                 
                 return (
@@ -423,7 +426,7 @@ const PublicLinks: React.FC = () => {
                     e.currentTarget.style.backgroundColor = data.themeHoverColor || '#5a67d8';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = data.themeSurfaceColor || '#667eea';
+                    e.currentTarget.style.backgroundColor = data.themePrimaryColor || '#667eea';
                   }}
                   onClick={() => handleLinkClick(link)}
                 >

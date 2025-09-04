@@ -1328,8 +1328,8 @@ const MyLinks: React.FC = () => {
                                     key={link.id}
                                     className="w-full py-3 rounded-lg font-medium text-center text-xs cursor-pointer hover:scale-[1.02] transition-transform"
                                     style={{
-                                      backgroundColor: previewData?.pageSurfaceColor || '#667eea',
-                                      color: previewData?.pageTextPrimaryColor || '#ffffff'
+                                      backgroundColor: previewData?.pagePrimaryColor || '#667eea',
+                                      color: '#ffffff'
                                     }}
                                   >
                                     <span className="text-balance leading-tight">
