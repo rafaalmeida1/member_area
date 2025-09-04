@@ -21,6 +21,7 @@ import { publicLinksService } from '@/services/publicLinksService';
 import { LinkResponse, LinkRequest, LinkType } from '@/types/publicLinks';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { apiService } from '@/services/api';
 import { Layout } from '@/components/Layout';
 import { analyticsService } from '@/services/analyticsService';
@@ -322,30 +323,78 @@ const MyLinks: React.FC = () => {
       if (axiosError.response?.status === 400) {
         const errorMessage = axiosError.response?.data?.message || 'Dados inválidos';
         if (errorMessage.includes('título')) {
-          toast.error('Título inválido. Verifique se não está vazio ou muito longo.');
+          toast({
+            title: 'Título inválido',
+            description: 'Título inválido. Verifique se não está vazio ou muito longo.',
+            variant: 'destructive',
+          }); 
         } else if (errorMessage.includes('URL') || errorMessage.includes('url')) {
-          toast.error('URL inválida. Verifique o formato da URL.');
+          toast({
+            title: 'URL inválida',
+            description: 'URL inválida. Verifique o formato da URL.',
+            variant: 'destructive',
+          });
         } else if (errorMessage.includes('tipo')) {
-          toast.error('Tipo de link inválido.');
+          toast({
+            title: 'Tipo de link inválido',
+            description: 'Tipo de link inválido.',
+            variant: 'destructive',
+          });
         } else {
-          toast.error(`Erro de validação: ${errorMessage}`);
+          toast({
+            title: 'Erro de validação',
+            description: `Err o de validação: ${errorMessage}`,
+            variant: 'destructive',
+          });
         }
       } else if (axiosError.response?.status === 401) {
-        toast.error('Sessão expirada. Faça login novamente.');
+        toast({
+          title: 'Sessão expirada',
+          description: 'Sessão expirada. Faça login novamente.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status === 403) {
-        toast.error('Você não tem permissão para realizar esta ação.');
+        toast({
+          title: 'Você não tem permissão para realizar esta ação.',
+          description: 'Você não tem permissão para realizar esta ação.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status === 404) {
-        toast.error('Link não encontrado.');
+        toast({
+          title: 'Link não encontrado',
+          description: 'Link não encontrado.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status === 409) {
-        toast.error('Já existe um link com este título.');
+        toast({
+          title: 'Já existe um link com este título',
+          description: 'Já existe um link com este título.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status === 422) {
-        toast.error('Dados não processáveis. Verifique as informações.');
+        toast({
+          title: 'Dados não processáveis',
+          description: 'Dados não processáveis. Verifique as informações.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status >= 500) {
-        toast.error('Erro interno do servidor. Tente novamente mais tarde.');
+        toast({
+          title: 'Erro interno do servidor',
+          description: 'Erro interno do servidor. Tente novamente mais tarde.',
+          variant: 'destructive',
+        });
       } else if (axiosError.code === 'NETWORK_ERROR' || !axiosError.response) {
-        toast.error('Erro de conexão. Verifique sua internet.');
+        toast({
+          title: 'Erro de conexão',
+          description: 'Erro de conexão. Verifique sua internet.',
+          variant: 'destructive',
+        });
       } else {
-        toast.error('Erro inesperado ao salvar link. Tente novamente.');
+        toast({
+          title: 'Erro inesperado ao salvar link',
+          description: 'Erro inesperado ao salvar link. Tente novamente.',
+          variant: 'destructive',
+        });
       }
     }
   };
@@ -376,19 +425,43 @@ const MyLinks: React.FC = () => {
       
       const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
       if (axiosError.response?.status === 401) {
-        toast.error('Sessão expirada. Faça login novamente.');
+        toast({
+          title: 'Sessão expirada',
+          description: 'Sessão expirada. Faça login novamente.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status === 403) {
-        toast.error('Você não tem permissão para excluir este link.');
+        toast({
+          title: 'Você não tem permissão para excluir este link',
+          description: 'Você não tem permissão para excluir este link.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status === 404) {
-        toast.error('Link não encontrado ou já foi excluído.');
+        toast({
+          title: 'Link não encontrado ou já foi excluído',
+          description: 'Link não encontrado ou já foi excluído.',
+          variant: 'destructive',
+        });
         // Remover da lista local se não existe mais
         setLinks(links.filter(link => link.id !== linkId));
       } else if (axiosError.response?.status >= 500) {
-        toast.error('Erro interno do servidor. Tente novamente mais tarde.');
+        toast({
+          title: 'Erro interno do servidor',
+          description: 'Erro interno do servidor. Tente novamente mais tarde.',
+          variant: 'destructive',
+        });
       } else if (axiosError.code === 'NETWORK_ERROR' || !axiosError.response) {
-        toast.error('Erro de conexão. Verifique sua internet.');
+        toast({
+          title: 'Erro de conexão',
+          description: 'Erro de conexão. Verifique sua internet.',
+          variant: 'destructive',
+        });
       } else {
-        toast.error('Erro inesperado ao excluir link. Tente novamente.');
+        toast({
+          title: 'Erro inesperado ao excluir link',
+          description: 'Erro inesperado ao excluir link. Tente novamente.',
+          variant: 'destructive',
+        });
       }
     }
   };
@@ -416,7 +489,11 @@ const MyLinks: React.FC = () => {
     const newIndex = links.findIndex(link => link.id === Number(over.id));
 
     if (oldIndex === -1 || newIndex === -1) {
-      toast.error('Erro ao identificar posição dos links');
+      toast({
+        title: 'Erro ao identificar posição dos links',
+        description: 'Erro ao identificar posição dos links',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -439,17 +516,41 @@ const MyLinks: React.FC = () => {
       
       const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
       if (axiosError.response?.status === 401) {
-        toast.error('Sessão expirada. Faça login novamente.');
+        toast({
+          title: 'Sessão expirada',
+          description: 'Sessão expirada. Faça login novamente.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status === 403) {
-        toast.error('Você não tem permissão para reordenar links.');
+        toast({
+          title: 'Você não tem permissão para reordenar links.',
+          description: 'Você não tem permissão para reordenar links.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status === 400) {
-        toast.error('Dados inválidos para reordenação.');
+        toast({
+          title: 'Dados inválidos para reordenação',
+          description: 'Dados inválidos para reordenação.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status >= 500) {
-        toast.error('Erro interno do servidor. Tente novamente mais tarde.');
+        toast({
+          title: 'Erro interno do servidor',
+          description: 'Erro interno do servidor. Tente novamente mais tarde.',
+          variant: 'destructive',
+        });
       } else if (axiosError.code === 'NETWORK_ERROR' || !axiosError.response) {
-        toast.error('Erro de conexão. Verifique sua internet.');
+        toast({
+          title: 'Erro de conexão',
+          description: 'Erro de conexão. Verifique sua internet.',
+          variant: 'destructive',
+        });
       } else {
-        toast.error('Erro ao reordenar links. Ordem restaurada.');
+        toast({
+          title: 'Erro ao reordenar links',
+          description: 'Erro ao reordenar links. Ordem restaurada.',
+          variant: 'destructive',
+        });
       }
     }
   };
@@ -476,15 +577,35 @@ const MyLinks: React.FC = () => {
       
       const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
       if (axiosError.response?.status === 401) {
-        toast.error('Sessão expirada. Faça login novamente.');
+        toast({
+          title: 'Sessão expirada',
+          description: 'Sessão expirada. Faça login novamente.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status === 403) {
-        toast.error('Você não tem permissão para ver os analytics.');
+        toast({
+          title: 'Você não tem permissão para ver os analytics',
+          description: 'Você não tem permissão para ver os analytics.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status >= 500) {
-        toast.error('Erro interno do servidor. Tente novamente mais tarde.');
+        toast({
+          title: 'Erro interno do servidor',
+          description: 'Erro interno do servidor. Tente novamente mais tarde.',
+          variant: 'destructive',
+        });
       } else if (axiosError.code === 'NETWORK_ERROR' || !axiosError.response) {
-        toast.error('Erro de conexão. Verifique sua internet.');
+        toast({
+          title: 'Erro de conexão',
+          description: 'Erro de conexão. Verifique sua internet.',
+          variant: 'destructive',
+        });
       } else {
-        toast.error('Erro inesperado ao carregar analytics.');
+        toast({
+          title: 'Erro inesperado ao carregar analytics',
+          description: 'Erro inesperado ao carregar analytics.',
+          variant: 'destructive',
+        });
       }
     } finally {
       setAnalyticsLoading(false);
@@ -502,10 +623,18 @@ const MyLinks: React.FC = () => {
       
       const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
       if (axiosError.response?.status === 401) {
-        toast.error('Sessão expirada. Redirecionando para login...');
+        toast({
+          title: 'Sessão expirada',
+          description: 'Sessão expirada. Redirecionando para login...',
+          variant: 'destructive',
+        });
         // O interceptor já vai redirecionar
       } else if (axiosError.response?.status === 403) {
-        toast.error('Você não tem permissão para acessar essas configurações.');
+        toast({
+          title: 'Você não tem permissão para acessar essas configurações',
+          description: 'Você não tem permissão para acessar essas configurações.',
+          variant: 'destructive',
+        });
       } else {
         // Para outros erros, usar configurações padrão sem mostrar erro
         console.warn('Usando configurações padrão devido ao erro:', error);
@@ -530,15 +659,35 @@ const MyLinks: React.FC = () => {
       
       const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
       if (axiosError.response?.status === 401) {
-        toast.error('Sessão expirada. Faça login novamente.');
+        toast({
+          title: 'Sessão expirada',
+          description: 'Sessão expirada. Faça login novamente.',
+          variant: 'destructive',
+        })
       } else if (axiosError.response?.status === 403) {
-        toast.error('Você não tem permissão para alterar essas configurações.');
+        toast({
+          title: 'Você não tem permissão para alterar essas configurações',
+          description: 'Você não tem permissão para alterar essas configurações.',
+          variant: 'destructive',
+        });
       } else if (axiosError.response?.status >= 500) {
-        toast.error('Erro interno do servidor. Tente novamente mais tarde.');
+        toast({
+          title: 'Erro interno do servidor',
+          description: 'Erro interno do servidor. Tente novamente mais tarde.',
+          variant: 'destructive',
+        });
       } else if (axiosError.code === 'NETWORK_ERROR' || !axiosError.response) {
-        toast.error('Erro de conexão. Verifique sua internet.');
+        toast({
+          title: 'Erro de conexão',
+          description: 'Erro de conexão. Verifique sua internet.',
+          variant: 'destructive',
+        });
       } else {
-        toast.error('Erro inesperado ao salvar configurações.');
+        toast({
+          title: 'Erro inesperado ao salvar configurações',
+          description: 'Erro inesperado ao salvar configurações.',
+          variant: 'destructive',
+        });
       }
     }
   };

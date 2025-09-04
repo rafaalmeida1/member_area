@@ -116,6 +116,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   const shouldShowAnimation = (): boolean => {
     try {
+      // Não mostrar animação na página pública de links
+      if (window.location.pathname.startsWith('/links/')) {
+        return false;
+      }
+      
       // Verificar se foi marcado para mostrar animação (para redirects diretos)
       const shouldAnimate = sessionStorage.getItem('nutri-thata-show-animation');
       if (shouldAnimate === 'true') {
@@ -127,7 +132,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       return isExternalRedirect();
     } catch (error) {
       console.error('Erro ao verificar se deve mostrar animação:', error);
-      return true;
+      return false;
     }
   };
 
@@ -194,6 +199,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
+      } else {
+        setIsLoading(false);
       }
     }
   };
