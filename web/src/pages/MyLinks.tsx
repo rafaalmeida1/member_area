@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableItem } from '@/components/SortableItem';
 import { LoadingState } from '@/components/LoadingState';
@@ -23,6 +23,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { apiService } from '@/services/api';
 import { Layout } from '@/components/Layout';
+import { analyticsService } from '@/services/analyticsService';
+import { PageAnalytics } from '@/types/analytics';
 
 const linkSchema = z.object({
   title: z.string()
@@ -117,6 +119,8 @@ const MyLinks: React.FC = () => {
   const [editingLink, setEditingLink] = useState<LinkResponse | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [professionalName, setProfessionalName] = useState('');
+  const [analytics, setAnalytics] = useState<PageAnalytics | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -160,7 +164,7 @@ const MyLinks: React.FC = () => {
     } catch (error: unknown) {
       console.error('Erro ao carregar links:', error);
       
-      const axiosError = error as any;
+      const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
       if (axiosError.response?.status === 401) {
         toast.error('Sessão expirada. Faça login novamente.');
         // Redirecionar para login se necessário
@@ -231,7 +235,7 @@ const MyLinks: React.FC = () => {
       console.error('Erro ao salvar link:', error);
       
       // Tratamento específico de erros
-      const axiosError = error as any; // Cast para acessar propriedades do axios
+      const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
       if (axiosError.response?.status === 400) {
         const errorMessage = axiosError.response?.data?.message || 'Dados inválidos';
         if (errorMessage.includes('título')) {
@@ -287,7 +291,7 @@ const MyLinks: React.FC = () => {
     } catch (error: unknown) {
       console.error('Erro ao excluir link:', error);
       
-      const axiosError = error as any;
+      const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
       if (axiosError.response?.status === 401) {
         toast.error('Sessão expirada. Faça login novamente.');
       } else if (axiosError.response?.status === 403) {
@@ -320,13 +324,13 @@ const MyLinks: React.FC = () => {
     });
   };
 
-  const handleDragEnd = async (event: any) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over || active.id === over.id) return;
 
-    const oldIndex = links.findIndex(link => link.id === active.id);
-    const newIndex = links.findIndex(link => link.id === over.id);
+    const oldIndex = links.findIndex(link => link.id === Number(active.id));
+    const newIndex = links.findIndex(link => link.id === Number(over.id));
 
     if (oldIndex === -1 || newIndex === -1) {
       toast.error('Erro ao identificar posição dos links');
@@ -350,7 +354,7 @@ const MyLinks: React.FC = () => {
       // Reverter a mudança em caso de erro
       setLinks(originalLinks);
       
-      const axiosError = error as any;
+      const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
       if (axiosError.response?.status === 401) {
         toast.error('Sessão expirada. Faça login novamente.');
       } else if (axiosError.response?.status === 403) {
@@ -377,6 +381,31 @@ const MyLinks: React.FC = () => {
     const url = getPublicUrl();
     navigator.clipboard.writeText(url);
     toast.success('URL copiada para a área de transferência!');
+  };
+
+  const loadAnalytics = async () => {
+    try {
+      setAnalyticsLoading(true);
+      const data = await analyticsService.getPageAnalytics();
+      setAnalytics(data);
+    } catch (error: unknown) {
+      console.error('Erro ao carregar analytics:', error);
+      
+      const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
+      if (axiosError.response?.status === 401) {
+        toast.error('Sessão expirada. Faça login novamente.');
+      } else if (axiosError.response?.status === 403) {
+        toast.error('Você não tem permissão para ver os analytics.');
+      } else if (axiosError.response?.status >= 500) {
+        toast.error('Erro interno do servidor. Tente novamente mais tarde.');
+      } else if (axiosError.code === 'NETWORK_ERROR' || !axiosError.response) {
+        toast.error('Erro de conexão. Verifique sua internet.');
+      } else {
+        toast.error('Erro inesperado ao carregar analytics.');
+      }
+    } finally {
+      setAnalyticsLoading(false);
+    }
   };
 
   if (loading) {
@@ -708,18 +737,164 @@ const MyLinks: React.FC = () => {
           )}
         </TabsContent>
         
-        <TabsContent value="analytics">
-          <Card>
-            <CardContent className="text-center py-12">
-              <BarChart3 className="w-12 h-12 mx-auto mb-4 text-blue-500" />
-              <h3 className="text-lg font-semibold mb-2">Analytics Detalhados</h3>
-              <p className="text-gray-500 mb-6">Veja estatísticas completas dos seus links</p>
-              <Button onClick={() => window.open('/analytics', '_blank')}>
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Abrir Analytics
-              </Button>
-            </CardContent>
-          </Card>
+        <TabsContent value="analytics" className="space-y-4">
+          {analyticsLoading ? (
+            <LoadingState 
+              loading={true} 
+              loadingText="Carregando analytics..." 
+              className="min-h-[300px]" 
+            />
+          ) : analytics ? (
+            <div className="space-y-6">
+              {/* Resumo Geral */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center">
+                      <BarChart3 className="h-8 w-8 text-blue-500" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Total de Visualizações</p>
+                        <p className="text-2xl font-bold">{analytics.totalViews}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center">
+                      <ExternalLink className="h-8 w-8 text-green-500" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Total de Cliques</p>
+                        <p className="text-2xl font-bold">{analytics.totalClicks}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center">
+                      <BarChart3 className="h-8 w-8 text-purple-500" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Taxa de Clique</p>
+                        <p className="text-2xl font-bold">
+                          {analytics.totalViews > 0 ? ((analytics.totalClicks / analytics.totalViews) * 100).toFixed(1) : '0'}%
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center">
+                      <BarChart3 className="h-8 w-8 text-orange-500" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Visualizações Únicas</p>
+                        <p className="text-2xl font-bold">{analytics.uniqueViews}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Links Mais Clicados */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Links Mais Clicados</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {analytics.topLinks.slice(0, 5).map((linkStat, index) => {
+                      const link = links.find(l => l.id === linkStat.linkId);
+                      return (
+                        <div key={linkStat.linkId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center">
+                            <span className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white text-xs rounded-full mr-3">
+                              {index + 1}
+                            </span>
+                            <div>
+                              <p className="font-medium">{link?.title || 'Link não encontrado'}</p>
+                              <p className="text-sm text-gray-500 truncate max-w-xs">{link?.url}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-lg">{linkStat.totalClicks}</p>
+                            <p className="text-sm text-gray-500">cliques</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {analytics.topLinks.length === 0 && (
+                      <p className="text-center text-gray-500 py-8">Nenhum clique registrado ainda</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Visualizações por Data */}
+              {analytics.viewsByDate && analytics.viewsByDate.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Visualizações dos Últimos 7 Dias</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {analytics.viewsByDate.slice(-7).map((dayData) => (
+                        <div key={dayData.date} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                          <span className="text-sm font-medium">{new Date(dayData.date).toLocaleDateString('pt-BR')}</span>
+                          <span className="font-bold">{dayData.views} visualizações</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Top Links por Cliques */}
+              {analytics.topLinks && analytics.topLinks.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Performance por Link</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {analytics.topLinks.map((linkData) => {
+                        const link = links.find(l => l.id === linkData.linkId);
+                        return (
+                          <div key={linkData.linkId} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            <span className="text-sm font-medium truncate">{link?.title || 'Link não encontrado'}</span>
+                            <span className="font-bold">{linkData.totalClicks} cliques</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Botão para Recarregar */}
+              <div className="text-center">
+                <Button onClick={loadAnalytics} variant="outline">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Atualizar Analytics
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="text-center py-12">
+                <BarChart3 className="w-12 h-12 mx-auto mb-4 text-blue-500" />
+                <h3 className="text-lg font-semibold mb-2">Analytics dos Seus Links</h3>
+                <p className="text-gray-500 mb-6">Veja estatísticas detalhadas sobre suas visualizações e cliques</p>
+                <Button onClick={loadAnalytics}>
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Carregar Analytics
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>
