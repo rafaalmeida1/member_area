@@ -572,7 +572,7 @@ const PublicLinks: React.FC = () => {
                                             <span className="text-balance leading-tight">
                                                 {link.title}
                                             </span>
-                                            <span className="text-xs text-gray-500">
+                                            <span className="text-xs text-wrap">
                                                 {link.description}
                                             </span>
                                         </div>
