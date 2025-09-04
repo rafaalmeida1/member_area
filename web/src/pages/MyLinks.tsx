@@ -43,13 +43,13 @@ const linkSchema = z.object({
     .min(1, 'URL é obrigatória')
     .refine((url) => {
       // Validação customizada baseada no tipo de link
-      const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+      const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-@]*)*\/?$/;
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const phonePattern = /^[+]?[1-9][\d]{0,15}$/;
       const whatsappPattern = /^[+]?[1-9][\d]{0,15}$/;
       
-      // Para email, validar formato de email
-      if (url.includes('@')) {
+      // Para email específico (sem http/https no início)
+      if (!url.startsWith('http') && !url.startsWith('www') && url.includes('@') && !url.includes('/')) {
         return emailPattern.test(url);
       }
       
@@ -58,12 +58,12 @@ const linkSchema = z.object({
         return whatsappPattern.test(url.replace(/[\s-()]/g, ''));
       }
       
-      // Para URLs normais
+      // Para URLs normais (incluindo com @)
       return urlPattern.test(url) || url.startsWith('http://') || url.startsWith('https://');
     }, 'URL inválida. Verifique o formato.')
     .transform((url) => {
       // Normalizar URL se necessário
-      if (url.includes('@')) return url; // Email
+      if (!url.startsWith('http') && !url.startsWith('www') && url.includes('@') && !url.includes('/')) return url; // Email
       if (/^[+]?[\d\s-()]+$/.test(url)) return url.replace(/[\s-()]/g, ''); // Telefone
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
         return `https://${url}`;
@@ -133,8 +133,13 @@ const availableIcons = [
 ];
 
 // Função para renderizar ícone baseado no valor
-const renderIconByValue = (iconValue: string, size = 20, className = "text-white") => {
+const renderIconByValue = (iconValue: string | undefined, size = 20, className = "text-white") => {
   const iconProps = { size, className };
+  
+  // Se não tem valor ou é "default", retorna null para usar o ícone padrão do tipo
+  if (!iconValue || iconValue === 'default') {
+    return null;
+  }
   
   const iconConfig = availableIcons.find(icon => icon.value === iconValue);
   if (iconConfig?.component) {
@@ -929,14 +934,14 @@ const MyLinks: React.FC = () => {
                 <div>
                   <Label htmlFor="icon">Ícone</Label>
                   <Select 
-                    value={watch('icon') || ''} 
-                    onValueChange={(value) => setValue('icon', value)}
+                    value={watch('icon') || 'default'} 
+                    onValueChange={(value) => setValue('icon', value === 'default' ? '' : value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione um ícone" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Ícone padrão (baseado no tipo)</SelectItem>
+                      <SelectItem value="default">Ícone padrão (baseado no tipo)</SelectItem>
                       {availableIcons.map((icon) => (
                         <SelectItem key={icon.value} value={icon.value}>
                           <div className="flex items-center gap-2">
@@ -1632,8 +1637,7 @@ const MyLinks: React.FC = () => {
                                          style={{ 
                                            backgroundColor: previewData?.pagePrimaryColor || '#667eea',
                                          }}>
-                                      {link.icon ? 
-                                        renderIconByValue(link.icon, 14, "text-white") : 
+                                      {renderIconByValue(link.icon, 14, "text-white") || 
                                         renderSocialIcon(link.linkType, 14)
                                       }
                                     </div>
@@ -1663,7 +1667,7 @@ const MyLinks: React.FC = () => {
                                       e.currentTarget.style.backgroundColor = previewData?.pagePrimaryColor || '#667eea';
                                     }}
                                   >
-                                    {link.icon && (
+                                    {renderIconByValue(link.icon, 12, "text-white") && (
                                       <div className="flex items-center">
                                         {renderIconByValue(link.icon, 12, "text-white")}
                                       </div>
