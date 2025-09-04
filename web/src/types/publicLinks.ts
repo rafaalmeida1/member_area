@@ -8,6 +8,9 @@ export type LinkType =
   | 'LINKEDIN'
   | 'FACEBOOK'
   | 'TIKTOK'
+  | 'INSTAGRAM'
+  | 'TWITTER'
+  | 'TELEGRAM'
   | 'CUSTOM';
 
 export interface PublicLink {

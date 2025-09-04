@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, GripVertical, ExternalLink, BarChart3, Palette, Upload, Eye } from 'lucide-react';
+import { Plus, Edit2, Trash2, GripVertical, ExternalLink, BarChart3, Palette, Upload, Eye, MessageCircle, Phone, Mail, Instagram, Youtube, Linkedin, Facebook, Twitter, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -27,6 +27,7 @@ import { analyticsService } from '@/services/analyticsService';
 import { PageAnalytics } from '@/types/analytics';
 import { linkPageProfileService } from '@/services/linkPageProfileService';
 import { LinkPageProfileRequest, LinkPageProfileResponse } from '@/types/linkPageProfile';
+import { FileUpload } from '@/components/FileUpload';
 
 const linkSchema = z.object({
   title: z.string()
@@ -68,7 +69,7 @@ const linkSchema = z.object({
       }
       return url;
     }),
-  linkType: z.enum(['SOCIAL_MEDIA', 'WEBSITE', 'WHATSAPP', 'EMAIL', 'PHONE', 'YOUTUBE', 'LINKEDIN', 'FACEBOOK', 'TIKTOK', 'CUSTOM'] as const, {
+  linkType: z.enum(['SOCIAL_MEDIA', 'WEBSITE', 'WHATSAPP', 'EMAIL', 'PHONE', 'YOUTUBE', 'LINKEDIN', 'FACEBOOK', 'TIKTOK', 'INSTAGRAM', 'TWITTER', 'TELEGRAM', 'CUSTOM'] as const, {
     errorMap: () => ({ message: 'Selecione um tipo de link válido' })
   }),
   icon: z.string()
@@ -113,6 +114,36 @@ const linkSchema = z.object({
 });
 
 type LinkFormData = z.infer<typeof linkSchema>;
+
+// Função para renderizar ícones sociais no preview
+const renderSocialIcon = (linkType: LinkType, size = 20) => {
+  const iconProps = { size, className: "text-white" };
+  
+  switch (linkType) {
+    case 'WHATSAPP':
+      return <MessageCircle {...iconProps} />;
+    case 'EMAIL':
+      return <Mail {...iconProps} />;
+    case 'PHONE':
+      return <Phone {...iconProps} />;
+    case 'INSTAGRAM':
+      return <Instagram {...iconProps} />;
+    case 'YOUTUBE':
+      return <Youtube {...iconProps} />;
+    case 'LINKEDIN':
+      return <Linkedin {...iconProps} />;
+    case 'FACEBOOK':
+      return <Facebook {...iconProps} />;
+    case 'TWITTER':
+      return <Twitter {...iconProps} />;
+    case 'TELEGRAM':
+      return <Send {...iconProps} />;
+    case 'TIKTOK':
+      return <div className="text-white font-bold text-xs">TT</div>;
+    default:
+      return <ExternalLink {...iconProps} />;
+  }
+};
 
 const MyLinks: React.FC = () => {
   const { user } = useAuth();
@@ -486,7 +517,7 @@ const MyLinks: React.FC = () => {
     <Layout
       title="Meus Links"
     >
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="mx-auto p-6 max-w-full">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Meus Links</h1>
@@ -563,7 +594,7 @@ const MyLinks: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="WEBSITE">Site/Website</SelectItem>
-                      <SelectItem value="SOCIAL_MEDIA">Rede Social</SelectItem>
+                      <SelectItem value="INSTAGRAM">Instagram</SelectItem>
                       <SelectItem value="WHATSAPP">WhatsApp</SelectItem>
                       <SelectItem value="EMAIL">Email</SelectItem>
                       <SelectItem value="PHONE">Telefone</SelectItem>
@@ -571,6 +602,9 @@ const MyLinks: React.FC = () => {
                       <SelectItem value="LINKEDIN">LinkedIn</SelectItem>
                       <SelectItem value="FACEBOOK">Facebook</SelectItem>
                       <SelectItem value="TIKTOK">TikTok</SelectItem>
+                      <SelectItem value="TWITTER">X (Twitter)</SelectItem>
+                      <SelectItem value="TELEGRAM">Telegram</SelectItem>
+                      <SelectItem value="SOCIAL_MEDIA">Outra Rede Social</SelectItem>
                       <SelectItem value="CUSTOM">Personalizado</SelectItem>
                     </SelectContent>
                   </Select>
@@ -813,9 +847,9 @@ const MyLinks: React.FC = () => {
               className="min-h-[300px]" 
             />
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Painel de Configurações */}
-              <div className="space-y-6">
+              <div className="lg:col-span-2 space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -894,36 +928,53 @@ const MyLinks: React.FC = () => {
                       
                       <div>
                         <Label htmlFor="displayImageUrl">Foto do Perfil para a página de links</Label>
-                        <div className="flex gap-2">
-                          <Input
-                            id="displayImageUrl"
-                            value={previewData?.displayImageUrl || ''}
-                            onChange={(e) => setPreviewData(prev => ({ ...prev, displayImageUrl: e.target.value }))}
-                            placeholder="https://exemplo.com/foto-para-links.jpg"
-                          />
-                          <Button variant="outline" size="sm">
-                            <Upload className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <FileUpload
+                          type="image"
+                          currentUrl={previewData?.displayImageUrl}
+                          field="displayImageUrl"
+                          onFileSelect={(url) => setPreviewData(prev => ({ ...prev, displayImageUrl: url }))}
+                          specifications={{
+                            title: "Foto do Perfil",
+                            description: "Imagem que aparecerá como foto de perfil na sua página de links",
+                            dimensions: "400x400 pixels (quadrada)",
+                            format: "JPG, PNG, WebP",
+                            maxSize: "5MB",
+                            tips: [
+                              "Use uma foto clara e profissional",
+                              "A imagem será cortada em formato circular",
+                              "Centralize o rosto na imagem",
+                              "Evite fundos muito coloridos ou distraentes"
+                            ]
+                          }}
+                        />
+                        <p className="text-xs text-gray-500 mt-2">
                           Deixe vazio para usar a foto do seu perfil principal
                         </p>
                       </div>
 
                       <div>
                         <Label htmlFor="backgroundImageUrl">Imagem de Fundo da página de links</Label>
-                        <div className="flex gap-2">
-                          <Input
-                            id="backgroundImageUrl"
-                            value={previewData?.backgroundImageUrl || ''}
-                            onChange={(e) => setPreviewData(prev => ({ ...prev, backgroundImageUrl: e.target.value }))}
-                            placeholder="https://exemplo.com/fundo-links.jpg"
-                          />
-                          <Button variant="outline" size="sm">
-                            <Upload className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <FileUpload
+                          type="image"
+                          currentUrl={previewData?.backgroundImageUrl}
+                          field="backgroundImageUrl"
+                          onFileSelect={(url) => setPreviewData(prev => ({ ...prev, backgroundImageUrl: url }))}
+                          specifications={{
+                            title: "Imagem de Fundo",
+                            description: "Imagem que aparecerá como fundo da sua página de links",
+                            dimensions: "1080x1920 pixels (vertical mobile)",
+                            format: "JPG, PNG, WebP",
+                            maxSize: "10MB",
+                            tips: [
+                              "Use imagens com boa qualidade e resolução",
+                              "A imagem será adaptada para diferentes telas",
+                              "Evite imagens com muito texto",
+                              "Cores mais suaves funcionam melhor como fundo",
+                              "A imagem terá uma sobreposição escura para melhor legibilidade"
+                            ]
+                          }}
+                        />
+                        <p className="text-xs text-gray-500 mt-2">
                           Fundo exclusivo para sua página de links (opcional)
                         </p>
                       </div>
@@ -1100,125 +1151,177 @@ const MyLinks: React.FC = () => {
               </div>
 
               {/* Preview da Página */}
-              <div className="lg:sticky lg:top-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Eye className="w-5 h-5" />
-                      Preview da Página
+              <div className="lg:sticky lg:top-6 lg:self-start">
+                <Card className="overflow-hidden">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <Eye className="w-4 h-4" />
+                      Preview Mobile
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="border rounded-lg overflow-hidden">
-                      {/* Simulação Mobile */}
-                      <div 
-                        className="w-full max-w-sm mx-auto bg-white"
-                        style={{
-                          backgroundColor: previewData?.pageBackgroundColor || '#f5f5f5',
-                          backgroundImage: previewData?.backgroundImageUrl ? `url(${previewData.backgroundImageUrl})` : undefined,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          minHeight: '600px'
-                        }}
-                      >
-                        <div className="p-6 text-center">
-                          {/* Avatar */}
-                          {(previewData?.showProfileImage !== false) && (
-                            <div className="mb-6">
-                              <div 
-                                className="w-24 h-24 mx-auto rounded-full border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center overflow-hidden"
-                                style={{
-                                  backgroundImage: previewData?.displayImageUrl ? `url(${previewData.displayImageUrl})` : undefined,
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center'
-                                }}
-                              >
-                                {!previewData?.displayImageUrl && (
-                                  <span 
-                                    className="text-2xl font-bold"
-                                    style={{ color: previewData?.pagePrimaryColor || '#3b82f6' }}
+                  <CardContent className="p-0">
+                    {/* Simulação de um iPhone */}
+                    <div className="bg-gray-900 rounded-3xl p-2 mx-4 mb-4">
+                      <div className="bg-black rounded-2xl overflow-hidden">
+                        {/* Notch do iPhone */}
+                        <div className="bg-black h-6 relative">
+                          <div className="absolute top-1 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-full h-4 w-20"></div>
+                        </div>
+                        
+                        {/* Conteúdo da página */}
+                        <div 
+                          className="relative min-h-[600px]"
+                          style={{
+                            backgroundImage: previewData?.backgroundImageUrl ? `url(${previewData.backgroundImageUrl})` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                          }}
+                        >
+                          {/* Overlay para melhor legibilidade */}
+                          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+                          
+                          {/* Conteúdo */}
+                          <div className="relative z-10 px-6 py-8">
+                            {/* Seção superior com perfil */}
+                            <div className="text-center mb-8">
+                              {/* Avatar */}
+                              {(previewData?.showProfileImage !== false) && (
+                                <div className="mb-4">
+                                  <div 
+                                    className="w-28 h-28 mx-auto rounded-full border-4 border-white shadow-2xl bg-gray-200 flex items-center justify-center overflow-hidden"
+                                    style={{
+                                      backgroundImage: previewData?.displayImageUrl ? `url(${previewData.displayImageUrl})` : undefined,
+                                      backgroundSize: 'cover',
+                                      backgroundPosition: 'center'
+                                    }}
                                   >
-                                    {(previewData?.displayName || professionalName || 'U').charAt(0).toUpperCase()}
-                                  </span>
+                                    {!previewData?.displayImageUrl && (
+                                      <span 
+                                        className="text-3xl font-bold text-white"
+                                      >
+                                        {(previewData?.displayName || professionalName || 'U').charAt(0).toUpperCase()}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Nome */}
+                              <h1 className="text-xl font-bold mb-2 text-white">
+                                {previewData?.displayName || professionalName || 'Seu Nome'}
+                              </h1>
+
+                              {/* Título */}
+                              {previewData?.displayTitle && (previewData?.showTitle !== false) && (
+                                <p className="text-sm mb-3 text-white/90 font-medium">
+                                  {previewData.displayTitle}
+                                </p>
+                              )}
+
+                              {/* Bio */}
+                              {previewData?.displayBio && (previewData?.showBio !== false) && (
+                                <p className="text-xs leading-relaxed mb-6 text-white/80 max-w-xs mx-auto">
+                                  {previewData.displayBio}
+                                </p>
+                              )}
+
+                              {/* Links Sociais (Ícones) */}
+                              <div className="flex justify-center space-x-4 mb-6">
+                                {links.filter(link => ['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).slice(0, 5).map((link) => (
+                                  <div
+                                    key={link.id}
+                                    className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center hover:bg-white/30 transition-colors cursor-pointer"
+                                  >
+                                    {renderSocialIcon(link.linkType, 20)}
+                                  </div>
+                                ))}
+                                {links.filter(link => ['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).length === 0 && (
+                                  <div className="text-white/60 text-xs">Links sociais aparecerão aqui</div>
                                 )}
                               </div>
                             </div>
-                          )}
 
-                          {/* Nome */}
-                          <h1 
-                            className="text-xl font-bold mb-2"
-                            style={{ color: previewData?.pageTextPrimaryColor || '#2C2C2C' }}
-                          >
-                            {previewData?.displayName || professionalName || 'Seu Nome'}
-                          </h1>
-
-                          {/* Título */}
-                          {previewData?.displayTitle && (previewData?.showTitle !== false) && (
-                            <p 
-                              className="text-base mb-4 font-medium"
-                              style={{ color: previewData?.pageTextSecondaryColor || '#666666' }}
-                            >
-                              {previewData.displayTitle}
-                            </p>
-                          )}
-
-                          {/* Bio */}
-                          {previewData?.displayBio && (previewData?.showBio !== false) && (
-                            <p 
-                              className="text-sm leading-relaxed mb-6"
-                              style={{ color: previewData?.pageTextSecondaryColor || '#666666' }}
-                            >
-                              {previewData.displayBio}
-                            </p>
-                          )}
-
-                          {/* Links Exemplo */}
-                          <div className="space-y-3">
-                            {links.slice(0, 3).map((link, index) => (
-                              <div
-                                key={link.id}
-                                className="w-full rounded-2xl shadow-md p-4 flex items-center justify-between"
-                                style={{
-                                  backgroundColor: previewData?.pageSurfaceColor || '#ffffff',
-                                  border: `1px solid ${previewData?.pageBorderColor || '#e0e0e0'}`
-                                }}
+                            {/* Seção curvada para links normais */}
+                            <div className="relative">
+                              {/* Curva */}
+                              <div 
+                                className="absolute -top-6 left-0 right-0 h-6 rounded-t-3xl"
+                                style={{ backgroundColor: previewData?.pageBackgroundColor || '#ffffff' }}
+                              ></div>
+                              
+                              {/* Conteúdo dos links */}
+                              <div 
+                                className="rounded-t-3xl pt-8 pb-6 px-4"
+                                style={{ backgroundColor: previewData?.pageBackgroundColor || '#ffffff' }}
                               >
-                                <div className="flex items-center flex-1">
-                                  <div className="w-8 h-8 rounded-full bg-gray-300 mr-3"></div>
-                                  <div className="flex-1 min-w-0">
-                                    <h3 
-                                      className="font-semibold text-sm truncate"
-                                      style={{ color: previewData?.pageTextPrimaryColor || '#2C2C2C' }}
+                                <div className="space-y-3">
+                                  {links.filter(link => !['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).slice(0, 3).map((link) => (
+                                    <div
+                                      key={link.id}
+                                      className="w-full rounded-2xl shadow-sm p-4 border hover:shadow-md transition-shadow cursor-pointer"
+                                      style={{
+                                        backgroundColor: previewData?.pageSurfaceColor || '#f8fafc',
+                                        borderColor: previewData?.pageBorderColor || '#e2e8f0'
+                                      }}
                                     >
-                                      {link.title}
-                                    </h3>
-                                  </div>
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center flex-1">
+                                          <div 
+                                            className="w-8 h-8 rounded-full mr-3 flex items-center justify-center"
+                                            style={{ backgroundColor: previewData?.pagePrimaryColor || '#3b82f6' }}
+                                          >
+                                            <ExternalLink size={16} className="text-white" />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <h3 
+                                              className="font-semibold text-sm truncate"
+                                              style={{ color: previewData?.pageTextPrimaryColor || '#1e293b' }}
+                                            >
+                                              {link.title}
+                                            </h3>
+                                            {link.description && (
+                                              <p 
+                                                className="text-xs text-gray-500 truncate"
+                                                style={{ color: previewData?.pageTextSecondaryColor || '#64748b' }}
+                                              >
+                                                {link.description}
+                                              </p>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <ExternalLink 
+                                          size={14} 
+                                          style={{ color: previewData?.pageSecondaryColor || '#64748b' }}
+                                        />
+                                      </div>
+                                    </div>
+                                  ))}
+                                  
+                                  {links.filter(link => !['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).length === 0 && (
+                                    <div
+                                      className="w-full rounded-2xl shadow-sm p-4 text-center border"
+                                      style={{
+                                        backgroundColor: previewData?.pageSurfaceColor || '#f8fafc',
+                                        borderColor: previewData?.pageBorderColor || '#e2e8f0'
+                                      }}
+                                    >
+                                      <p 
+                                        className="text-sm"
+                                        style={{ color: previewData?.pageTextSecondaryColor || '#64748b' }}
+                                      >
+                                        Seus links aparecerão aqui
+                                      </p>
+                                    </div>
+                                  )}
                                 </div>
-                                <ExternalLink 
-                                  size={16} 
-                                  style={{ color: previewData?.pageSecondaryColor || '#999999' }}
-                                />
                               </div>
-                            ))}
-                            
-                            {links.length === 0 && (
-                              <div
-                                className="w-full rounded-2xl shadow-md p-4 text-center"
-                                style={{
-                                  backgroundColor: previewData?.pageSurfaceColor || '#ffffff',
-                                  border: `1px solid ${previewData?.pageBorderColor || '#e0e0e0'}`
-                                }}
-                              >
-                                <p 
-                                  className="text-sm"
-                                  style={{ color: previewData?.pageTextSecondaryColor || '#666666' }}
-                                >
-                                  Seus links aparecerão aqui
-                                </p>
-                              </div>
-                            )}
+                            </div>
                           </div>
+                        </div>
+                        
+                        {/* Barra inferior do iPhone */}
+                        <div className="bg-black h-6 flex justify-center items-center">
+                          <div className="w-32 h-1 bg-white rounded-full"></div>
                         </div>
                       </div>
                     </div>
