@@ -40,6 +40,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     root.style.setProperty('--color-surface', themeColors.surfaceColor);
     root.style.setProperty('--color-text-primary', themeColors.textPrimaryColor);
     root.style.setProperty('--color-text-secondary', themeColors.textSecondaryColor);
+    root.style.setProperty('--color-text', themeColors.textPrimaryColor); // Alias para compatibilidade
     root.style.setProperty('--color-border', themeColors.borderColor);
     root.style.setProperty('--color-hover', themeColors.hoverColor);
     root.style.setProperty('--color-disabled', themeColors.disabledColor);
@@ -62,6 +63,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     document.body.style.setProperty('--color-surface', themeColors.surfaceColor);
     document.body.style.setProperty('--color-text-primary', themeColors.textPrimaryColor);
     document.body.style.setProperty('--color-text-secondary', themeColors.textSecondaryColor);
+    document.body.style.setProperty('--color-text', themeColors.textPrimaryColor); // Alias para compatibilidade
   };
 
   const saveThemeToLocalStorage = (themeColors: ThemeColors) => {
