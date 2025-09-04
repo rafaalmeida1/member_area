@@ -139,12 +139,20 @@ const PublicLinks: React.FC = () => {
           return;
         }
         
-        // Debug: Log das imagens recebidas
-        console.log('Dados recebidos:', {
+        // Debug: Log dos dados recebidos
+        console.log('Dados completos recebidos:', {
           image: response.image,
           backgroundImage: response.backgroundImage,
           name: response.name,
-          title: response.title
+          title: response.title,
+          themePrimaryColor: response.themePrimaryColor,
+          themeSecondaryColor: response.themeSecondaryColor,
+          themeBackgroundColor: response.themeBackgroundColor,
+          themeSurfaceColor: response.themeSurfaceColor,
+          themeTextPrimaryColor: response.themeTextPrimaryColor,
+          themeTextSecondaryColor: response.themeTextSecondaryColor,
+          themeBorderColor: response.themeBorderColor,
+          themeHoverColor: response.themeHoverColor
         });
         
         setData(response);
@@ -378,14 +386,14 @@ const PublicLinks: React.FC = () => {
                   key={link.id}
                   className="w-full py-4 rounded-lg font-medium border-0 transition-all duration-200 hover:scale-[1.02] text-center"
                   style={{
-                    backgroundColor: data.themeSurfaceColor || '#f3f4f6',
-                    color: data.themeTextPrimaryColor || '#374151'
+                    backgroundColor: data.themeSurfaceColor || '#667eea',
+                    color: data.themeTextPrimaryColor || '#ffffff'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = data.themeHoverColor || '#e5e7eb';
+                    e.currentTarget.style.backgroundColor = data.themeHoverColor || '#5a67d8';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = data.themeSurfaceColor || '#f3f4f6';
+                    e.currentTarget.style.backgroundColor = data.themeSurfaceColor || '#667eea';
                   }}
                   onClick={() => handleLinkClick(link)}
                 >
