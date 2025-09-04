@@ -20,7 +20,7 @@ import { LoadingState } from '@/components/LoadingState';
 import { publicLinksService } from '@/services/publicLinksService';
 import { LinkResponse, LinkRequest, LinkType } from '@/types/publicLinks';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { apiService } from '@/services/api';
 import { Layout } from '@/components/Layout';
 import { analyticsService } from '@/services/analyticsService';
@@ -147,6 +147,24 @@ const renderSocialIcon = (linkType: LinkType, size = 20) => {
 
 const MyLinks: React.FC = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
+  
+  // Helper para toasts de sucesso
+  const showSuccessToast = (message: string) => {
+    toast({
+      title: "Sucesso",
+      description: message,
+    });
+  };
+  
+  // Helper para toasts de erro
+  const showErrorToast = (title: string, message: string) => {
+    toast({
+      title,
+      description: message,
+      variant: "destructive",
+    });
+  };
   const [links, setLinks] = useState<LinkResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingLink, setEditingLink] = useState<LinkResponse | null>(null);
@@ -210,18 +228,41 @@ const MyLinks: React.FC = () => {
       
       const axiosError = error as { response?: { status: number; data?: { message?: string } }; code?: string };
       if (axiosError.response?.status === 401) {
-        toast.error('Sessão expirada. Faça login novamente.');
-        // Não redirecionar automaticamente - deixar o usuário decidir
+        toast({
+          title: "Sessão Expirada",
+          description: "Faça login novamente.",
+          variant: "destructive",
+        });
       } else if (axiosError.response?.status === 403) {
-        toast.error('Você não tem permissão para acessar os links.');
+        toast({
+          title: "Acesso Negado",
+          description: "Você não tem permissão para acessar os links.",
+          variant: "destructive",
+        });
       } else if (axiosError.response?.status === 404) {
-        toast.error('Perfil profissional não encontrado.');
+        toast({
+          title: "Perfil Não Encontrado",
+          description: "Perfil profissional não encontrado.",
+          variant: "destructive",
+        });
       } else if (axiosError.response?.status >= 500) {
-        toast.error('Erro interno do servidor. Tente novamente mais tarde.');
+        toast({
+          title: "Erro do Servidor",
+          description: "Erro interno do servidor. Tente novamente mais tarde.",
+          variant: "destructive",
+        });
       } else if (axiosError.code === 'NETWORK_ERROR' || !axiosError.response) {
-        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
+        toast({
+          title: "Erro de Conexão",
+          description: "Verifique sua internet e tente novamente.",
+          variant: "destructive",
+        });
       } else {
-        toast.error('Erro inesperado ao carregar links. Recarregue a página.');
+        toast({
+          title: "Erro Inesperado",
+          description: "Erro inesperado ao carregar links. Recarregue a página.",
+          variant: "destructive",
+        });
       }
       
       // Definir estado vazio em caso de erro
@@ -236,18 +277,18 @@ const MyLinks: React.FC = () => {
     try {
       // Validação adicional antes do envio
       if (!data.title.trim()) {
-        toast.error('Título é obrigatório');
+        showErrorToast('Título Obrigatório', 'O título do link é obrigatório.');
         return;
       }
 
       if (!data.url.trim()) {
-        toast.error('URL é obrigatória');
+        showErrorToast('URL Obrigatória', 'A URL do link é obrigatória.');
         return;
       }
 
       // Validar limite de links (máximo 50 por profissional)
       if (!editingLink && links.length >= 50) {
-        toast.error('Você atingiu o limite máximo de 50 links');
+        showErrorToast('Limite Atingido', 'Você atingiu o limite máximo de 50 links.');
         return;
       }
 
@@ -265,11 +306,11 @@ const MyLinks: React.FC = () => {
       if (editingLink) {
         const updatedLink = await publicLinksService.updateLink(editingLink.id, linkData);
         setLinks(links.map(link => link.id === editingLink.id ? updatedLink : link));
-        toast.success('Link atualizado com sucesso!');
+        showSuccessToast('Link atualizado com sucesso!');
       } else {
         const newLink = await publicLinksService.createLink(linkData);
         setLinks([...links, newLink]);
-        toast.success('Link criado com sucesso!');
+        showSuccessToast('Link criado com sucesso!');
       }
 
       handleCloseDialog();
@@ -329,7 +370,7 @@ const MyLinks: React.FC = () => {
     try {
       await publicLinksService.deleteLink(linkId);
       setLinks(links.filter(link => link.id !== linkId));
-      toast.success('Link excluído com sucesso!');
+      showSuccessToast('Link excluído com sucesso!');
     } catch (error: unknown) {
       console.error('Erro ao excluir link:', error);
       
@@ -389,7 +430,7 @@ const MyLinks: React.FC = () => {
       await publicLinksService.reorderLinks({
         linkIds: newLinks.map(link => link.id)
       });
-      toast.success('Ordem dos links atualizada!');
+      showSuccessToast('Ordem dos links atualizada!');
     } catch (error: unknown) {
       console.error('Erro ao reordenar links:', error);
       
@@ -422,7 +463,7 @@ const MyLinks: React.FC = () => {
   const copyPublicUrl = () => {
     const url = getPublicUrl();
     navigator.clipboard.writeText(url);
-    toast.success('URL copiada para a área de transferência!');
+    showSuccessToast('URL copiada para a área de transferência!');
   };
 
   const loadAnalytics = async () => {
@@ -483,7 +524,7 @@ const MyLinks: React.FC = () => {
       const updated = await linkPageProfileService.updateLinkPageProfile(data);
       setPageProfile(updated);
       setPreviewData(updated);
-      toast.success('Configurações da página salvas com sucesso!');
+      showSuccessToast('Configurações da página salvas com sucesso!');
     } catch (error: unknown) {
       console.error('Erro ao salvar configurações da página:', error);
       
@@ -506,10 +547,10 @@ const MyLinks: React.FC = () => {
     try {
       await linkPageProfileService.copySiteColors();
       await loadPageProfile(); // Recarregar para pegar as novas cores
-      toast.success('Cores do site copiadas com sucesso!');
+      showSuccessToast('Cores do site copiadas com sucesso!');
     } catch (error: unknown) {
       console.error('Erro ao copiar cores do site:', error);
-      toast.error('Erro ao copiar cores do site. Tente novamente.');
+      showErrorToast('Erro ao Copiar Cores', 'Erro ao copiar cores do site. Tente novamente.');
     }
   };
 

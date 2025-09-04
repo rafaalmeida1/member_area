@@ -139,21 +139,27 @@ const PublicLinks: React.FC = () => {
           return;
         }
         
-        // Debug: Log dos dados recebidos
-        console.log('Dados completos recebidos:', {
-          image: response.image,
-          backgroundImage: response.backgroundImage,
-          name: response.name,
-          title: response.title,
-          themePrimaryColor: response.themePrimaryColor,
-          themeSecondaryColor: response.themeSecondaryColor,
-          themeBackgroundColor: response.themeBackgroundColor,
-          themeSurfaceColor: response.themeSurfaceColor,
-          themeTextPrimaryColor: response.themeTextPrimaryColor,
-          themeTextSecondaryColor: response.themeTextSecondaryColor,
-          themeBorderColor: response.themeBorderColor,
-          themeHoverColor: response.themeHoverColor
-        });
+        // Debug: Log das URLs das imagens recebidas
+        console.log('=== DEBUG IMAGENS ===');
+        console.log('Image URL recebida:', response.image);
+        console.log('Background Image URL recebida:', response.backgroundImage);
+        console.log('Base URL atual:', window.location.origin);
+        
+        // Testar se as URLs são acessíveis
+        if (response.image) {
+          console.log('Testando acesso à imagem de perfil...');
+          fetch(response.image)
+            .then(res => console.log('Status imagem de perfil:', res.status))
+            .catch(err => console.log('Erro ao acessar imagem de perfil:', err));
+        }
+        
+        if (response.backgroundImage) {
+          console.log('Testando acesso à imagem de fundo...');
+          fetch(response.backgroundImage)
+            .then(res => console.log('Status imagem de fundo:', res.status))
+            .catch(err => console.log('Erro ao acessar imagem de fundo:', err));
+        }
+        console.log('=== FIM DEBUG IMAGENS ===');
         
         setData(response);
       } catch (err: unknown) {
@@ -295,6 +301,9 @@ const PublicLinks: React.FC = () => {
               : `linear-gradient(135deg, ${data.themePrimaryColor || '#667eea'} 0%, ${data.themeSecondaryColor || '#764ba2'} 100%)`,
             ...backgroundStyle
           }}
+          onError={() => {
+            console.log('Erro ao carregar imagem de fundo:', data.backgroundImage);
+          }}
         />
 
         {/* SVG Curve */}
@@ -315,8 +324,16 @@ const PublicLinks: React.FC = () => {
                 src={data.image} 
                 alt={data.name} 
                 className="object-cover"
-                onError={() => console.log('Erro ao carregar imagem do perfil:', data.image)}
-                onLoad={() => console.log('Imagem do perfil carregada com sucesso:', data.image)}
+                onError={(e) => {
+                  console.log('Erro ao carregar imagem do perfil:', {
+                    src: data.image,
+                    error: e,
+                    element: e.target
+                  });
+                }}
+                onLoad={() => {
+                  console.log('Imagem do perfil carregada com sucesso:', data.image);
+                }}
               />
               <AvatarFallback 
                 className="text-2xl font-bold text-white w-full h-full flex items-center justify-center"
@@ -381,13 +398,26 @@ const PublicLinks: React.FC = () => {
           {/* Action buttons */}
           {regularLinks.length > 0 ? (
             <div className="space-y-4">
-              {regularLinks.map((link) => (
+              {regularLinks.map((link) => {
+                const buttonBgColor = data.themeSurfaceColor || '#667eea';
+                const buttonTextColor = data.themeTextPrimaryColor || '#ffffff';
+                
+                console.log('Cores do botão:', {
+                  backgroundColor: buttonBgColor,
+                  color: buttonTextColor,
+                  themeSurfaceColor: data.themeSurfaceColor,
+                  themeTextPrimaryColor: data.themeTextPrimaryColor
+                });
+                
+                return (
                 <button
                   key={link.id}
                   className="w-full py-4 rounded-lg font-medium border-0 transition-all duration-200 hover:scale-[1.02] text-center"
                   style={{
-                    backgroundColor: data.themeSurfaceColor || '#667eea',
-                    color: data.themeTextPrimaryColor || '#ffffff'
+                    backgroundColor: buttonBgColor,
+                    color: buttonTextColor,
+                    border: 'none',
+                    outline: 'none'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = data.themeHoverColor || '#5a67d8';
@@ -401,7 +431,8 @@ const PublicLinks: React.FC = () => {
                     {link.title}
                   </span>
                 </button>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-12">
