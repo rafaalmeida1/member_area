@@ -34,10 +34,10 @@ public class ThemeController {
             Map<String, String> theme = new HashMap<>();
             theme.put("primaryColor", profile.getThemePrimaryColor() != null ? profile.getThemePrimaryColor() : "#DBCFCB");
             theme.put("secondaryColor", profile.getThemeSecondaryColor() != null ? profile.getThemeSecondaryColor() : "#D8C4A4");
-            theme.put("accentColor", profile.getThemeAccentColor() != null ? profile.getThemeAccentColor() : "#A67B5B");
+            theme.put("accentColor", profile.getThemePrimaryColor() != null ? profile.getThemePrimaryColor() : "#A67B5B");
             theme.put("backgroundColor", profile.getThemeBackgroundColor() != null ? profile.getThemeBackgroundColor() : "#FFFFFF");
             theme.put("surfaceColor", profile.getThemeSurfaceColor() != null ? profile.getThemeSurfaceColor() : "#FAFAFA");
-            theme.put("textColor", profile.getThemeTextColor() != null ? profile.getThemeTextColor() : "#2C2C2C");
+            theme.put("textColor", profile.getThemeTextPrimaryColor() != null ? profile.getThemeTextPrimaryColor() : "#2C2C2C");
             theme.put("textSecondaryColor", profile.getThemeTextSecondaryColor() != null ? profile.getThemeTextSecondaryColor() : "#666666");
 
             return theme;

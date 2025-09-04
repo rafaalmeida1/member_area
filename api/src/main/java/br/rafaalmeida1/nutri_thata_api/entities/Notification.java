@@ -36,6 +36,7 @@ public class Notification {
     private String message;
     
     @Column(name = "read", nullable = false)
+    @Builder.Default
     private boolean read = false;
     
     @Column(name = "module_id")

@@ -89,18 +89,14 @@ public class ProfessionalService {
         if (request.getThemeSecondaryColor() != null && isValidHexColor(request.getThemeSecondaryColor())) {
             profile.setThemeSecondaryColor(request.getThemeSecondaryColor());
         }
-        if (request.getThemeAccentColor() != null && isValidHexColor(request.getThemeAccentColor())) {
-            profile.setThemeAccentColor(request.getThemeAccentColor());
-        }
+        // ThemeAccentColor removido - usando ThemePrimaryColor como substituto
         if (request.getThemeBackgroundColor() != null && isValidHexColor(request.getThemeBackgroundColor())) {
             profile.setThemeBackgroundColor(request.getThemeBackgroundColor());
         }
         if (request.getThemeSurfaceColor() != null && isValidHexColor(request.getThemeSurfaceColor())) {
             profile.setThemeSurfaceColor(request.getThemeSurfaceColor());
         }
-        if (request.getThemeTextColor() != null && isValidHexColor(request.getThemeTextColor())) {
-            profile.setThemeTextColor(request.getThemeTextColor());
-        }
+        // ThemeTextColor removido - usando ThemeTextPrimaryColor como substituto
         if (request.getThemeTextSecondaryColor() != null && isValidHexColor(request.getThemeTextSecondaryColor())) {
             profile.setThemeTextSecondaryColor(request.getThemeTextSecondaryColor());
         }
@@ -210,9 +206,7 @@ public class ProfessionalService {
         if (themeData.containsKey("secondaryColor") && isValidHexColor(themeData.get("secondaryColor"))) {
             profile.setThemeSecondaryColor(themeData.get("secondaryColor"));
         }
-        if (themeData.containsKey("accentColor") && isValidHexColor(themeData.get("accentColor"))) {
-            profile.setThemeAccentColor(themeData.get("accentColor"));
-        }
+        // accentColor removido - usando primaryColor como substituto
         if (themeData.containsKey("backgroundColor") && isValidHexColor(themeData.get("backgroundColor"))) {
             profile.setThemeBackgroundColor(themeData.get("backgroundColor"));
         }
@@ -220,7 +214,7 @@ public class ProfessionalService {
             profile.setThemeSurfaceColor(themeData.get("surfaceColor"));
         }
         if (themeData.containsKey("textColor") && isValidHexColor(themeData.get("textColor"))) {
-            profile.setThemeTextColor(themeData.get("textColor"));
+            profile.setThemeTextPrimaryColor(themeData.get("textColor"));
         }
         if (themeData.containsKey("textSecondaryColor") && isValidHexColor(themeData.get("textSecondaryColor"))) {
             profile.setThemeTextSecondaryColor(themeData.get("textSecondaryColor"));
