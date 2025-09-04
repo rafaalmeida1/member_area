@@ -6,7 +6,7 @@ import br.rafaalmeida1.nutri_thata_api.entities.LinkPageProfile;
 import br.rafaalmeida1.nutri_thata_api.entities.ProfessionalProfile;
 import br.rafaalmeida1.nutri_thata_api.mapper.LinkPageProfileMapper;
 import br.rafaalmeida1.nutri_thata_api.repository.LinkPageProfileRepository;
-import br.rafaalmeida1.nutri_thata_api.repository.ProfessionalProfileRepository;
+import br.rafaalmeida1.nutri_thata_api.repositories.ProfessionalProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,7 +40,7 @@ public class LinkPageProfileService {
         LinkPageProfile newProfile = LinkPageProfile.builder()
                 .professionalProfile(professionalProfile)
                 .displayName(professionalProfile.getName())
-                .displayTitle(professionalProfile.getSpecialty())
+                .displayTitle(professionalProfile.getTitle())
                 .displayBio(professionalProfile.getBio())
                 .useSiteColors(true) // Por padrão, usar cores do site
                 .showProfileImage(true)
@@ -112,9 +112,9 @@ public class LinkPageProfileService {
             LinkPageProfile tempProfile = LinkPageProfile.builder()
                     .professionalProfile(professionalProfile)
                     .displayName(professionalProfile.getName())
-                    .displayTitle(professionalProfile.getSpecialty())
+                    .displayTitle(professionalProfile.getTitle())
                     .displayBio(professionalProfile.getBio())
-                    .displayImageUrl(professionalProfile.getImageUrl())
+                    .displayImageUrl(professionalProfile.getImage())
                     .useSiteColors(true)
                     .showProfileImage(true)
                     .showTitle(true)

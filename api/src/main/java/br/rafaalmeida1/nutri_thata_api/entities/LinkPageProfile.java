@@ -43,9 +43,11 @@ public class LinkPageProfile {
     private String backgroundImageUrl;
 
     @Column(name = "background_position_x")
+    @Builder.Default
     private Integer backgroundPositionX = 50;
 
     @Column(name = "background_position_y")
+    @Builder.Default
     private Integer backgroundPositionY = 50;
 
     // Cores personalizadas da página de links (separadas das cores do site)
