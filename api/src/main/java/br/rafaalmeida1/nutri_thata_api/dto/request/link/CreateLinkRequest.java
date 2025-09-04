@@ -25,5 +25,7 @@ public class CreateLinkRequest {
 
     private Integer displayOrder;
 
+    private Boolean displayAsIcon = false;
+
     private Boolean isActive = true;
 }

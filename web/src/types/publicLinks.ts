@@ -21,6 +21,7 @@ export interface PublicLink {
   linkType: LinkType;
   icon?: string;
   whatsappMessage?: string;
+  displayAsIcon?: boolean;
   displayOrder: number;
 }
 
@@ -52,6 +53,7 @@ export interface LinkRequest {
   linkType: LinkType;
   icon?: string;
   whatsappMessage?: string;
+  displayAsIcon?: boolean;
   displayOrder?: number;
   isActive?: boolean;
 }

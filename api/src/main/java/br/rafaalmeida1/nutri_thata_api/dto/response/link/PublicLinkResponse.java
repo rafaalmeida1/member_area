@@ -13,4 +13,5 @@ public class PublicLinkResponse {
     private String icon;
     private String whatsappMessage;
     private Integer displayOrder;
+    private Boolean displayAsIcon;
 }

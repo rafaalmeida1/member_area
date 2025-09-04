@@ -25,5 +25,7 @@ public class UpdateLinkRequest {
 
     private Integer displayOrder;
 
+    private Boolean displayAsIcon;
+
     private Boolean isActive;
 }

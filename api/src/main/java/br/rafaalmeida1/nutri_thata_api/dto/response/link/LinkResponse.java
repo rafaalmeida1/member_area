@@ -15,6 +15,7 @@ public class LinkResponse {
     private String icon;
     private String whatsappMessage;
     private Integer displayOrder;
+    private Boolean displayAsIcon;
     private Boolean isActive;
     private Long clickCount;
     private LocalDateTime createdAt;

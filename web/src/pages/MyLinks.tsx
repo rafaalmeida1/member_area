@@ -81,6 +81,7 @@ const linkSchema = z.object({
     .max(1000, 'Mensagem do WhatsApp deve ter no máximo 1000 caracteres')
     .optional()
     .or(z.literal('')),
+  displayAsIcon: z.boolean().default(false),
   isActive: z.boolean().default(true),
 }).refine((data) => {
   // Validação condicional: WhatsApp deve ter número válido
@@ -115,6 +116,40 @@ const linkSchema = z.object({
 });
 
 type LinkFormData = z.infer<typeof linkSchema>;
+
+// Lista de ícones disponíveis
+const availableIcons = [
+  { value: 'instagram', label: 'Instagram', component: Instagram },
+  { value: 'whatsapp', label: 'WhatsApp', component: MessageCircle },
+  { value: 'facebook', label: 'Facebook', component: Facebook },
+  { value: 'twitter', label: 'X (Twitter)', component: Twitter },
+  { value: 'youtube', label: 'YouTube', component: Youtube },
+  { value: 'linkedin', label: 'LinkedIn', component: Linkedin },
+  { value: 'telegram', label: 'Telegram', component: Send },
+  { value: 'tiktok', label: 'TikTok', component: null }, // Usaremos texto customizado
+  { value: 'email', label: 'Email', component: Mail },
+  { value: 'phone', label: 'Telefone', component: Phone },
+  { value: 'website', label: 'Site/Website', component: ExternalLink },
+];
+
+// Função para renderizar ícone baseado no valor
+const renderIconByValue = (iconValue: string, size = 20, className = "text-white") => {
+  const iconProps = { size, className };
+  
+  const iconConfig = availableIcons.find(icon => icon.value === iconValue);
+  if (iconConfig?.component) {
+    const IconComponent = iconConfig.component;
+    return <IconComponent {...iconProps} />;
+  }
+  
+  // Casos especiais
+  if (iconValue === 'tiktok') {
+    return <div className={`font-bold text-xs ${className}`}>TT</div>;
+  }
+  
+  // Fallback para ícone padrão
+  return <ExternalLink {...iconProps} />;
+};
 
 // Função para renderizar ícones sociais no preview
 const renderSocialIcon = (linkType: LinkType, size = 20) => {
@@ -267,7 +302,7 @@ const MyLinks: React.FC = () => {
       console.log('MyLinks: Finalizando carregamento de links...');
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const onSubmit = async (data: LinkFormData) => {
     try {
@@ -295,6 +330,7 @@ const MyLinks: React.FC = () => {
         linkType: data.linkType,
         whatsappMessage: data.whatsappMessage?.trim() || undefined,
         icon: data.icon?.trim() || undefined,
+        displayAsIcon: data.displayAsIcon,
         displayOrder: editingLink?.displayOrder || links.length + 1,
         isActive: data.isActive,
       };
@@ -403,6 +439,7 @@ const MyLinks: React.FC = () => {
       linkType: link.linkType,
       icon: link.icon || '',
       whatsappMessage: link.whatsappMessage || '',
+      displayAsIcon: link.displayAsIcon || false,
       isActive: link.isActive,
     });
     setIsDialogOpen(true);
@@ -471,6 +508,7 @@ const MyLinks: React.FC = () => {
       linkType: 'WEBSITE',
       icon: '',
       whatsappMessage: '',
+      displayAsIcon: false,
       isActive: true,
     });
   };
@@ -641,7 +679,7 @@ const MyLinks: React.FC = () => {
     } finally {
       setPageProfileLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     loadLinks();
@@ -889,20 +927,47 @@ const MyLinks: React.FC = () => {
                 )}
 
                 <div>
-                  <Label htmlFor="icon">Ícone <span className="text-xs text-gray-500">(opcional, máx. 255 caracteres)</span></Label>
-                  <Input
-                    id="icon"
-                    {...register('icon')}
-                    placeholder="Ex: instagram, ou URL do ícone"
-                    maxLength={255}
-                    className={errors.icon ? 'border-red-500' : ''}
-                  />
-                  {errors.icon && (
-                    <p className="text-sm text-red-600 mt-1">{errors.icon.message}</p>
-                  )}
+                  <Label htmlFor="icon">Ícone</Label>
+                  <Select 
+                    value={watch('icon') || ''} 
+                    onValueChange={(value) => setValue('icon', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um ícone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Ícone padrão (baseado no tipo)</SelectItem>
+                      {availableIcons.map((icon) => (
+                        <SelectItem key={icon.value} value={icon.value}>
+                          <div className="flex items-center gap-2">
+                            {icon.component ? (
+                              <icon.component size={16} />
+                            ) : (
+                              <div className="w-4 h-4 flex items-center justify-center text-xs font-bold">TT</div>
+                            )}
+                            {icon.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <p className="text-xs text-gray-500 mt-1">
-                    Nome do ícone ou URL personalizada (deixe vazio para usar ícone padrão)
+                    Escolha o ícone que será exibido para este link
                   </p>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="displayAsIcon"
+                    checked={watch('displayAsIcon')}
+                    onCheckedChange={(checked) => setValue('displayAsIcon', checked)}
+                  />
+                  <div>
+                    <Label htmlFor="displayAsIcon">Exibir como ícone social</Label>
+                    <p className="text-xs text-gray-500">
+                      Se ativado, aparece no topo como ícone. Se desativado, aparece como botão/card
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -1557,33 +1622,36 @@ const MyLinks: React.FC = () => {
 
                               {/* Social media icons */}
                               <div className="flex justify-center gap-4 mb-6">
-                                {links.filter(link => ['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).slice(0, 4).map((link) => (
+                                {links.filter(link => link.displayAsIcon && link.isActive).slice(0, 4).map((link) => (
                                   <div
                                     key={link.id}
                                     className="hover:scale-110 transition-transform duration-200 cursor-pointer"
                                   >
-                                    {/* Usar mini versão dos ícones com cores personalizadas */}
+                                    {/* Usar ícone personalizado ou baseado no tipo */}
                                     <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm" 
                                          style={{ 
                                            backgroundColor: previewData?.pagePrimaryColor || '#667eea',
                                          }}>
-                                      {renderSocialIcon(link.linkType, 14)}
+                                      {link.icon ? 
+                                        renderIconByValue(link.icon, 14, "text-white") : 
+                                        renderSocialIcon(link.linkType, 14)
+                                      }
                                     </div>
                                   </div>
                                 ))}
-                                {links.filter(link => ['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).length === 0 && (
+                                {links.filter(link => link.displayAsIcon && link.isActive).length === 0 && (
                                   <div className="text-xs" style={{ color: previewData?.pageTextSecondaryColor || '#6b7280' }}>
-                                    Links sociais aparecerão aqui
+                                    Links como ícones aparecerão aqui
                                   </div>
                                 )}
                               </div>
 
                               {/* Action buttons */}
                               <div className="space-y-3">
-                                {links.filter(link => !['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).slice(0, 3).map((link) => (
+                                {links.filter(link => !link.displayAsIcon && link.isActive).slice(0, 3).map((link) => (
                                   <div
                                     key={link.id}
-                                    className="w-full py-3 rounded-lg font-medium text-center text-xs cursor-pointer hover:scale-[1.02] transition-all duration-200"
+                                    className="w-full py-3 rounded-lg font-medium text-center text-xs cursor-pointer hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2"
                                     style={{
                                       backgroundColor: previewData?.pagePrimaryColor || '#667eea',
                                       color: '#ffffff'
@@ -1595,19 +1663,24 @@ const MyLinks: React.FC = () => {
                                       e.currentTarget.style.backgroundColor = previewData?.pagePrimaryColor || '#667eea';
                                     }}
                                   >
+                                    {link.icon && (
+                                      <div className="flex items-center">
+                                        {renderIconByValue(link.icon, 12, "text-white")}
+                                      </div>
+                                    )}
                                     <span className="text-balance leading-tight">
                                       {link.title}
                                     </span>
                                   </div>
                                 ))}
                                 
-                                {links.filter(link => !['INSTAGRAM', 'WHATSAPP', 'FACEBOOK', 'YOUTUBE', 'LINKEDIN', 'TWITTER', 'TELEGRAM', 'TIKTOK'].includes(link.linkType)).length === 0 && (
+                                {links.filter(link => !link.displayAsIcon && link.isActive).length === 0 && (
                                   <div className="text-center py-6">
                                     <p 
                                       className="text-xs"
                                       style={{ color: previewData?.pageTextSecondaryColor || '#6b7280' }}
                                     >
-                                      Seus links aparecerão aqui
+                                      Links como botões aparecerão aqui
                                     </p>
                                   </div>
                                 )}
