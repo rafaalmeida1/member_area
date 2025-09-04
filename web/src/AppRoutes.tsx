@@ -15,6 +15,9 @@ import { ProfessionalSettings } from './pages/ProfessionalSettings';
 import NotFound from './pages/NotFound';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ModuleViewer } from './components/ModuleViewer';
+import PublicLinks from './pages/PublicLinks';
+import MyLinks from './pages/MyLinks';
+import LinkAnalytics from './pages/LinkAnalytics';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -96,6 +99,9 @@ function AppRoutes() {
         />
         <Route path="/invite/:token" element={<InviteRegister />} />
         
+        {/* Rota pública para links do profissional */}
+        <Route path="/links/:professionalId" element={<PublicLinks />} />
+        
         {/* Rotas protegidas */}
         <Route 
           path="/" 
@@ -139,6 +145,24 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <ProfessionalSettings />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/my-links" 
+          element={
+            <ProtectedRoute>
+              <MyLinks />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/analytics" 
+          element={
+            <ProtectedRoute>
+              <LinkAnalytics />
             </ProtectedRoute>
           } 
         />

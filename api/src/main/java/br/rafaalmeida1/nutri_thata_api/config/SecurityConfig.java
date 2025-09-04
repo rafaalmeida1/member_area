@@ -53,6 +53,7 @@ public class SecurityConfig {
         "/test/**",
         "/api/test/**",
         "/api/theme",
+        "/api/public/links/**",
         "/static/**",
         "/v3/api-docs/**",
         "/swagger-ui/**",

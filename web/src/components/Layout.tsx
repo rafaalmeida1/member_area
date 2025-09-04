@@ -6,7 +6,7 @@ import { Link } from "react-router-dom"
 import { useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { NotificationDropdown } from "@/components/NotificationDropdown"
-import { Home, User, LogOut, FileText, Mail, Users, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react"
+import { Home, User, LogOut, FileText, Mail, Users, ArrowLeft, ChevronLeft, ChevronRight, Link2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface LayoutProps {
@@ -79,6 +79,12 @@ export function Layout({ children, title, showSidebar = true, showBackButton = f
             icon: Mail,
             label: "Convites",
             active: pathname === "/invites",
+          },
+          {
+            href: "/my-links",
+            icon: Link2,
+            label: "Meus Links",
+            active: pathname === "/my-links",
           },
         ]
       : []),
