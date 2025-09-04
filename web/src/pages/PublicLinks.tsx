@@ -139,6 +139,14 @@ const PublicLinks: React.FC = () => {
           return;
         }
         
+        // Debug: Log das imagens recebidas
+        console.log('Dados recebidos:', {
+          image: response.image,
+          backgroundImage: response.backgroundImage,
+          name: response.name,
+          title: response.title
+        });
+        
         setData(response);
       } catch (err: unknown) {
         console.error('Erro ao carregar links:', err);
@@ -295,7 +303,13 @@ const PublicLinks: React.FC = () => {
         <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-10">
           <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
             <Avatar className="w-full h-full">
-              <AvatarImage src={data.image} alt={data.name} className="object-cover" />
+              <AvatarImage 
+                src={data.image} 
+                alt={data.name} 
+                className="object-cover"
+                onError={() => console.log('Erro ao carregar imagem do perfil:', data.image)}
+                onLoad={() => console.log('Imagem do perfil carregada com sucesso:', data.image)}
+              />
               <AvatarFallback 
                 className="text-2xl font-bold text-white w-full h-full flex items-center justify-center"
                 style={{ backgroundColor: data.themePrimaryColor || '#667eea' }}
@@ -392,33 +406,6 @@ const PublicLinks: React.FC = () => {
             </div>
           )}
 
-          {/* Footer com botão "Create a free bio site" */}
-          <div className="text-center mt-12 pt-6">
-            <div 
-              className="inline-flex items-center px-6 py-3 rounded-full border-2 transition-all duration-200 hover:shadow-md cursor-pointer"
-              style={{ 
-                borderColor: data.themeBorderColor || '#e5e7eb',
-                backgroundColor: data.themeBackgroundColor || '#ffffff'
-              }}
-              onClick={() => window.open('/', '_blank')}
-            >
-              <div 
-                className="w-3 h-3 rounded-full mr-3"
-                style={{ backgroundColor: data.themePrimaryColor || '#667eea' }}
-              ></div>
-              <span 
-                className="text-sm font-medium"
-                style={{ color: data.themeTextPrimaryColor || '#111827' }}
-              >
-                CREATE A FREE BIO SITE
-              </span>
-              <ExternalLink 
-                size={16} 
-                className="ml-3"
-                style={{ color: data.themeTextSecondaryColor || '#6b7280' }}
-              />
-            </div>
-          </div>
         </div>
       </div>
     </div>
