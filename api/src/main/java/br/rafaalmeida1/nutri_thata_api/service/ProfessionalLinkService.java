@@ -101,7 +101,10 @@ public class ProfessionalLinkService {
 
         List<ProfessionalLink> links = linkRepository.findByProfessionalProfileAndIsActiveTrueOrderByDisplayOrderAsc(profile);
         
-        PublicLinksResponse response = publicLinksMapper.toResponse(profile);
+        // Buscar configurações personalizadas da página de links
+        var linkPageProfile = linkPageProfileService.getLinkPageProfileByProfessionalId(professionalId);
+        
+        PublicLinksResponse response = publicLinksMapper.toResponse(profile, linkPageProfile);
         response.setLinks(linkMapper.toPublicResponseList(links));
         
         return response;
