@@ -11,7 +11,7 @@ import { FileUpload } from '@/components/FileUpload';
 import { LoadingWrapper, InlineLoading } from '@/components/LoadingSpinner';
 import { DraggableContentList } from '@/components/DraggableContentList';
 import { DraggableModuleList } from '@/components/DraggableModuleList';
-import { Layout } from '@/components/Layout';
+import { ModernLayout } from '@/components/ModernLayout';
 import { PatientSelector } from '@/components/PatientSelector';
 import { ArrowLeft, Plus, FileText, Video, Volume2, Save, Trash2, User, Settings, LogOut, Mail, UserCog, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -288,7 +288,7 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
 
   if (isCreating) {
     return (
-      <Layout
+      <ModernLayout
         title={editingModule ? 'Editar Módulo' : 'Criar Novo Módulo'}
         showSidebar={true}
         showBackButton={true}
@@ -477,12 +477,12 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
           initialSelectedIds={selectedPatientIds}
           title="Selecionar Pacientes para o Módulo"
         />
-      </Layout>
+      </ModernLayout>
     );
   }
 
   return (
-    <Layout
+    <ModernLayout
       title="Gerenciar Módulos"
       showSidebar={true}
       showBackButton={true}
@@ -535,6 +535,6 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
           )}
         </LoadingWrapper>
       </div>
-    </Layout>
+    </ModernLayout>
   );
 }

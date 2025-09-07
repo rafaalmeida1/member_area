@@ -26,8 +26,10 @@ COPY --from=build /app/target/nutri_thata_api-0.0.1-SNAPSHOT.jar app.jar
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
-# Create uploads directory
-RUN mkdir -p uploads
+# Create uploads directory with proper permissions
+RUN mkdir -p uploads && \
+    chmod 755 uploads && \
+    chown 1000:1000 uploads
 
 # Expose port
 EXPOSE 8081

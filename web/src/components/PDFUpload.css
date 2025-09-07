@@ -1,0 +1,320 @@
+/* PDF Upload Component */
+.pdf-upload-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.pdf-upload-input {
+  display: none;
+}
+
+.pdf-upload-dropzone {
+  border: 2px dashed var(--color-border);
+  border-radius: 12px;
+  padding: 2rem;
+  background-color: var(--color-surface);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pdf-upload-dropzone:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-muted);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px var(--color-shadow);
+}
+
+.pdf-upload-dropzone.dragging {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: var(--color-background);
+}
+
+.pdf-upload-dropzone.uploading {
+  cursor: default;
+  border-color: var(--color-secondary);
+  background-color: var(--color-muted);
+}
+
+.pdf-upload-dropzone.uploading:hover {
+  transform: none;
+}
+
+/* Upload Content */
+.pdf-upload-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pdf-upload-icon {
+  width: 64px;
+  height: 64px;
+  background-color: var(--color-primary);
+  color: var(--color-background);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.pdf-upload-dropzone.dragging .pdf-upload-icon {
+  background-color: var(--color-background);
+  color: var(--color-primary);
+}
+
+.pdf-upload-text h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.pdf-upload-text p {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.pdf-upload-limit {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  background-color: var(--color-muted);
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+}
+
+/* Progress Section */
+.pdf-upload-progress {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.pdf-upload-file-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--color-background);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid var(--color-border);
+}
+
+.file-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.file-name {
+  font-weight: 500;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  word-break: break-all;
+}
+
+.file-size {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.cancel-button {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancel-button:hover:not(:disabled) {
+  color: var(--color-accent);
+  background-color: var(--color-muted);
+}
+
+.cancel-button:disabled {
+  cursor: default;
+  color: var(--color-primary);
+}
+
+/* Progress Bar */
+.progress-container {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-muted);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-image: linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.2) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.2) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 20px 20px;
+  animation: progress-stripes 1s linear infinite;
+}
+
+@keyframes progress-stripes {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 20px 0;
+  }
+}
+
+.progress-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* Status Messages */
+.upload-status,
+.upload-success {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.upload-success {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-muted);
+  border-top: 2px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Info Section */
+.pdf-upload-info {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: var(--color-muted);
+  border-radius: 8px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.info-item svg {
+  color: var(--color-primary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .pdf-upload-dropzone {
+    padding: 1.5rem;
+    min-height: 150px;
+  }
+  
+  .pdf-upload-icon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .pdf-upload-text h3 {
+    font-size: 1.125rem;
+  }
+  
+  .pdf-upload-file-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .file-details {
+    align-items: center;
+  }
+}
+
+/* Dark Theme Adjustments */
+[data-theme="dark"] .pdf-upload-dropzone {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .pdf-upload-dropzone:hover {
+  background-color: var(--color-muted);
+}
+
+[data-theme="dark"] .pdf-upload-file-info {
+  background-color: var(--color-background);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .progress-bar {
+  background-color: var(--color-border);
+}
+
+[data-theme="dark"] .pdf-upload-info {
+  background-color: var(--color-surface);
+}

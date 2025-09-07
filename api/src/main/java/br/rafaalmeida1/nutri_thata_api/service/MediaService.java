@@ -62,6 +62,10 @@ public class MediaService {
     private static final List<String> ALLOWED_AUDIO_TYPES = Arrays.asList(
             "audio/mp3", "audio/wav", "audio/ogg", "audio/aac", "audio/mpeg"
     );
+    
+    private static final List<String> ALLOWED_DOCUMENT_TYPES = Arrays.asList(
+            "application/pdf"
+    );
 
     @Transactional
     public MediaAssetResponse uploadFile(MultipartFile file, MediaType type, User user) {
@@ -188,11 +192,18 @@ public class MediaService {
                     throw new BusinessException("Tipo de áudio não suportado. Tipos permitidos: " + ALLOWED_AUDIO_TYPES);
                 }
                 break;
+            case DOCUMENT:
+                if (!ALLOWED_DOCUMENT_TYPES.contains(contentType)) {
+                    throw new BusinessException("Tipo de documento não suportado. Tipos permitidos: " + ALLOWED_DOCUMENT_TYPES);
+                }
+                break;
         }
 
         // Additional file size validation (Spring Boot already handles this, but good to double-check)
-        if (file.getSize() > 10 * 1024 * 1024) { // 10MB
-            throw new BusinessException("Arquivo muito grande. Tamanho máximo: 10MB");
+        long maxSize = (type == MediaType.DOCUMENT) ? 50 * 1024 * 1024 : 10 * 1024 * 1024; // 50MB for documents, 10MB for others
+        if (file.getSize() > maxSize) {
+            String maxSizeStr = (type == MediaType.DOCUMENT) ? "50MB" : "10MB";
+            throw new BusinessException("Arquivo muito grande. Tamanho máximo: " + maxSizeStr);
         }
     }
 

@@ -44,6 +44,8 @@ public class MediaController {
                     type = MediaType.VIDEO;
                 } else if (contentType.startsWith("audio/")) {
                     type = MediaType.AUDIO;
+                } else if (contentType.equals("application/pdf")) {
+                    type = MediaType.DOCUMENT;
                 } else {
                     type = MediaType.IMAGE; // default
                 }
