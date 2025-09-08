@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { InlineLoading } from '@/components/LoadingSpinner';
+import { PDFViewer } from '@/components/PDFViewer';
 import { Upload, Link, Image, Video, Volume2, FileText, X, Check, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiService } from '../services/api';
@@ -326,45 +327,11 @@ export function FileUpload({
           
           {type === 'pdf' && (
             <div className="mt-3">
-              <div className="border rounded-md p-4 bg-muted/50">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText className="w-4 h-4 text-red-500" />
-                  <span className="text-sm font-medium">PDF Preview</span>
-                </div>
-                <iframe
-                  src={currentUrl}
-                  className="w-full h-64 border rounded"
-                  title="PDF Preview"
-                  onError={() => {
-                    toast({
-                      title: "Erro ao carregar PDF",
-                      description: "Verifique se a URL está correta.",
-                      variant: "destructive",
-                    });
-                  }}
-                />
-                <div className="mt-2 flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => window.open(currentUrl, '_blank')}
-                  >
-                    Abrir em nova aba
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = currentUrl;
-                      link.download = 'documento.pdf';
-                      link.click();
-                    }}
-                  >
-                    Baixar PDF
-                  </Button>
-                </div>
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="w-4 h-4 text-red-500" />
+                <span className="text-sm font-medium">PDF Preview</span>
               </div>
+              <PDFViewer url={currentUrl} className="h-96" />
             </div>
           )}
         </CardContent>

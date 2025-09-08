@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingWrapper } from '@/components/LoadingSpinner';
 import { ModernLayout } from '@/components/ModernLayout';
+import { PDFViewer } from '@/components/PDFViewer';
 import { ArrowLeft, FileText, Video, Volume2, Calendar, User, Eye, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
@@ -51,6 +52,7 @@ export function ModuleViewer() {
       case 'TEXT': return <FileText className="w-5 h-5 text-primary" />;
       case 'VIDEO': return <Video className="w-5 h-5 text-primary" />;
       case 'AUDIO': return <Volume2 className="w-5 h-5 text-primary" />;
+      case 'PDF': return <FileText className="w-5 h-5 text-red-500" />;
       default: return <FileText className="w-5 h-5 text-primary" />;
     }
   };
@@ -147,6 +149,23 @@ export function ModuleViewer() {
           </Card>
         );
       }
+        
+      case 'PDF':
+        return (
+          <Card className="border-l-4 border-l-red-500/50">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                {getContentIcon(block.type)}
+                <span className="font-medium text-sm text-muted-foreground">
+                  PDF {block.order}
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <PDFViewer url={block.content} className="h-96" />
+            </CardContent>
+          </Card>
+        );
         
       case 'AUDIO':
         return (
