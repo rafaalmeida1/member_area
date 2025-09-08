@@ -1,5 +1,6 @@
 package br.rafaalmeida1.nutri_thata_api.controller;
 
+import br.rafaalmeida1.nutri_thata_api.dto.response.ApiResponse;
 import br.rafaalmeida1.nutri_thata_api.dto.response.link.PublicLinksResponse;
 import br.rafaalmeida1.nutri_thata_api.entities.User;
 import br.rafaalmeida1.nutri_thata_api.service.AnalyticsService;
@@ -19,7 +20,7 @@ public class PublicLinksController {
     private final AnalyticsService analyticsService;
 
     @GetMapping("/links/{professionalId}")
-    public ResponseEntity<PublicLinksResponse> getPublicLinks(
+    public ResponseEntity<ApiResponse<PublicLinksResponse>> getPublicLinks(
             @PathVariable Long professionalId,
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
@@ -32,11 +33,11 @@ public class PublicLinksController {
         analyticsService.trackPageView(professionalId, ipAddress, userAgent, referer, user, null);
         
         PublicLinksResponse response = linkService.getPublicLinks(professionalId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("Links encontrados", response));
     }
 
     @PostMapping("/links/{linkId}/click")
-    public ResponseEntity<Void> trackLinkClick(
+    public ResponseEntity<ApiResponse<Void>> trackLinkClick(
             @PathVariable Long linkId,
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
@@ -48,7 +49,7 @@ public class PublicLinksController {
         
         analyticsService.trackLinkClick(linkId, ipAddress, userAgent, referer, user);
         
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Link clicado", null));
     }
 
     private String getClientIpAddress(HttpServletRequest request) {

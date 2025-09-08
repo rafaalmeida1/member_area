@@ -1,6 +1,7 @@
 package br.rafaalmeida1.nutri_thata_api.controller;
 
 import br.rafaalmeida1.nutri_thata_api.dto.request.linkpage.UpdateLinkPageProfileRequest;
+import br.rafaalmeida1.nutri_thata_api.dto.response.ApiResponse;
 import br.rafaalmeida1.nutri_thata_api.dto.response.linkpage.LinkPageProfileResponse;
 import br.rafaalmeida1.nutri_thata_api.service.LinkPageProfileService;
 import br.rafaalmeida1.nutri_thata_api.service.JwtService;
@@ -31,7 +32,7 @@ public class LinkPageProfileController {
     }
 
     @GetMapping
-    public ResponseEntity<LinkPageProfileResponse> getLinkPageProfile(
+    public ResponseEntity<ApiResponse<LinkPageProfileResponse>> getLinkPageProfile(
             Authentication authentication,
             HttpServletRequest request) {
         log.info("Obtendo configurações da página de links para usuário: {}", authentication.getName());
@@ -39,11 +40,11 @@ public class LinkPageProfileController {
         Long userId = extractUserIdFromRequest(request);
         LinkPageProfileResponse response = linkPageProfileService.getOrCreateLinkPageProfile(userId);
         
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("Configurações da página de links", response));
     }
 
     @PutMapping
-    public ResponseEntity<LinkPageProfileResponse> updateLinkPageProfile(
+    public ResponseEntity<ApiResponse<LinkPageProfileResponse>> updateLinkPageProfile(
             @Valid @RequestBody UpdateLinkPageProfileRequest request,
             Authentication authentication,
             HttpServletRequest httpRequest) {
@@ -53,7 +54,7 @@ public class LinkPageProfileController {
         Long userId = extractUserIdFromRequest(httpRequest);
         LinkPageProfileResponse response = linkPageProfileService.updateLinkPageProfile(userId, request);
         
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("Configurações da página de links atualizadas", response));
     }
 
 }
