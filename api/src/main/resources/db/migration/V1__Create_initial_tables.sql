@@ -14,6 +14,31 @@ CREATE TABLE users (
     birth_date DATE,
     role VARCHAR(20) NOT NULL CHECK (role IN ('PATIENT', 'PROFESSIONAL', 'ADMIN')),
     is_active BOOLEAN NOT NULL DEFAULT true,
+    -- Theme-related columns (align with entity User)
+    theme_primary_color VARCHAR(7),
+    theme_secondary_color VARCHAR(7),
+    theme_accent_color VARCHAR(7),
+    theme_background_color VARCHAR(7),
+    theme_surface_color VARCHAR(7),
+    theme_text_color VARCHAR(7),
+    theme_text_secondary_color VARCHAR(7),
+    theme_border_color VARCHAR(7),
+    theme_input_bg_color VARCHAR(7),
+    theme_input_border_color VARCHAR(7),
+    theme_input_focus_color VARCHAR(7),
+    theme_button_primary_bg VARCHAR(7),
+    theme_button_primary_hover VARCHAR(7),
+    theme_button_primary_text VARCHAR(7),
+    theme_button_secondary_bg VARCHAR(7),
+    theme_button_secondary_hover VARCHAR(7),
+    theme_button_secondary_text VARCHAR(7),
+    theme_button_disabled_bg VARCHAR(7),
+    theme_button_disabled_text VARCHAR(7),
+    theme_success_color VARCHAR(7),
+    theme_warning_color VARCHAR(7),
+    theme_error_color VARCHAR(7),
+    theme_info_color VARCHAR(7),
+    selected_theme VARCHAR(50),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE
 );
@@ -175,3 +200,35 @@ CREATE INDEX idx_invites_created_at ON invites(created_at);
 CREATE INDEX idx_modules_search ON modules USING GIN (
     to_tsvector('portuguese', title || ' ' || description)
 );
+
+-- Garantir colunas de tema e selected_theme na tabela users (idempotente)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users') THEN
+        ALTER TABLE users
+            ADD COLUMN IF NOT EXISTS theme_primary_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_secondary_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_accent_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_background_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_surface_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_text_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_text_secondary_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_border_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_input_bg_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_input_border_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_input_focus_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_button_primary_bg VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_button_primary_hover VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_button_primary_text VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_button_secondary_bg VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_button_secondary_hover VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_button_secondary_text VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_button_disabled_bg VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_button_disabled_text VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_success_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_warning_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_error_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS theme_info_color VARCHAR(7),
+            ADD COLUMN IF NOT EXISTS selected_theme VARCHAR(50);
+    END IF;
+END $$;
