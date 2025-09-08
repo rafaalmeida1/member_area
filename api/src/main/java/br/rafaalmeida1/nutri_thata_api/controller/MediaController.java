@@ -54,6 +54,11 @@ public class MediaController {
             }
         }
         
+        // Normalize PDF to DOCUMENT for internal processing
+        if (type == MediaType.PDF) {
+            type = MediaType.DOCUMENT;
+        }
+        
         MediaAssetResponse response = mediaService.uploadFile(file, type, user);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Upload concluído", response));
