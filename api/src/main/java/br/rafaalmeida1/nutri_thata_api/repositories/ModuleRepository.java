@@ -78,7 +78,8 @@ public interface ModuleRepository extends JpaRepository<Module, UUID> {
     @Query("SELECT SUM(m.viewCount) FROM Module m WHERE m.createdBy = :createdBy")
     Long sumViewCountByCreatedBy(@Param("createdBy") User createdBy);
     
-    long countVisibleToPatient(User patient);
+    @Query("SELECT COUNT(m) FROM Module m WHERE m.visibility = 'GENERAL' OR (m.visibility = 'SPECIFIC' AND EXISTS (SELECT 1 FROM m.allowedPatients p WHERE p.id = :patientId))")
+    long countVisibleToPatient(@Param("patientId") Long patientId);
     
     // TODO: Implementar quando as entidades ModuleView e ModuleCompletion estiverem disponíveis
     // long countViewedByPatient(@Param("patientId") Long patientId);

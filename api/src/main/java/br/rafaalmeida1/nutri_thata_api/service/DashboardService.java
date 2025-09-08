@@ -103,7 +103,7 @@ public class DashboardService {
      */
     private DashboardStatsResponse getPatientStats(User patient) {
         // Total de módulos disponíveis
-        long totalModules = moduleRepository.countVisibleToPatient(patient);
+        long totalModules = moduleRepository.countVisibleToPatient(patient.getId());
         
         // Por enquanto, retornar valores básicos até implementar o sistema de visualização/conclusão
         return DashboardStatsResponse.builder()
