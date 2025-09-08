@@ -132,13 +132,13 @@ export function ThemeSettings() {
                 <div className="preview-buttons">
                   <button 
                     className="preview-btn primary"
-                    style={{ backgroundColor: localTheme.primaryColor, color: '#fff' }}
+                    style={{ backgroundColor: localTheme.primaryColor, color: 'var(--color-text)' }}
                   >
                     Botão Primário
                   </button>
                   <button 
                     className="preview-btn secondary"
-                    style={{ backgroundColor: localTheme.secondaryColor, color: '#fff' }}
+                    style={{ backgroundColor: localTheme.secondaryColor, color: 'var(--color-text)' }}
                   >
                     Botão Secundário
                   </button>

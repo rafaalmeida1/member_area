@@ -1,5 +1,5 @@
 -- Tabela de links profissionais
-CREATE TABLE professional_links (
+CREATE TABLE IF NOT EXISTS professional_links (
     id BIGSERIAL PRIMARY KEY,
     professional_profile_id BIGINT NOT NULL REFERENCES professional_profiles(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE professional_links (
 );
 
 -- Tabela de visualizações de página
-CREATE TABLE page_views (
+CREATE TABLE IF NOT EXISTS page_views (
     id BIGSERIAL PRIMARY KEY,
     professional_profile_id BIGINT NOT NULL REFERENCES professional_profiles(id) ON DELETE CASCADE,
     user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
@@ -33,7 +33,7 @@ CREATE TABLE page_views (
 );
 
 -- Tabela de cliques em links
-CREATE TABLE link_clicks (
+CREATE TABLE IF NOT EXISTS link_clicks (
     id BIGSERIAL PRIMARY KEY,
     professional_link_id BIGINT NOT NULL REFERENCES professional_links(id) ON DELETE CASCADE,
     user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
@@ -49,11 +49,11 @@ CREATE TABLE link_clicks (
 );
 
 -- Índices para performance
-CREATE INDEX idx_professional_links_profile_order ON professional_links(professional_profile_id, display_order);
-CREATE INDEX idx_professional_links_active ON professional_links(professional_profile_id, is_active);
-CREATE INDEX idx_page_views_profile_date ON page_views(professional_profile_id, viewed_at);
-CREATE INDEX idx_page_views_ip_date ON page_views(ip_address, viewed_at);
-CREATE INDEX idx_link_clicks_link_date ON link_clicks(professional_link_id, clicked_at);
-CREATE INDEX idx_link_clicks_ip_date ON link_clicks(ip_address, clicked_at);
-CREATE INDEX idx_link_clicks_user ON link_clicks(user_id);
-CREATE INDEX idx_page_views_user ON page_views(user_id);
+CREATE INDEX IF NOT EXISTS idx_professional_links_profile_order ON professional_links(professional_profile_id, display_order);
+CREATE INDEX IF NOT EXISTS idx_professional_links_active ON professional_links(professional_profile_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_page_views_profile_date ON page_views(professional_profile_id, viewed_at);
+CREATE INDEX IF NOT EXISTS idx_page_views_ip_date ON page_views(ip_address, viewed_at);
+CREATE INDEX IF NOT EXISTS idx_link_clicks_link_date ON link_clicks(professional_link_id, clicked_at);
+CREATE INDEX IF NOT EXISTS idx_link_clicks_ip_date ON link_clicks(ip_address, clicked_at);
+CREATE INDEX IF NOT EXISTS idx_link_clicks_user ON link_clicks(user_id);
+CREATE INDEX IF NOT EXISTS idx_page_views_user ON page_views(user_id);

@@ -26,6 +26,53 @@ CREATE TABLE professional_profiles (
     title VARCHAR(255),
     bio TEXT,
     image TEXT,
+    background_image TEXT,
+    background_image_position VARCHAR(20) DEFAULT 'CENTER',
+
+    -- Core theme colors (final schema)
+    theme_primary_color VARCHAR(7) DEFAULT '#DBCFCB',
+    theme_secondary_color VARCHAR(7) DEFAULT '#D8C4A4',
+    theme_background_color VARCHAR(7) DEFAULT '#FFFFFF',
+    theme_surface_color VARCHAR(7) DEFAULT '#FAFAFA',
+    theme_text_primary_color VARCHAR(7) DEFAULT '#2C2C2C',
+    theme_text_secondary_color VARCHAR(7) DEFAULT '#666666',
+    theme_border_color VARCHAR(7) DEFAULT '#E5E5E5',
+    theme_hover_color VARCHAR(7) DEFAULT '#F5F5F5',
+    theme_disabled_color VARCHAR(7) DEFAULT '#CCCCCC',
+
+    -- Input-specific colors
+    input_background_color VARCHAR(7) DEFAULT '#FFFFFF',
+    input_border_color VARCHAR(7) DEFAULT '#D1D5DB',
+    input_focus_color VARCHAR(7) DEFAULT '#A67B5B',
+    input_text_color VARCHAR(7) DEFAULT '#2C2C2C',
+    input_placeholder_color VARCHAR(7) DEFAULT '#9CA3AF',
+
+    -- Button-specific colors (final schema)
+    button_primary_bg_color VARCHAR(7) DEFAULT '#A67B5B',
+    button_primary_hover_color VARCHAR(7) DEFAULT '#8B5A3C',
+    button_primary_text_color VARCHAR(7) DEFAULT '#FFFFFF',
+    button_secondary_bg_color VARCHAR(7) DEFAULT '#F3F4F6',
+    button_secondary_hover_color VARCHAR(7) DEFAULT '#E5E7EB',
+    button_secondary_text_color VARCHAR(7) DEFAULT '#374151',
+    button_disabled_color VARCHAR(7) DEFAULT '#F9FAFB',
+    button_disabled_text_color VARCHAR(7) DEFAULT '#9CA3AF',
+
+    -- Status colors (final schema)
+    success_color VARCHAR(7) DEFAULT '#10B981',
+    warning_color VARCHAR(7) DEFAULT '#F59E0B',
+    error_color VARCHAR(7) DEFAULT '#EF4444',
+    info_color VARCHAR(7) DEFAULT '#3B82F6',
+
+    -- Legacy compatibility columns used by older code paths
+    button_primary_color VARCHAR(7) DEFAULT '#A67B5B',
+    button_secondary_color VARCHAR(7) DEFAULT '#F3F4F6',
+    color_success VARCHAR(7) DEFAULT '#10B981',
+    color_warning VARCHAR(7) DEFAULT '#F59E0B',
+    color_error VARCHAR(7) DEFAULT '#EF4444',
+    color_info VARCHAR(7) DEFAULT '#3B82F6',
+    color_overlay VARCHAR(7) DEFAULT '#000000',
+    color_shadow VARCHAR(7) DEFAULT '#000000',
+
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE
 );
@@ -53,7 +100,7 @@ CREATE TABLE modules (
 CREATE TABLE content_blocks (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     module_id UUID NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
-    type VARCHAR(20) NOT NULL CHECK (type IN ('TEXT', 'VIDEO', 'AUDIO')),
+    type VARCHAR(20) NOT NULL CHECK (type IN ('TEXT', 'VIDEO', 'AUDIO', 'PDF')),
     content TEXT NOT NULL,
     order_index INTEGER NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -65,7 +112,7 @@ CREATE TABLE content_blocks (
 CREATE TABLE media_assets (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     owner_user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    type VARCHAR(20) NOT NULL CHECK (type IN ('IMAGE', 'VIDEO', 'AUDIO')),
+    type VARCHAR(20) NOT NULL CHECK (type IN ('IMAGE', 'VIDEO', 'AUDIO', 'DOCUMENT')),
     storage VARCHAR(20) NOT NULL CHECK (storage IN ('LOCAL', 'EXTERNAL_URL')),
     file_path TEXT,
     public_url TEXT,

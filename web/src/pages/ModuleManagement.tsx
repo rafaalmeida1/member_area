@@ -46,17 +46,17 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
 
   const [contentBlocks, setContentBlocks] = useState<Array<{
     id: string;
-    type: 'TEXT' | 'VIDEO' | 'AUDIO';
+    type: 'TEXT' | 'VIDEO' | 'AUDIO' | 'PDF';
     content: string;
     order: number;
   }>>([]);
 
-  // Abrir seletor imediatamente ao escolher SPECIFIC
+  // Abrir seletor imediatamente ao escolher SPECIFIC (apenas quando mudar para SPECIFIC)
   useEffect(() => {
-    if (formData.visibility === 'SPECIFIC' && !showPatientSelector) {
+    if (formData.visibility === 'SPECIFIC' && selectedPatientIds.length === 0) {
       setShowPatientSelector(true);
     }
-  }, [formData.visibility]);
+  }, [formData.visibility, selectedPatientIds.length]);
 
   const loadModules = useCallback(async () => {
     try {
@@ -67,7 +67,7 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
       const parsed = parseApiError(error);
       toast({
         title: parsed.title,
-        description: parsed.description,
+        description: parsed.message,
         variant: "destructive",
       });
     } finally {
@@ -133,6 +133,13 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
       }));
       
       setContentBlocks(contentBlocksWithValidIndexes);
+      
+      // Configurar pacientes selecionados se a visibilidade for específica
+      if (moduleDetail.visibility === 'SPECIFIC' && moduleDetail.allowedPatients) {
+        setSelectedPatientIds(moduleDetail.allowedPatients.map(p => p.id));
+      } else {
+        setSelectedPatientIds([]);
+      }
       
     } catch (error) {
       toast({
@@ -255,7 +262,7 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
       const parsed = parseApiError(error);
       toast({
         title: parsed.title,
-        description: parsed.description,
+        description: parsed.message,
         variant: "destructive",
       });
     } finally {
@@ -276,7 +283,7 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
       const parsed = parseApiError(error);
       toast({
         title: parsed.title,
-        description: parsed.description,
+        description: parsed.message,
         variant: "destructive",
       });
     } finally {
@@ -295,27 +302,28 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
         onBack={resetForm}
       >
 
-        <div className="mx-auto px-4 py-8 max-w-screen">
+        <div className="mx-auto px-4 py-4 sm:py-8 max-w-screen">
           <Card className="shadow-elegant">
-            <CardHeader>
-              <CardTitle className="text-2xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg sm:text-2xl">
                 {editingModule ? 'Editar Módulo' : 'Criar Novo Módulo'}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
               {/* Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Título *</Label>
+                  <Label htmlFor="title" className="text-sm font-medium">Título *</Label>
                   <Input
                     id="title"
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Título do módulo"
+                    className="text-sm"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="category">Categoria *</Label>
+                  <Label htmlFor="category" className="text-sm font-medium">Categoria *</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value) => {
@@ -326,7 +334,7 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
                       }
                     }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="text-sm">
                       <SelectValue placeholder="Selecione ou digite uma categoria" />
                     </SelectTrigger>
                     <SelectContent>
@@ -343,31 +351,34 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
                       placeholder="Digite o nome da nova categoria"
                       value={formData.category}
                       onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                      className="mt-2"
+                      className="mt-2 text-sm"
                     />
                   )}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Descrição *</Label>
+                <Label htmlFor="description" className="text-sm font-medium">Descrição *</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Descrição do módulo"
                   rows={3}
+                  className="text-sm"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Imagem de Capa</Label>
+                <Label className="text-sm font-medium">Imagem de Capa</Label>
                 <FileUpload
                   type="image"
                   currentUrl={formData.coverImage}
                   field="coverImage"
                   onFileSelect={(publicUrl) => setFormData(prev => ({ ...prev, coverImage: publicUrl }))}
-                  setFormData={setFormData}
+                  setFormData={(data: Record<string, unknown>) => {
+                    setFormData(prev => ({ ...prev, ...data }));
+                  }}
                   formData={formData}
                   specifications={{
                     title: "Imagem de Capa do Módulo",
@@ -387,14 +398,14 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="visibility">Visibilidade</Label>
+                <Label htmlFor="visibility" className="text-sm font-medium">Visibilidade</Label>
                 <Select
                   value={formData.visibility}
                   onValueChange={(value: 'GENERAL' | 'SPECIFIC') => 
                     setFormData(prev => ({ ...prev, visibility: value }))
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -405,23 +416,24 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
                 
                 {/* Seletor de pacientes para visibilidade específica */}
                 {formData.visibility === 'SPECIFIC' && (
-                  <div className="mt-4 p-4 border rounded-lg bg-muted/50">
-                    <div className="flex items-center justify-between mb-3">
+                  <div className="mt-4 p-3 sm:p-4 border rounded-lg bg-muted/50">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 space-y-2 sm:space-y-0">
                       <Label className="text-sm font-medium">Pacientes Selecionados</Label>
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         onClick={() => setShowPatientSelector(true)}
+                        className="text-xs sm:text-sm"
                       >
-                        <Users className="w-4 h-4 mr-2" />
+                        <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                         Selecionar Pacientes
                       </Button>
                     </div>
                     
                     {selectedPatientIds.length > 0 ? (
                       <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           {selectedPatientIds.length} paciente{selectedPatientIds.length !== 1 ? 's' : ''} selecionado{selectedPatientIds.length !== 1 ? 's' : ''}
                         </p>
                         <Button
@@ -429,13 +441,13 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedPatientIds([])}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-red-600 hover:text-red-700 text-xs sm:text-sm"
                         >
                           Limpar seleção
                         </Button>
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         Nenhum paciente selecionado. Clique em "Selecionar Pacientes" para escolher.
                       </p>
                     )}
@@ -448,17 +460,21 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
                 contentBlocks={contentBlocks}
                 onContentBlocksChange={handleContentBlocksChange}
                 formData={formData}
-                setFormData={setFormData}
+                setFormData={(data: Record<string, unknown>) => {
+                  setFormData(prev => ({ ...prev, ...data }));
+                }}
               />
 
-              <div className="flex gap-3 pt-6">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 sm:pt-6">
                 <Button onClick={handleSaveModule} className="flex-1" disabled={isSaving}>
                   <InlineLoading loading={isSaving} loadingText={editingModule ? 'Atualizando...' : 'Criando...'}>
-                    <Save className="w-4 h-4 mr-2" />
-                    {editingModule ? 'Atualizar Módulo' : 'Criar Módulo'}
+                    <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    <span className="text-sm sm:text-base">
+                      {editingModule ? 'Atualizar Módulo' : 'Criar Módulo'}
+                    </span>
                   </InlineLoading>
                 </Button>
-                <Button variant="outline" onClick={resetForm} disabled={isSaving}>
+                <Button variant="outline" onClick={resetForm} disabled={isSaving} className="text-sm sm:text-base">
                   Cancelar
                 </Button>
               </div>
@@ -489,18 +505,22 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
       onBack={resetForm}
     >
 
-      <div className="mx-auto px-4 py-8 max-w-screen">
-        {/* Dashboard Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold">Gerenciar Módulos</h2>
-            <p className="text-muted-foreground mt-2">
+      <div className="mx-auto px-4 py-4 sm:py-8 max-w-screen">
+        {/* Dashboard Header - Mobile First */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+          <div className="text-center sm:text-left">
+            <h2 className="text-xl sm:text-3xl font-bold">Gerenciar Módulos</h2>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
               Crie e edite conteúdos para seus pacientes
             </p>
           </div>
-          <Button onClick={handleCreateModule} size="lg" className="shadow-md hover:shadow-lg transition-all duration-300">
-            <Plus className="w-5 h-5 mr-2" />
-            Novo Módulo
+          <Button 
+            onClick={handleCreateModule} 
+            size="lg" 
+            className="shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-auto"
+          >
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+            <span className="text-sm sm:text-base">Novo Módulo</span>
           </Button>
         </div>
 
@@ -523,13 +543,13 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
           />
 
           {modules.length === 0 && !isLoading && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg mb-4">
+            <div className="text-center py-8 sm:py-12">
+              <p className="text-muted-foreground text-base sm:text-lg mb-4">
                 Nenhum módulo criado ainda.
               </p>
-              <Button onClick={handleCreateModule}>
+              <Button onClick={handleCreateModule} className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
-                Criar Primeiro Módulo
+                <span className="text-sm sm:text-base">Criar Primeiro Módulo</span>
               </Button>
             </div>
           )}

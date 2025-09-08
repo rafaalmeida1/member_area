@@ -2,10 +2,10 @@
 
 -- Adicionar campo de visibilidade na tabela modules
 ALTER TABLE modules 
-ADD COLUMN visibility VARCHAR(50) NOT NULL DEFAULT 'GENERAL';
+ADD COLUMN IF NOT EXISTS visibility VARCHAR(50) NOT NULL DEFAULT 'GENERAL';
 
 -- Criar tabela de relacionamento para pacientes específicos
-CREATE TABLE module_patient_access (
+CREATE TABLE IF NOT EXISTS module_patient_access (
     module_id UUID NOT NULL,
     patient_id BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -18,9 +18,9 @@ CREATE TABLE module_patient_access (
 UPDATE users SET role = 'PROFESSIONAL' WHERE role = 'ADMIN';
 
 -- Índices para performance
-CREATE INDEX idx_modules_visibility ON modules(visibility);
-CREATE INDEX idx_module_patient_access_patient ON module_patient_access(patient_id);
-CREATE INDEX idx_module_patient_access_module ON module_patient_access(module_id);
+CREATE INDEX IF NOT EXISTS idx_modules_visibility ON modules(visibility);
+CREATE INDEX IF NOT EXISTS idx_module_patient_access_patient ON module_patient_access(patient_id);
+CREATE INDEX IF NOT EXISTS idx_module_patient_access_module ON module_patient_access(module_id);
 
 -- Comentários para documentação
 COMMENT ON COLUMN modules.visibility IS 'GENERAL: visível para todos pacientes, SPECIFIC: apenas para pacientes selecionados';

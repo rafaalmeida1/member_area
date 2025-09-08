@@ -114,7 +114,7 @@ export function Layout({ children, title, showSidebar = true, showBackButton = f
                </div>
                {!sidebarCollapsed && (
                  <div>
-                   <h2 className="text-lg font-bold text-white">NutriThata</h2>
+                   <h2 className="text-lg font-bold text-white">Clube da Nutri</h2>
                    <p className="text-sm text-white/80">Plataforma de Nutrição</p>
                  </div>
                )}

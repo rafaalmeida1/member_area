@@ -1,5 +1,5 @@
 -- Migration V7: Create notifications table
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     type VARCHAR(50) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE notifications (
 );
 
 -- Indexes for better performance
-CREATE INDEX idx_notifications_user_id ON notifications(user_id);
-CREATE INDEX idx_notifications_read ON notifications(read);
-CREATE INDEX idx_notifications_created_at ON notifications(created_at);
-CREATE INDEX idx_notifications_user_read ON notifications(user_id, read); 
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
+CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, read); 

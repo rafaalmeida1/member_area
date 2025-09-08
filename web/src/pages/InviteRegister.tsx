@@ -140,7 +140,7 @@ export function InviteRegister() {
             const parsed = parseApiError(error);
             toast({
                 title: parsed.title,
-                description: parsed.description,
+                description: parsed.message,
                 variant: "destructive",
             });
         } finally {
@@ -214,7 +214,6 @@ export function InviteRegister() {
                                 Nome Completo
                             </label>
                             <div className="input-container">
-                                <User className="input-icon" size={18} />
                                 <input
                                     id="name"
                                     type="text"
@@ -232,7 +231,6 @@ export function InviteRegister() {
                                 E-mail
                             </label>
                             <div className="input-container">
-                                <Mail className="input-icon" size={18} />
                                 <input
                                     id="email"
                                     type="email"
@@ -250,7 +248,6 @@ export function InviteRegister() {
                                 Telefone
                             </label>
                             <div className="input-container">
-                                <Phone className="input-icon" size={18} />
                                 <input
                                     id="phone"
                                     type="tel"
@@ -268,7 +265,6 @@ export function InviteRegister() {
                                 Senha
                             </label>
                             <div className="input-container">
-                                <Lock className="input-icon" size={18} />
                                 <input
                                     id="password"
                                     type={showPassword ? "text" : "password"}
@@ -303,7 +299,6 @@ export function InviteRegister() {
                                 Confirmar Senha
                             </label>
                             <div className="input-container">
-                                <Lock className="input-icon" size={18} />
                                 <input
                                     id="confirmPassword"
                                     type={

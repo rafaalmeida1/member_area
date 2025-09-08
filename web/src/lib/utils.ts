@@ -5,32 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Padroniza parsing de erros vindos do backend (ApiResponse)
-export function parseApiError(err: unknown): {
-  title: string;
-  description: string;
-  fieldErrors?: Record<string, string>;
-} {
-  // Axios error shape
-  const anyErr = err as any;
-  const res = anyErr?.response;
-  const data = res?.data;
-
-  // ApiResponse esperado: { status, message, data }
-  const statusText = data?.status || res?.status?.toString() || 'error';
-  const message = data?.message || anyErr?.message || 'Ocorreu um erro';
-  const fieldErrors = (data?.data && typeof data?.data === 'object') ? data.data : undefined;
-
-  return {
-    title: statusText === 'error' ? 'Erro' : statusText,
-    description: fieldErrors ? formatFieldErrors(fieldErrors) : message,
-    fieldErrors: fieldErrors,
-  };
-}
-
-function formatFieldErrors(errors: Record<string, string>): string {
-  const entries = Object.entries(errors);
-  if (entries.length === 0) return 'Dados inválidos';
-  // Junta como: campo: mensagem
-  return entries.map(([field, msg]) => `${field}: ${msg}`).join(' | ');
-}
+// Re-export das funções de tratamento de erro para compatibilidade
+export { 
+  parseApiError,
+  formatValidationErrors,
+  validateEmail,
+  validatePassword,
+  validateName,
+  validateUrl,
+  validateRequired,
+  validatePositiveNumber,
+  createErrorHandler,
+  type ProcessedError,
+  type ValidationErrors
+} from './errorUtils';

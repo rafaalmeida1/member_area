@@ -129,7 +129,7 @@ export function ModernLayout({
             <FileText className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">NutriThata</span>
+            <span className="text-sm font-semibold">Clube da Nutri</span>
             <span className="text-xs text-muted-foreground">Nutrição</span>
           </div>
         </div>

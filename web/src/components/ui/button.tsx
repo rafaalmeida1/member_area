@@ -9,14 +9,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[var(--color-secondary)] text-[var(--color-background)] hover:bg-[var(--color-primary)] hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
+        default: "bg-[var(--color-button-background)] text-[var(--color-button-text)] hover:bg-[var(--color-button-hover)] hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
         destructive:
           "bg-red-500 text-white hover:bg-red-600 hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
         outline:
-          "border border-[var(--color-secondary)] bg-transparent text-[var(--color-secondary)] hover:bg-[var(--color-secondary)] hover:text-[var(--color-background)] hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
+          "border border-[var(--color-button-background)] bg-transparent text-[var(--color-secondary)] hover:bg-[var(--color-button-background)] hover:text-[var(--color-button-text)] hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
         secondary:
-          "bg-[var(--color-primary)] text-[var(--color-background)] hover:bg-[var(--color-secondary)] hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
-        ghost: "text-[var(--color-secondary)] hover:bg-[var(--color-secondary)]/10 hover:transform hover:-translate-y-0.5 disabled:transform-none",
+          "bg-[var(--color-primary)] text-[var(--color-button-text)] hover:bg-[var(--color-button-background)] hover:transform hover:-translate-y-0.5 hover:shadow-lg disabled:transform-none",
+        ghost: "text-[var(--color-secondary)] hover:bg-[var(--color-button-background)]/10 hover:transform hover:-translate-y-0.5 disabled:transform-none",
         link: "text-[var(--color-secondary)] underline-offset-4 hover:underline hover:text-[var(--color-primary)]",
       },
       size: {
@@ -54,3 +54,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button"
 
 export { Button, buttonVariants }
+

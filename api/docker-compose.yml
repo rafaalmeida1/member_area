@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   redis:
     image: redis:7-alpine
@@ -23,26 +21,42 @@ services:
       dockerfile: Dockerfile
     container_name: nutri_thata_api
     environment:
+      # Database Configuration
       - DB_URL=${DB_URL}
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
+      
+      # JWT Configuration
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRATION=${JWT_EXPIRATION}
       - JWT_REFRESH_EXPIRATION=${JWT_REFRESH_EXPIRATION}
+      
+      # Server Configuration
+      - SERVER_PORT=${SERVER_PORT}
+      
+      # CORS Configuration
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
       - FRONTEND_URL=${FRONTEND_URL}
+      
+      # File Upload Configuration
       - UPLOAD_DIRECTORY=${UPLOAD_DIRECTORY}
       - UPLOAD_MAX_FILE_SIZE=${UPLOAD_MAX_FILE_SIZE}
       - UPLOAD_ALLOWED_TYPES=${UPLOAD_ALLOWED_TYPES}
+      
+      # Invite Configuration
       - INVITE_EXPIRATION_HOURS=${INVITE_EXPIRATION_HOURS}
+      
+      # Email Configuration
       - MAIL_HOST=${MAIL_HOST}
       - MAIL_PORT=${MAIL_PORT}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_SMTP_AUTH=${MAIL_SMTP_AUTH}
       - MAIL_SMTP_STARTTLS=${MAIL_SMTP_STARTTLS}
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      
+      # Redis Configuration
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_DATABASE=${REDIS_DATABASE}
       - REDIS_TIMEOUT=${REDIS_TIMEOUT}
@@ -50,13 +64,14 @@ services:
       - REDIS_POOL_MAX_IDLE=${REDIS_POOL_MAX_IDLE}
       - REDIS_POOL_MIN_IDLE=${REDIS_POOL_MIN_IDLE}
       - REDIS_POOL_MAX_WAIT=${REDIS_POOL_MAX_WAIT}
+      
+      # Cache Configuration
       - CACHE_TTL=${CACHE_TTL}
       - CACHE_KEY_PREFIX=${CACHE_KEY_PREFIX}
-      - SERVER_PORT=${SERVER_PORT}
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
     volumes:
-      - uploads_data:/app/uploads
+      - uploads_data:/app/storage/uploads
     depends_on:
       redis:
         condition: service_healthy
@@ -70,4 +85,4 @@ volumes:
 
 networks:
   nutri_thata_network:
-    driver: bridge 
+    driver: bridge

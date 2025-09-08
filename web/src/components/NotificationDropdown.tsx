@@ -17,20 +17,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
-import { apiService } from '@/services/api';
+import { notificationService, Notification as NotificationType } from '@/services/notificationService';
 import { useNavigate } from 'react-router-dom';
 import './NotificationDropdown.css';
 
-interface Notification {
-  id: number;
-  type: 'MODULE_NEW' | 'MODULE_UPDATED' | 'PROFESSIONAL_MESSAGE' | 'SYSTEM';
-  title: string;
-  message: string;
-  read: boolean;
-  createdAt: string;
-  moduleId?: string; // UUID é uma string
-  moduleTitle?: string;
-}
+// Usar o tipo do serviço
+type Notification = NotificationType;
 
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,8 +52,7 @@ export function NotificationDropdown() {
     
     try {
       setIsLoading(true);
-      const response = await apiService.getNotifications();
-      const unreadNotifications = response.filter(n => !n.read);
+      const unreadNotifications = await notificationService.getUnreadNotifications();
       setNotifications(unreadNotifications);
       setUnreadCount(unreadNotifications.length);
     } catch (error) {
@@ -76,29 +67,14 @@ export function NotificationDropdown() {
     }
   };
 
-  // Carregar todas as notificações para o sheet com paginação
-  const loadAllNotifications = async (page: number = 0, append: boolean = false) => {
+  // Carregar todas as notificações para o sheet
+  const loadAllNotifications = async () => {
     if (!user) return;
     
     try {
-      if (page === 0) {
-        setIsLoading(true);
-      } else {
-        setIsLoadingMore(true);
-      }
-      
-      const response = await apiService.getNotificationsPaginated(page, 20);
-      
-      if (append) {
-        setAllNotifications(prev => [...prev, ...response.content]);
-      } else {
-        setAllNotifications(response.content);
-      }
-      
-      setCurrentPage(response.currentPage);
-      setTotalPages(response.totalPages);
-      setTotalElements(response.totalElements);
-      setHasMore(response.currentPage < response.totalPages - 1);
+      setIsLoading(true);
+      const allNotifications = await notificationService.getNotifications();
+      setAllNotifications(allNotifications);
     } catch (error) {
       console.error('Erro ao carregar todas as notificações:', error);
       toast({
@@ -108,26 +84,13 @@ export function NotificationDropdown() {
       });
     } finally {
       setIsLoading(false);
-      setIsLoadingMore(false);
     }
   };
 
-  // Função para carregar mais notificações (scroll infinito)
-  const loadMoreNotifications = useCallback(async () => {
-    if (hasMore && !isLoadingMore && !isLoading) {
-      await loadAllNotifications(currentPage + 1, true);
-    }
-  }, [hasMore, isLoadingMore, isLoading, currentPage]);
-
-  // Detectar scroll para carregar mais
+  // Detectar scroll para carregar mais (simplificado)
   const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
-    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
-    
-    if (scrollPercentage > 0.8 && hasMore && !isLoadingMore) {
-      loadMoreNotifications();
-    }
-  }, [hasMore, isLoadingMore, loadMoreNotifications]);
+    // Implementação simplificada sem paginação
+  }, []);
 
   // Carregar notificações quando abrir o dropdown
   useEffect(() => {
@@ -139,9 +102,7 @@ export function NotificationDropdown() {
   // Carregar todas as notificações quando abrir o sheet
   useEffect(() => {
     if (sheetOpen && user) {
-      setCurrentPage(0);
-      setHasMore(true);
-      loadAllNotifications(0, false);
+      loadAllNotifications();
     }
   }, [sheetOpen, user]);
 
@@ -149,7 +110,7 @@ export function NotificationDropdown() {
   const markAsRead = async (notificationId: number) => {
     try {
       setActionLoading(notificationId);
-      await apiService.markNotificationAsRead(notificationId);
+      await notificationService.markAsRead(notificationId);
       
       // Atualizar estado local
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
@@ -173,7 +134,7 @@ export function NotificationDropdown() {
   const markAllAsRead = async () => {
     try {
       setMarkAllLoading(true);
-      await apiService.markAllNotificationsAsRead();
+      await notificationService.markAllAsRead();
       
       // Atualizar estado local
       setNotifications([]);

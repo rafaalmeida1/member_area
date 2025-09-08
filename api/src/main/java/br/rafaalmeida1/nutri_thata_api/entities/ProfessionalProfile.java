@@ -42,7 +42,7 @@ public class ProfessionalProfile {
     @Column(name = "background_image")
     private String backgroundImage;
 
-    // Posição da imagem de fundo (percentual 0-100)
+    // PosiÃ§Ã£o da imagem de fundo (percentual 0-100)
     @Column(name = "background_position_x")
     private Integer backgroundPositionX;
 
@@ -76,6 +76,63 @@ public class ProfessionalProfile {
 
     @Column(name = "theme_disabled_color")
     private String themeDisabledColor;
+    // Cores específicas para inputs
+    @Column(name = "input_background_color")
+    private String inputBackgroundColor;
+
+    @Column(name = "input_border_color")
+    private String inputBorderColor;
+
+    @Column(name = "input_focus_color")
+    private String inputFocusColor;
+
+    @Column(name = "input_placeholder_color")
+    private String inputPlaceholderColor;
+
+    // Cores específicas para botões
+    @Column(name = "button_primary_color")
+    private String buttonPrimaryColor;
+
+    @Column(name = "button_primary_hover_color")
+    private String buttonPrimaryHoverColor;
+
+    @Column(name = "button_primary_text_color")
+    private String buttonPrimaryTextColor;
+
+    @Column(name = "button_secondary_color")
+    private String buttonSecondaryColor;
+
+    @Column(name = "button_secondary_hover_color")
+    private String buttonSecondaryHoverColor;
+
+    @Column(name = "button_secondary_text_color")
+    private String buttonSecondaryTextColor;
+
+    @Column(name = "button_disabled_color")
+    private String buttonDisabledColor;
+
+    @Column(name = "button_disabled_text_color")
+    private String buttonDisabledTextColor;
+
+    // Cores de estado
+    @Column(name = "color_success")
+    private String colorSuccess;
+
+    @Column(name = "color_warning")
+    private String colorWarning;
+
+    @Column(name = "color_error")
+    private String colorError;
+
+    @Column(name = "color_info")
+    private String colorInfo;
+
+    // Cores de sombra e overlay
+    @Column(name = "color_shadow")
+    private String colorShadow;
+
+    @Column(name = "color_overlay")
+    private String colorOverlay;
 
 
     @ElementCollection(fetch = FetchType.EAGER)

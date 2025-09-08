@@ -1,58 +1,78 @@
 package br.rafaalmeida1.nutri_thata_api.controller;
 
+import br.rafaalmeida1.nutri_thata_api.dto.request.theme.ThemeColorsRequest;
 import br.rafaalmeida1.nutri_thata_api.dto.response.ApiResponse;
-import br.rafaalmeida1.nutri_thata_api.dto.response.ProfessionalProfileResponse;
-import br.rafaalmeida1.nutri_thata_api.service.ProfessionalService;
+import br.rafaalmeida1.nutri_thata_api.dto.response.theme.PredefinedThemeResponse;
+import br.rafaalmeida1.nutri_thata_api.dto.response.theme.ThemeColorsResponse;
+import br.rafaalmeida1.nutri_thata_api.entities.User;
+import br.rafaalmeida1.nutri_thata_api.service.ThemeService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/theme")
+@RequestMapping("/theme")
 @RequiredArgsConstructor
+@Slf4j
 public class ThemeController {
 
-    private final ProfessionalService professionalService;
+    private final ThemeService themeService;
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<Map<String, String>>> getTheme() {
-        Map<String, String> theme = getCachedTheme();
-        return ResponseEntity.ok(ApiResponse.success("Tema carregado com sucesso", theme));
-    }
-
-    @Cacheable(value = "theme", key = "'global'")
-    public Map<String, String> getCachedTheme() {
+    @GetMapping("/colors")
+    public ResponseEntity<ApiResponse<ThemeColorsResponse>> getUserThemeColors(
+            @AuthenticationPrincipal User user) {
         try {
-            ProfessionalProfileResponse profile = professionalService.getThemeData();
-            
-            Map<String, String> theme = new HashMap<>();
-            theme.put("primaryColor", profile.getThemePrimaryColor() != null ? profile.getThemePrimaryColor() : "#DBCFCB");
-            theme.put("secondaryColor", profile.getThemeSecondaryColor() != null ? profile.getThemeSecondaryColor() : "#D8C4A4");
-            theme.put("accentColor", profile.getThemePrimaryColor() != null ? profile.getThemePrimaryColor() : "#A67B5B");
-            theme.put("backgroundColor", profile.getThemeBackgroundColor() != null ? profile.getThemeBackgroundColor() : "#FFFFFF");
-            theme.put("surfaceColor", profile.getThemeSurfaceColor() != null ? profile.getThemeSurfaceColor() : "#FAFAFA");
-            theme.put("textColor", profile.getThemeTextPrimaryColor() != null ? profile.getThemeTextPrimaryColor() : "#2C2C2C");
-            theme.put("textSecondaryColor", profile.getThemeTextSecondaryColor() != null ? profile.getThemeTextSecondaryColor() : "#666666");
-
-            return theme;
+            ThemeColorsResponse colors = themeService.getUserThemeColors(user);
+            return ResponseEntity.ok(ApiResponse.success("Cores do tema carregadas com sucesso", colors));
         } catch (Exception e) {
-            // Se não conseguir carregar o perfil, retorna tema padrão
-            Map<String, String> defaultTheme = new HashMap<>();
-            defaultTheme.put("primaryColor", "#DBCFCB");
-            defaultTheme.put("secondaryColor", "#D8C4A4");
-            defaultTheme.put("accentColor", "#A67B5B");
-            defaultTheme.put("backgroundColor", "#FFFFFF");
-            defaultTheme.put("surfaceColor", "#FAFAFA");
-            defaultTheme.put("textColor", "#2C2C2C");
-            defaultTheme.put("textSecondaryColor", "#666666");
-
-            return defaultTheme;
+            log.error("Erro ao carregar cores do tema: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Erro ao carregar cores do tema: " + e.getMessage()));
         }
     }
-} 
+
+    @PutMapping("/colors")
+    public ResponseEntity<ApiResponse<ThemeColorsResponse>> updateUserThemeColors(
+            @AuthenticationPrincipal User user,
+            @Valid @RequestBody ThemeColorsRequest request) {
+        try {
+            ThemeColorsResponse colors = themeService.updateUserThemeColors(user, request);
+            return ResponseEntity.ok(ApiResponse.success("Cores do tema atualizadas com sucesso", colors));
+        } catch (Exception e) {
+            log.error("Erro ao atualizar cores do tema: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Erro ao atualizar cores do tema: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/predefined")
+    public ResponseEntity<ApiResponse<List<PredefinedThemeResponse>>> getPredefinedThemes() {
+        try {
+            List<PredefinedThemeResponse> themes = themeService.getPredefinedThemes();
+            return ResponseEntity.ok(ApiResponse.success("Temas pré-definidos carregados com sucesso", themes));
+        } catch (Exception e) {
+            log.error("Erro ao carregar temas pré-definidos: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Erro ao carregar temas pré-definidos: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/apply/{themeId}")
+    public ResponseEntity<ApiResponse<ThemeColorsResponse>> applyPredefinedTheme(
+            @AuthenticationPrincipal User user,
+            @PathVariable String themeId) {
+        try {
+            ThemeColorsResponse colors = themeService.applyPredefinedTheme(user, themeId);
+            return ResponseEntity.ok(ApiResponse.success("Tema aplicado com sucesso", colors));
+        } catch (Exception e) {
+            log.error("Erro ao aplicar tema: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Erro ao aplicar tema: " + e.getMessage()));
+        }
+    }
+}

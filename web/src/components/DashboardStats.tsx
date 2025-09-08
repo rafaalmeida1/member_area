@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,6 +17,8 @@ import {
   MoreHorizontal
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { dashboardService, DashboardStats as DashboardStatsType } from '@/services/dashboardService'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 
 interface StatsCardProps {
   title: string
@@ -69,76 +71,141 @@ interface DashboardStatsProps {
 }
 
 export function DashboardStats({ userRole }: DashboardStatsProps) {
-  // Mock data - em produção, estes dados viriam da API
+  const [stats, setStats] = useState<DashboardStatsType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { handleError } = useErrorHandler();
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      setLoading(true);
+      const data = await dashboardService.getDashboardStats();
+      setStats(data);
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatNumber = (num: number | undefined) => {
+    if (num === undefined) return '0';
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'k';
+    }
+    return num.toString();
+  };
+
+  const formatTime = (minutes: number | undefined) => {
+    if (minutes === undefined) return '0 min';
+    if (minutes >= 60) {
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+      return `${hours}h ${remainingMinutes}min`;
+    }
+    return `${minutes} min`;
+  };
+
+  if (loading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="animate-pulse">
+            <CardHeader className="space-y-0 pb-2">
+              <div className="h-4 bg-muted rounded w-3/4"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-8 bg-muted rounded w-1/2 mb-2"></div>
+              <div className="h-3 bg-muted rounded w-2/3"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
   const professionalStats = [
     {
       title: "Total de Pacientes",
-      value: "1,234",
-      description: "Pacientes ativos",
+      value: formatNumber(stats?.totalPatients),
+      description: `${stats?.activePatients || 0} ativos`,
       icon: Users,
-      trend: { value: 12.5, isPositive: true }
+      trend: stats?.totalPatients && stats?.activePatients ? 
+        { value: Math.round((stats.activePatients / stats.totalPatients) * 100), isPositive: true } : 
+        undefined
     },
     {
       title: "Módulos Criados",
-      value: "89",
-      description: "Conteúdos disponíveis",
+      value: formatNumber(stats?.totalModules),
+      description: `${stats?.activeModules || 0} ativos`,
       icon: FileText,
-      trend: { value: 8.2, isPositive: true }
+      trend: stats?.totalModules && stats?.activeModules ? 
+        { value: Math.round((stats.activeModules / stats.totalModules) * 100), isPositive: true } : 
+        undefined
     },
     {
       title: "Convites Enviados",
-      value: "156",
-      description: "Este mês",
+      value: formatNumber(stats?.totalInvites),
+      description: `${stats?.invitesThisMonth || 0} este mês`,
       icon: Mail,
-      trend: { value: 23.1, isPositive: true }
+      trend: stats?.totalInvites && stats?.invitesThisMonth ? 
+        { value: Math.round((stats.invitesThisMonth / stats.totalInvites) * 100), isPositive: true } : 
+        undefined
     },
     {
       title: "Visualizações",
-      value: "12.4k",
-      description: "Últimos 30 dias",
+      value: formatNumber(stats?.totalViews),
+      description: "Total de acessos",
       icon: Eye,
-      trend: { value: 15.3, isPositive: true }
+      trend: undefined
     }
   ]
 
   const patientStats = [
     {
-      title: "Módulos Concluídos",
-      value: "24",
-      description: "Conteúdos finalizados",
+      title: "Módulos Disponíveis",
+      value: formatNumber(stats?.totalModules),
+      description: "Conteúdos para estudar",
       icon: FileText,
-      trend: { value: 5.2, isPositive: true }
+      trend: undefined
     },
     {
-      title: "Progresso Geral",
-      value: "78%",
-      description: "Do plano nutricional",
+      title: "Módulos Visualizados",
+      value: formatNumber(stats?.viewedModules),
+      description: "Conteúdos acessados",
+      icon: Eye,
+      trend: stats?.totalModules && stats?.viewedModules ? 
+        { value: Math.round((stats.viewedModules / stats.totalModules) * 100), isPositive: true } : 
+        undefined
+    },
+    {
+      title: "Módulos Concluídos",
+      value: formatNumber(stats?.completedModules),
+      description: "Conteúdos finalizados",
       icon: BarChart3,
-      trend: { value: 12.1, isPositive: true }
+      trend: stats?.viewedModules && stats?.completedModules ? 
+        { value: Math.round((stats.completedModules / stats.viewedModules) * 100), isPositive: true } : 
+        undefined
     },
     {
-      title: "Dias Ativos",
-      value: "45",
-      description: "Nos últimos 60 dias",
-      icon: Calendar,
-      trend: { value: 8.7, isPositive: true }
-    },
-    {
-      title: "Tempo Médio",
-      value: "25min",
-      description: "Por sessão",
+      title: "Tempo de Estudo",
+      value: formatTime(stats?.totalStudyTime),
+      description: "Tempo total investido",
       icon: Clock,
-      trend: { value: 3.2, isPositive: false }
+      trend: undefined
     }
   ]
 
-  const stats = userRole === 'PROFESSIONAL' ? professionalStats : patientStats
+  const displayStats = userRole === 'PROFESSIONAL' ? professionalStats : patientStats
 
   return (
     <div className="space-y-6">
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
+        {displayStats.map((stat, index) => (
           <StatsCard
             key={index}
             title={stat.title}

@@ -27,9 +27,9 @@ COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
 # Create uploads directory with proper permissions
-RUN mkdir -p uploads && \
-    chmod 755 uploads && \
-    chown 1000:1000 uploads
+RUN mkdir -p storage/uploads && \
+    chmod 755 storage/uploads && \
+    chown 1000:1000 storage/uploads
 
 # Expose port
 EXPOSE 8081

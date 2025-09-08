@@ -23,7 +23,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
 import { apiService } from '@/services/api';
-import { Layout } from '@/components/Layout';
+import { ModernLayout } from '@/components/ModernLayout';
 import { analyticsService } from '@/services/analyticsService';
 import { PageAnalytics } from '@/types/analytics';
 import { linkPageProfileService } from '@/services/linkPageProfileService';
@@ -809,18 +809,18 @@ const MyLinks: React.FC = () => {
 
   if (loading) {
     return (
-      <Layout title="Meus Links">
+      <ModernLayout title="Meus Links">
         <LoadingState 
           loading={true} 
           loadingText="Carregando seus links..." 
           className="min-h-[400px]" 
         />
-      </Layout>
+      </ModernLayout>
     );
   }
 
   return (
-    <Layout
+    <ModernLayout
       title="Meus Links"
     >
     <div className="mx-auto p-6 max-w-full">
@@ -1911,7 +1911,7 @@ const MyLinks: React.FC = () => {
         </TabsContent>
       </Tabs>
     </div>
-    </Layout>
+    </ModernLayout>
   );
 };
 

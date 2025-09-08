@@ -52,7 +52,6 @@ public class SecurityConfig {
         "/invites/*",
         "/test/**",
         "/api/test/**",
-        "/api/theme",
         "/api/public/links/**",
         "/static/**",
         "/v3/api-docs/**",
@@ -86,6 +85,18 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/modules").hasRole("PROFESSIONAL")
                 .requestMatchers(HttpMethod.PATCH, "/modules/*").hasRole("PROFESSIONAL")
                 .requestMatchers(HttpMethod.DELETE, "/modules/*").hasRole("PROFESSIONAL")
+                
+                // Dashboard endpoints - authenticated users
+                .requestMatchers("/dashboard/**").authenticated()
+                
+                // Theme endpoints - authenticated users
+                .requestMatchers("/theme/**").authenticated()
+                
+                // Media endpoints - authenticated users
+                .requestMatchers("/media/**").authenticated()
+                
+                // User endpoints - authenticated users
+                .requestMatchers("/users/**").authenticated()
                 
                 // All authenticated users
                 .anyRequest().authenticated()

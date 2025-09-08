@@ -58,6 +58,11 @@ export function PatientSelector({
     }
   }, [isOpen]);
 
+  // Atualizar selectedIds quando initialSelectedIds muda
+  useEffect(() => {
+    setSelectedIds(initialSelectedIds);
+  }, [initialSelectedIds]);
+
   const loadPatients = async () => {
     try {
       setIsLoading(true);

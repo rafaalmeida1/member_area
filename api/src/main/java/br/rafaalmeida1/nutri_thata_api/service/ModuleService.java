@@ -162,6 +162,24 @@ public class ModuleService {
         module.getContent().addAll(contentBlocks);
         module = moduleRepository.save(module);
 
+        // Criar notificação para pacientes se o módulo for visível
+        if (module.getVisibility() == ContentVisibility.GENERAL) {
+            // Notificar todos os pacientes do profissional
+            notificationService.notifyNewModule(user, module.getId().toString(), module.getTitle());
+        } else if (module.getVisibility() == ContentVisibility.SPECIFIC && !module.getAllowedPatients().isEmpty()) {
+            // Notificar apenas pacientes específicos
+            for (User patient : module.getAllowedPatients()) {
+                notificationService.createNotification(
+                    patient, 
+                    br.rafaalmeida1.nutri_thata_api.enums.NotificationType.MODULE_NEW,
+                    "Novo Conteúdo Disponível! 📚",
+                    String.format("Um novo módulo '%s' foi adicionado à sua jornada nutricional.", module.getTitle()),
+                    module.getId().toString(),
+                    module.getTitle()
+                );
+            }
+        }
+
         log.info("Módulo criado com sucesso: {} (ordem: {})", module.getId(), module.getOrderIndex());
         return moduleMapper.toModuleResponse(module);
     }
@@ -266,6 +284,24 @@ public class ModuleService {
             }
         }
         
+        // Criar notificação sobre atualização do módulo
+        if (module.getVisibility() == ContentVisibility.GENERAL) {
+            // Notificar todos os pacientes do profissional
+            notificationService.notifyModuleUpdated(user, module.getId().toString(), module.getTitle());
+        } else if (module.getVisibility() == ContentVisibility.SPECIFIC && !module.getAllowedPatients().isEmpty()) {
+            // Notificar apenas pacientes específicos
+            for (User patient : module.getAllowedPatients()) {
+                notificationService.createNotification(
+                    patient, 
+                    br.rafaalmeida1.nutri_thata_api.enums.NotificationType.MODULE_UPDATED,
+                    "Conteúdo Atualizado! ✨",
+                    String.format("O módulo '%s' foi atualizado com novas informações.", module.getTitle()),
+                    module.getId().toString(),
+                    module.getTitle()
+                );
+            }
+        }
+
         log.info("Módulo atualizado com sucesso: {} (visibilidade: {})", module.getId(), module.getVisibility());
         return moduleMapper.toModuleResponse(module);
     }

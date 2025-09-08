@@ -1,5 +1,7 @@
 import { publicApi, privateApi } from './apiConfig';
 import { PublicLinksData, LinkRequest, LinkResponse, ReorderLinksRequest } from '@/types/publicLinks';
+import { ApiResponse } from './api';
+import { validateRequired, validateUrl, validatePositiveNumber } from '@/lib/errorUtils';
 
 // Interceptor para API pública também
 publicApi.interceptors.response.use(
@@ -19,88 +21,125 @@ publicApi.interceptors.response.use(
 export const publicLinksService = {
   // Rotas públicas
   async getPublicLinks(professionalId: number): Promise<PublicLinksData> {
-    if (!professionalId || professionalId <= 0) {
-      throw new Error('ID do profissional inválido');
+    const idError = validatePositiveNumber(professionalId, 'ID do profissional');
+    if (idError) throw new Error(idError);
+    
+    const response = await publicApi.get<ApiResponse<PublicLinksData>>(
+      `/api/public/links/${professionalId}`
+    );
+    
+    if (response.data.status === 'success' && response.data.data) {
+      return response.data.data;
     }
     
-    const response = await publicApi.get(`/api/public/links/${professionalId}`);
-    
-    if (!response.data) {
-      throw new Error('Dados não encontrados');
-    }
-    
-    return response.data;
+    throw new Error(response.data.message || 'Dados do profissional não encontrados');
   },
 
   async trackLinkClick(linkId: number): Promise<void> {
-    if (!linkId || linkId <= 0) {
-      throw new Error('ID do link inválido');
-    }
+    const idError = validatePositiveNumber(linkId, 'ID do link');
+    if (idError) throw new Error(idError);
     
-    await publicApi.post(`/api/public/links/${linkId}/click`);
+    const response = await publicApi.post<ApiResponse<void>>(
+      `/api/public/links/${linkId}/click`
+    );
+    
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || 'Erro ao registrar clique no link');
+    }
   },
 
   // Rotas privadas (para profissionais)
   async getAllLinks(): Promise<LinkResponse[]> {
-    const response = await privateApi.get('/api/professional/links');
-    return response.data;
+    const response = await privateApi.get<ApiResponse<LinkResponse[]>>(
+      '/api/professional/links'
+    );
+    
+    if (response.data.status === 'success' && response.data.data) {
+      return response.data.data;
+    }
+    
+    throw new Error(response.data.message || 'Erro ao buscar links');
   },
 
   async createLink(request: LinkRequest): Promise<LinkResponse> {
-    if (!request.title?.trim()) {
-      throw new Error('Título é obrigatório');
+    // Validações client-side
+    const titleError = validateRequired(request.title, 'Título');
+    if (titleError) throw new Error(titleError);
+    
+    const urlError = validateUrl(request.url);
+    if (urlError) throw new Error(urlError);
+    
+    const typeError = validateRequired(request.linkType, 'Tipo do link');
+    if (typeError) throw new Error(typeError);
+    
+    const response = await privateApi.post<ApiResponse<LinkResponse>>(
+      '/api/professional/links', 
+      request
+    );
+    
+    if (response.data.status === 'success' && response.data.data) {
+      return response.data.data;
     }
     
-    if (!request.url?.trim()) {
-      throw new Error('URL é obrigatória');
-    }
-    
-    if (!request.linkType) {
-      throw new Error('Tipo do link é obrigatório');
-    }
-    
-    const response = await privateApi.post('/api/professional/links', request);
-    return response.data;
+    throw new Error(response.data.message || 'Erro ao criar link');
   },
 
   async updateLink(linkId: number, request: LinkRequest): Promise<LinkResponse> {
-    if (!linkId || linkId <= 0) {
-      throw new Error('ID do link inválido');
+    // Validações client-side
+    const idError = validatePositiveNumber(linkId, 'ID do link');
+    if (idError) throw new Error(idError);
+    
+    const titleError = validateRequired(request.title, 'Título');
+    if (titleError) throw new Error(titleError);
+    
+    const urlError = validateUrl(request.url);
+    if (urlError) throw new Error(urlError);
+    
+    const typeError = validateRequired(request.linkType, 'Tipo do link');
+    if (typeError) throw new Error(typeError);
+    
+    const response = await privateApi.put<ApiResponse<LinkResponse>>(
+      `/api/professional/links/${linkId}`, 
+      request
+    );
+    
+    if (response.data.status === 'success' && response.data.data) {
+      return response.data.data;
     }
     
-    if (!request.title?.trim()) {
-      throw new Error('Título é obrigatório');
-    }
-    
-    if (!request.url?.trim()) {
-      throw new Error('URL é obrigatória');
-    }
-    
-    if (!request.linkType) {
-      throw new Error('Tipo do link é obrigatório');
-    }
-    
-    const response = await privateApi.put(`/api/professional/links/${linkId}`, request);
-    return response.data;
+    throw new Error(response.data.message || 'Erro ao atualizar link');
   },
 
   async deleteLink(linkId: number): Promise<void> {
-    if (!linkId || linkId <= 0) {
-      throw new Error('ID do link inválido');
-    }
+    const idError = validatePositiveNumber(linkId, 'ID do link');
+    if (idError) throw new Error(idError);
     
-    await privateApi.delete(`/api/professional/links/${linkId}`);
+    const response = await privateApi.delete<ApiResponse<void>>(
+      `/api/professional/links/${linkId}`
+    );
+    
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || 'Erro ao deletar link');
+    }
   },
 
   async reorderLinks(request: ReorderLinksRequest): Promise<void> {
     if (!request.linkIds || !Array.isArray(request.linkIds) || request.linkIds.length === 0) {
-      throw new Error('Lista de IDs inválida');
+      throw new Error('Lista de IDs é obrigatória');
     }
     
-    if (request.linkIds.some(id => !id || id <= 0)) {
-      throw new Error('IDs de links inválidos');
+    for (const id of request.linkIds) {
+      const idError = validatePositiveNumber(id, 'ID do link');
+      if (idError) throw new Error(idError);
     }
     
-    await privateApi.put('/api/professional/links/reorder', request);
+    const response = await privateApi.put<ApiResponse<void>>(
+      '/api/professional/links/reorder', 
+      request
+    );
+    
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || 'Erro ao reordenar links');
+    }
   },
 };

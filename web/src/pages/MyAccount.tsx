@@ -29,12 +29,13 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { apiService, ProfessionalProfile } from '@/services/api';
-import { Layout } from '@/components/Layout';
+import { ModernLayout } from '@/components/ModernLayout';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { FileUpload } from '@/components/FileUpload';
 import { BannerPreview } from '@/components/BannerPreview';
 import { BannerPositionControl } from '@/components/BannerPositionControl';
 import { ThemeSettings } from '@/components/ThemeSettings';
+import { ThemeManager } from '@/components/ThemeManager';
 import './MyAccount.css';
 
 interface UserStats {
@@ -284,73 +285,78 @@ export function MyAccount({
     : ['profile', 'stats', 'security'];
 
   return (
-    <Layout
+    <ModernLayout
       title="Minha Conta"
-      professionalName={professionalName}
     >
       <div className="my-account-container">
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-5">
-            <TabsTrigger value="profile">Meu Perfil</TabsTrigger>
-            {isProfessional && <TabsTrigger value="professional">Perfil Profissional</TabsTrigger>}
-            {isProfessional && <TabsTrigger value="theme">Tema</TabsTrigger>}
-            <TabsTrigger value="stats">Minhas Estatísticas</TabsTrigger>
-            <TabsTrigger value="security">Segurança</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+            <TabsTrigger value="profile" className="text-xs sm:text-sm">Meu Perfil</TabsTrigger>
+            {isProfessional && <TabsTrigger value="professional" className="text-xs sm:text-sm">Perfil Profissional</TabsTrigger>}
+            {isProfessional && <TabsTrigger value="theme" className="text-xs sm:text-sm">Tema</TabsTrigger>}
+            <TabsTrigger value="stats" className="text-xs sm:text-sm">Estatísticas</TabsTrigger>
+            <TabsTrigger value="security" className="text-xs sm:text-sm">Segurança</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="profile" className="space-y-6">
+          <TabsContent value="profile" className="space-y-4 sm:space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5" />
                   Informações Pessoais
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="profile-form">
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label className="form-label">Nome Completo</label>
+              <CardContent className="p-4 sm:p-6">
+                <div className="space-y-4 sm:space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Nome Completo</label>
                       <Input
                         value={profileForm.name}
                         onChange={(e) => setProfileForm(prev => ({ ...prev, name: e.target.value }))}
                         placeholder="Seu nome completo"
+                        className="text-sm"
                       />
                     </div>
                     
-                    <div className="form-group">
-                      <label className="form-label">Email</label>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Email</label>
                       <Input
                         type="email"
                         value={profileForm.email}
                         onChange={(e) => setProfileForm(prev => ({ ...prev, email: e.target.value }))}
                         placeholder="seu@email.com"
+                        className="text-sm"
                       />
                     </div>
                     
-                    <div className="form-group">
-                      <label className="form-label">Telefone</label>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Telefone</label>
                       <Input
                         value={profileForm.phone}
                         onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
                         placeholder="(11) 99999-9999"
+                        className="text-sm"
                       />
                     </div>
                     
-                    <div className="form-group">
-                      <label className="form-label">Data de Nascimento</label>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Data de Nascimento</label>
                       <Input
                         type="date"
                         value={profileForm.birthDate}
                         onChange={(e) => setProfileForm(prev => ({ ...prev, birthDate: e.target.value }))}
+                        className="text-sm"
                       />
                     </div>
                   </div>
                   
-                  <div className="form-actions">
-                    <Button onClick={handleSaveProfile} disabled={isSaving}>
-                      <Save className="w-4 h-4 mr-2" />
-                      {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+                  <div className="flex justify-end">
+                    <Button onClick={handleSaveProfile} disabled={isSaving} className="w-full sm:w-auto">
+                      <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                      <span className="text-sm sm:text-base">
+                        {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+                      </span>
                     </Button>
                   </div>
                 </div>
@@ -359,24 +365,25 @@ export function MyAccount({
           </TabsContent>
 
           {isProfessional && (
-            <TabsContent value="professional" className="space-y-6">
+            <TabsContent value="professional" className="space-y-4 sm:space-y-6">
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Award className="w-5 h-5" />
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <Award className="w-4 h-4 sm:w-5 sm:h-5" />
                     Perfil Profissional
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="space-y-4 sm:space-y-6">
                     {/* Informações Básicas */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Nome Profissional</label>
                         <Input
                           value={professionalForm.name}
                           onChange={(e) => setProfessionalForm(prev => ({ ...prev, name: e.target.value }))}
                           placeholder="Seu nome profissional"
+                          className="text-sm"
                         />
                       </div>
                       
@@ -386,6 +393,7 @@ export function MyAccount({
                           value={professionalForm.title}
                           onChange={(e) => setProfessionalForm(prev => ({ ...prev, title: e.target.value }))}
                           placeholder="Ex: Nutricionista Especialista"
+                          className="text-sm"
                         />
                       </div>
                     </div>
@@ -398,6 +406,7 @@ export function MyAccount({
                         onChange={(e) => setProfessionalForm(prev => ({ ...prev, bio: e.target.value }))}
                         placeholder="Conte um pouco sobre sua experiência e especialidades..."
                         rows={4}
+                        className="text-sm"
                       />
                     </div>
 
@@ -455,15 +464,17 @@ export function MyAccount({
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Especialidades</label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <Input
                             value={newSpecialty}
                             onChange={(e) => setNewSpecialty(e.target.value)}
                             placeholder="Adicionar especialidade"
                             onKeyPress={(e) => e.key === 'Enter' && addSpecialty()}
+                            className="text-sm flex-1"
                           />
-                          <Button onClick={addSpecialty} size="sm">
-                            <Plus className="w-4 h-4" />
+                          <Button onClick={addSpecialty} size="sm" className="w-full sm:w-auto">
+                            <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                            <span className="text-xs sm:text-sm">Adicionar</span>
                           </Button>
                         </div>
                       </div>
@@ -471,7 +482,7 @@ export function MyAccount({
                       {professionalForm.specialties.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                           {professionalForm.specialties.map((specialty, index) => (
-                            <Badge key={index} variant="secondary" className="text-sm">
+                            <Badge key={index} variant="secondary" className="text-xs sm:text-sm">
                               {specialty}
                               <Button
                                 variant="ghost"
@@ -489,9 +500,11 @@ export function MyAccount({
 
                     {/* Botão Salvar */}
                     <div className="flex justify-end">
-                      <Button onClick={handleSaveProfessional} disabled={isSaving}>
-                        <Save className="w-4 h-4 mr-2" />
-                        {isSaving ? 'Salvando...' : 'Salvar Perfil Profissional'}
+                      <Button onClick={handleSaveProfessional} disabled={isSaving} className="w-full sm:w-auto">
+                        <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                        <span className="text-sm sm:text-base">
+                          {isSaving ? 'Salvando...' : 'Salvar Perfil Profissional'}
+                        </span>
                       </Button>
                     </div>
                   </div>
@@ -502,61 +515,53 @@ export function MyAccount({
           
           {isProfessional && (
             <TabsContent value="theme" className="space-y-6">
-              <ThemeSettings />
+              <ThemeManager />
             </TabsContent>
           )}
           
-          <TabsContent value="stats" className="space-y-6">
+          <TabsContent value="stats" className="space-y-4 sm:space-y-6">
               {userStats ? (
                 <>
                   {/* Resumo das Estatísticas */}
                   <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <BarChart3 className="w-5 h-5" />
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                        <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
                         Resumo do Seu Progresso
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="stats-overview-grid">
-                        <div className="stat-card">
-                          <div className="stat-icon">
-                            <BookOpen className="w-6 h-6" />
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
+                        <div className="text-center p-3 sm:p-4 border rounded-lg">
+                          <div className="flex justify-center mb-2">
+                            <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                           </div>
-                          <div className="stat-content">
-                            <div className="stat-value">{userStats.totalModulesViewed}</div>
-                            <div className="stat-label">Módulos Visualizados</div>
-                          </div>
+                          <div className="text-lg sm:text-2xl font-bold">{userStats.totalModulesViewed}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Módulos Visualizados</div>
                         </div>
                         
-                        <div className="stat-card">
-                          <div className="stat-icon">
-                            <Clock className="w-6 h-6" />
+                        <div className="text-center p-3 sm:p-4 border rounded-lg">
+                          <div className="flex justify-center mb-2">
+                            <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                           </div>
-                          <div className="stat-content">
-                            <div className="stat-value">{formatTime(userStats.totalTimeSpent)}</div>
-                            <div className="stat-label">Tempo Total</div>
-                          </div>
+                          <div className="text-lg sm:text-2xl font-bold">{formatTime(userStats.totalTimeSpent)}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Tempo Total</div>
                         </div>
                         
-                        <div className="stat-card">
-                          <div className="stat-icon">
-                            <Award className="w-6 h-6" />
+                        <div className="text-center p-3 sm:p-4 border rounded-lg">
+                          <div className="flex justify-center mb-2">
+                            <Award className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                           </div>
-                          <div className="stat-content">
-                            <div className="stat-value">{userStats.modulesCompleted}</div>
-                            <div className="stat-label">Módulos Completados</div>
-                          </div>
+                          <div className="text-lg sm:text-2xl font-bold">{userStats.modulesCompleted}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Módulos Completados</div>
                         </div>
                         
-                        <div className="stat-card">
-                          <div className="stat-icon">
-                            <Target className="w-6 h-6" />
+                        <div className="text-center p-3 sm:p-4 border rounded-lg">
+                          <div className="flex justify-center mb-2">
+                            <Target className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                           </div>
-                          <div className="stat-content">
-                            <div className="stat-value">{userStats.progressPercentage}%</div>
-                            <div className="stat-label">Progresso Geral</div>
-                          </div>
+                          <div className="text-lg sm:text-2xl font-bold">{userStats.progressPercentage}%</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Progresso Geral</div>
                         </div>
                       </div>
                     </CardContent>
@@ -564,25 +569,25 @@ export function MyAccount({
 
                   {/* Atividade Recente */}
                   <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Activity className="w-5 h-5" />
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                        <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
                         Atividade Recente
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="activity-details">
-                        <div className="activity-item">
-                          <Calendar className="w-4 h-4" />
-                          <span>Última atividade: {formatDate(userStats.lastActivity)}</span>
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm sm:text-base">Última atividade: {formatDate(userStats.lastActivity)}</span>
                         </div>
-                        <div className="activity-item">
-                          <Clock className="w-4 h-4" />
-                          <span>Tempo médio por sessão: {formatTime(userStats.averageSessionTime)}</span>
+                        <div className="flex items-center gap-3">
+                          <Clock className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm sm:text-base">Tempo médio por sessão: {formatTime(userStats.averageSessionTime)}</span>
                         </div>
-                        <div className="activity-item">
-                          <TrendingUp className="w-4 h-4" />
-                          <span>Status: {getActivityStatus(userStats.lastActivity).label}</span>
+                        <div className="flex items-center gap-3">
+                          <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm sm:text-base">Status: {getActivityStatus(userStats.lastActivity).label}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -590,24 +595,24 @@ export function MyAccount({
 
                   {/* Categorias Favoritas */}
                   <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Award className="w-5 h-5" />
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                        <Award className="w-4 h-4 sm:w-5 sm:h-5" />
                         Suas Categorias Favoritas
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="categories-section">
+                    <CardContent className="p-4 sm:p-6">
+                      <div>
                         {userStats.favoriteCategories.length > 0 ? (
-                          <div className="categories-grid">
+                          <div className="flex flex-wrap gap-2">
                             {userStats.favoriteCategories.map((category, index) => (
-                              <Badge key={index} variant="outline" className="category-badge">
+                              <Badge key={index} variant="outline" className="text-xs sm:text-sm">
                                 {category}
                               </Badge>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-muted-foreground">
+                          <p className="text-sm sm:text-base text-muted-foreground">
                             Continue explorando módulos para descobrir suas categorias favoritas!
                           </p>
                         )}
@@ -620,63 +625,68 @@ export function MyAccount({
               )}
           </TabsContent>
           
-          <TabsContent value="security" className="space-y-6">
+          <TabsContent value="security" className="space-y-4 sm:space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="w-5 h-5" />
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
                   Alterar Senha
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="password-form">
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label className="form-label">Senha Atual</label>
-                      <div className="password-input-container">
+              <CardContent className="p-4 sm:p-6">
+                <div className="space-y-4 sm:space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Senha Atual</label>
+                      <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
                           value={passwordForm.currentPassword}
                           onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
                           placeholder="Digite sua senha atual"
+                          className="text-sm pr-10"
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="password-toggle"
+                          className="absolute right-0 top-0 h-full px-3"
                         >
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </Button>
                       </div>
                     </div>
                     
-                    <div className="form-group">
-                      <label className="form-label">Nova Senha</label>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Nova Senha</label>
                       <Input
                         type={showPassword ? "text" : "password"}
                         value={passwordForm.newPassword}
                         onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
                         placeholder="Digite a nova senha"
-                      />
-                    </div>
-                    
-                    <div className="form-group">
-                      <label className="form-label">Confirmar Nova Senha</label>
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        value={passwordForm.confirmPassword}
-                        onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                        placeholder="Confirme a nova senha"
+                        className="text-sm"
                       />
                     </div>
                   </div>
                   
-                  <div className="form-actions">
-                    <Button onClick={handleChangePassword} disabled={isSaving}>
-                      <Save className="w-4 h-4 mr-2" />
-                      {isSaving ? 'Alterando...' : 'Alterar Senha'}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Confirmar Nova Senha</label>
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      placeholder="Confirme a nova senha"
+                      className="text-sm"
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end">
+                    <Button onClick={handleChangePassword} disabled={isSaving} className="w-full sm:w-auto">
+                      <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                      <span className="text-sm sm:text-base">
+                        {isSaving ? 'Alterando...' : 'Alterar Senha'}
+                      </span>
                     </Button>
                   </div>
                 </div>
@@ -685,6 +695,6 @@ export function MyAccount({
           </TabsContent>
         </Tabs>
       </div>
-    </Layout>
+    </ModernLayout>
   );
 } 

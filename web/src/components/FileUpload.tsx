@@ -5,12 +5,12 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { InlineLoading } from '@/components/LoadingSpinner';
-import { Upload, Link, Image, Video, Volume2, X, Check, Info } from 'lucide-react';
+import { Upload, Link, Image, Video, Volume2, FileText, X, Check, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiService } from '../services/api';
 
 interface FileUploadProps {
-  type: 'image' | 'video' | 'audio';
+  type: 'image' | 'video' | 'audio' | 'pdf';
   onFileSelect: (url: string) => void;
   currentUrl?: string;
   field: string;
@@ -44,11 +44,26 @@ export function FileUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  const validateFileType = (file: File, expectedType: string): boolean => {
+    switch (expectedType) {
+      case 'image':
+        return file.type.startsWith('image/');
+      case 'video':
+        return file.type.startsWith('video/');
+      case 'audio':
+        return file.type.startsWith('audio/');
+      case 'pdf':
+        return file.type === 'application/pdf';
+      default:
+        return false;
+    }
+  };
+
   const handleFileUpload = async (file: File) => {
     if (!file) return;
 
     // Validar tipo de arquivo
-    const isValidType = file.type.startsWith(type + '/');
+    const isValidType = validateFileType(file, type);
     if (!isValidType) {
       toast({
         title: "Tipo de arquivo inválido",
@@ -89,7 +104,7 @@ export function FileUpload({
         });
       }, 100);
 
-      const response = await apiService.uploadFile(file, type.toUpperCase() as 'IMAGE' | 'VIDEO' | 'AUDIO');
+      const response = await apiService.uploadFile(file, type.toUpperCase() as 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT');
       
       clearInterval(progressInterval);
       setUploadProgress(100);
@@ -190,6 +205,7 @@ export function FileUpload({
       case 'image': return <Image className="w-8 h-8 text-muted-foreground" />;
       case 'video': return <Video className="w-8 h-8 text-muted-foreground" />;
       case 'audio': return <Volume2 className="w-8 h-8 text-muted-foreground" />;
+      case 'pdf': return <FileText className="w-8 h-8 text-muted-foreground" />;
     }
   };
 
@@ -198,6 +214,7 @@ export function FileUpload({
       case 'image': return 'image/*';
       case 'video': return 'video/*';
       case 'audio': return 'audio/*';
+      case 'pdf': return 'application/pdf';
     }
   };
 
@@ -206,6 +223,7 @@ export function FileUpload({
       case 'image': return 'Imagem';
       case 'video': return 'Vídeo';
       case 'audio': return 'Áudio';
+      case 'pdf': return 'PDF';
     }
   };
 
@@ -303,6 +321,50 @@ export function FileUpload({
                   });
                 }}
               />
+            </div>
+          )}
+          
+          {type === 'pdf' && (
+            <div className="mt-3">
+              <div className="border rounded-md p-4 bg-muted/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="w-4 h-4 text-red-500" />
+                  <span className="text-sm font-medium">PDF Preview</span>
+                </div>
+                <iframe
+                  src={currentUrl}
+                  className="w-full h-64 border rounded"
+                  title="PDF Preview"
+                  onError={() => {
+                    toast({
+                      title: "Erro ao carregar PDF",
+                      description: "Verifique se a URL está correta.",
+                      variant: "destructive",
+                    });
+                  }}
+                />
+                <div className="mt-2 flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => window.open(currentUrl, '_blank')}
+                  >
+                    Abrir em nova aba
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = currentUrl;
+                      link.download = 'documento.pdf';
+                      link.click();
+                    }}
+                  >
+                    Baixar PDF
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>

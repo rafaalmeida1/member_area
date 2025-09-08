@@ -88,7 +88,7 @@
 .error-number {
   font-size: 3rem;
   font-weight: 700;
-  color: #ef4444;
+  color: var(--color-primary);
   line-height: 1;
 }
 

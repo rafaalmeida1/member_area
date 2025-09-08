@@ -28,4 +28,9 @@ public interface InviteRepository extends JpaRepository<Invite, UUID> {
     java.util.List<Invite> findExpiredInvites(LocalDateTime now);
 
     Optional<Invite> findByEmailAndStatus(String email, InviteStatus status);
+
+    // Métodos para dashboard
+    long countByCreatedBy(User createdBy);
+    
+    long countByCreatedByAndCreatedAtAfter(User createdBy, LocalDateTime since);
 }

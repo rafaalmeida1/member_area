@@ -9,7 +9,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { FileUpload } from '@/components/FileUpload';
 import { BannerPreview } from '@/components/BannerPreview';
 import { ThemeManager } from '@/components/ThemeManager';
-import { Layout } from '@/components/Layout';
+import { ModernLayout } from '@/components/ModernLayout';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/contexts/ThemeContext';
 import { apiService, ProfessionalProfile, UpdateProfessionalProfileRequest, ThemeColors } from '@/services/api';
@@ -203,7 +203,7 @@ export function ProfessionalSettings({
   }
 
   return (
-    <Layout
+    <ModernLayout
       title="Configurações do Perfil"
       professionalName={professionalName}
     >
@@ -306,7 +306,9 @@ export function ProfessionalSettings({
                       type="image"
                       field="backgroundImage"
                       onFileSelect={handleBackgroundUpload}
-                      setFormData={setFormData}
+                      setFormData={(data: Record<string, unknown>) => {
+                        setFormData(prev => ({ ...prev, ...data }));
+                      }}
                       formData={formData}
                       specifications={{
                         title: "Imagem de Fundo do Banner",
@@ -426,6 +428,6 @@ export function ProfessionalSettings({
           </div>
         </div>
       </div>
-    </Layout>
+    </ModernLayout>
   );
 }

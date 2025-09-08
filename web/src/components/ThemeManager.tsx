@@ -1,268 +1,353 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Palette, Eye, EyeOff, RotateCcw, Save, Sparkles } from 'lucide-react';
+import { 
+  Palette, 
+  Check, 
+  RefreshCw, 
+  Eye,
+  Save,
+  X
+} from 'lucide-react';
+import { themeService, ThemeColors, PredefinedTheme } from '@/services/themeService';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useToast } from '@/hooks/use-toast';
-import { apiService, ThemeColors } from '@/services/api';
-import './ThemeManager.css';
 
 interface ThemeManagerProps {
-  onThemeChange?: (theme: ThemeColors) => void;
+  onThemeChange?: (colors: ThemeColors) => void;
 }
 
-// Temas pré-definidos
-const PRESET_THEMES = {
-  'Elegant': {
-    primaryColor: '#DBCFCB',
-    secondaryColor: '#D8C4A4',
-    backgroundColor: '#FFFFFF',
-    surfaceColor: '#FAFAFA',
-    textPrimaryColor: '#2C2C2C',
-    textSecondaryColor: '#666666',
-    borderColor: '#E0E0E0',
-    hoverColor: '#F0F0F0',
-    disabledColor: '#CCCCCC'
-  },
-  'Nature': {
-    primaryColor: '#8FBC8F',
-    secondaryColor: '#A8D5BA',
-    backgroundColor: '#FFFFFF',
-    surfaceColor: '#F8F9FA',
-    textPrimaryColor: '#2C3E50',
-    textSecondaryColor: '#7F8C8D',
-    borderColor: '#E8F5E8',
-    hoverColor: '#F0F8F0',
-    disabledColor: '#CCCCCC'
-  },
-  'Ocean': {
-    primaryColor: '#4A90E2',
-    secondaryColor: '#7BB3F0',
-    backgroundColor: '#FFFFFF',
-    surfaceColor: '#F8FBFF',
-    textPrimaryColor: '#2C3E50',
-    textSecondaryColor: '#7F8C8D',
-    borderColor: '#E3F2FD',
-    hoverColor: '#F0F8FF',
-    disabledColor: '#CCCCCC'
-  },
-  'Sunset': {
-    primaryColor: '#FF6B6B',
-    secondaryColor: '#FFB3BA',
-    backgroundColor: '#FFFFFF',
-    surfaceColor: '#FFF8F8',
-    textPrimaryColor: '#2C3E50',
-    textSecondaryColor: '#7F8C8D',
-    borderColor: '#FFE6E6',
-    hoverColor: '#FFF0F0',
-    disabledColor: '#CCCCCC'
-  },
-  'Dark': {
-    primaryColor: '#6366F1',
-    secondaryColor: '#8B5CF6',
-    backgroundColor: '#1A1A1A',
-    surfaceColor: '#2C2C2C',
-    textPrimaryColor: '#FFFFFF',
-    textSecondaryColor: '#CCCCCC',
-    borderColor: '#333333',
-    hoverColor: '#3C3C3C',
-    disabledColor: '#666666'
-  }
-};
-
 export function ThemeManager({ onThemeChange }: ThemeManagerProps) {
+  const [currentColors, setCurrentColors] = useState<ThemeColors | null>(null);
+  const [predefinedThemes, setPredefinedThemes] = useState<PredefinedTheme[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [previewColors, setPreviewColors] = useState<ThemeColors | null>(null);
+  const { handleError, handleSuccess } = useErrorHandler();
   const { toast } = useToast();
-  const [currentTheme, setCurrentTheme] = useState<ThemeColors>(PRESET_THEMES.Elegant);
-  const [isLoading, setIsLoading] = useState(false);
-  const [previewMode, setPreviewMode] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
 
-  // Carregar tema atual
   useEffect(() => {
-    loadCurrentTheme();
+    loadData();
   }, []);
 
-  const loadCurrentTheme = async () => {
+  const loadData = async () => {
     try {
-      const theme = await apiService.getTheme();
-      setCurrentTheme(theme);
+      setLoading(true);
+      const [colors, themes] = await Promise.all([
+        themeService.getUserThemeColors(),
+        themeService.getPredefinedThemes()
+      ]);
+      
+      setCurrentColors(colors);
+      setPreviewColors(colors);
+      setPredefinedThemes(themes);
+      
+      // Aplicar cores atuais
+      themeService.applyThemeColors(colors);
     } catch (error) {
-      console.error('Erro ao carregar tema:', error);
-    }
-  };
-
-  const applyTheme = (theme: ThemeColors) => {
-    setCurrentTheme(theme);
-    setHasChanges(true);
-    
-    // Aplicar tema imediatamente para preview
-    const root = document.documentElement;
-    root.style.setProperty('--color-primary', theme.primaryColor);
-    root.style.setProperty('--color-secondary', theme.secondaryColor);
-    root.style.setProperty('--color-background', theme.backgroundColor);
-    root.style.setProperty('--color-surface', theme.surfaceColor);
-    root.style.setProperty('--color-text-primary', theme.textPrimaryColor);
-    root.style.setProperty('--color-text-secondary', theme.textSecondaryColor);
-    root.style.setProperty('--color-border', theme.borderColor);
-    root.style.setProperty('--color-hover', theme.hoverColor);
-    root.style.setProperty('--color-disabled', theme.disabledColor);
-
-    if (onThemeChange) {
-      onThemeChange(theme);
-    }
-  };
-
-  const saveTheme = async () => {
-    try {
-      setIsLoading(true);
-      await apiService.updateTheme(currentTheme);
-      setHasChanges(false);
-      toast({
-        title: "Tema salvo!",
-        description: "As cores do seu site foram atualizadas com sucesso.",
-      });
-    } catch (error) {
-      console.error('Erro ao salvar tema:', error);
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar o tema. Tente novamente.",
-        variant: "destructive",
-      });
+      handleError(error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const resetTheme = () => {
-    applyTheme(PRESET_THEMES.Elegant);
+  const handleColorChange = (field: keyof ThemeColors, value: string) => {
+    if (!previewColors) return;
+    
+    const newColors = { ...previewColors, [field]: value };
+    setPreviewColors(newColors);
+    themeService.applyThemeColors(newColors);
   };
 
-  return (
-    <div className="theme-manager">
-      {/* Header */}
-      <div className="theme-manager-header">
-        <div className="header-content">
-          <div className="header-left">
-            <Palette className="header-icon" />
-            <div>
-              <h3 className="header-title">Personalizar Tema</h3>
-              <p className="header-subtitle">Escolha as cores do seu site</p>
-            </div>
-          </div>
-          <div className="header-actions">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPreviewMode(!previewMode)}
-              className="preview-button"
-            >
-              {previewMode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              {previewMode ? 'Ocultar' : 'Preview'}
-            </Button>
-            {hasChanges && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetTheme}
-                className="reset-button"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Resetar
-              </Button>
-            )}
-            <Button
-              onClick={saveTheme}
-              disabled={!hasChanges || isLoading}
-              className="save-button"
-            >
-              <Save className="w-4 h-4" />
-              Salvar Tema
-            </Button>
-          </div>
-        </div>
-      </div>
+  const handleSaveColors = async () => {
+    if (!previewColors) return;
+    
+    try {
+      setSaving(true);
+      const savedColors = await themeService.updateUserThemeColors(previewColors);
+      setCurrentColors(savedColors);
+      handleSuccess('Cores do tema salvas com sucesso!');
+      onThemeChange?.(savedColors);
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setSaving(false);
+    }
+  };
 
-      {/* Temas Pré-definidos */}
-      <Card className="preset-themes-card">
+  const handleApplyPredefinedTheme = async (theme: PredefinedTheme) => {
+    try {
+      setSaving(true);
+      const colors = await themeService.applyPredefinedTheme(theme.id);
+      setCurrentColors(colors);
+      setPreviewColors(colors);
+      handleSuccess(`Tema "${theme.name}" aplicado com sucesso!`);
+      onThemeChange?.(colors);
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleResetPreview = () => {
+    if (currentColors) {
+      setPreviewColors(currentColors);
+      themeService.applyThemeColors(currentColors);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card>
         <CardHeader>
-          <CardTitle className="card-title">
-            <Sparkles className="w-5 h-5" />
-            Temas Prontos
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5" />
+            Gerenciador de Temas
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="preset-grid">
-            {Object.entries(PRESET_THEMES).map(([name, theme]) => (
-              <div
-                key={name}
-                className={`preset-item ${isCurrentTheme(theme) ? 'active' : ''}`}
-                onClick={() => applyTheme(theme)}
-              >
-                <div className="preset-preview">
-                  <div 
-                    className="color-preview"
-                    style={{
-                      background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor})`
-                    }}
-                  />
-                  <div className="color-dots">
-                    <div className="color-dot" style={{ backgroundColor: theme.primaryColor }} />
-                    <div className="color-dot" style={{ backgroundColor: theme.secondaryColor }} />
-                    <div className="color-dot" style={{ backgroundColor: theme.backgroundColor }} />
-                  </div>
-                </div>
-                <div className="preset-info">
-                  <span className="preset-name">{name}</span>
-                  <Badge variant={isCurrentTheme(theme) ? "default" : "secondary"} className="preset-badge">
-                    {isCurrentTheme(theme) ? 'Ativo' : 'Aplicar'}
-                  </Badge>
-                </div>
-              </div>
-            ))}
+          <div className="flex items-center justify-center p-8">
+            <RefreshCw className="h-6 w-6 animate-spin" />
+            <span className="ml-2">Carregando temas...</span>
           </div>
         </CardContent>
       </Card>
-
-      {/* Preview do Tema */}
-      {previewMode && (
-        <Card className="theme-preview-card">
-          <CardHeader>
-            <CardTitle className="card-title">Preview do Tema</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="theme-preview">
-              <div className="preview-header">
-                <div className="preview-logo">Logo</div>
-                <div className="preview-nav">
-                  <span>Início</span>
-                  <span>Módulos</span>
-                  <span>Pacientes</span>
-                </div>
-              </div>
-              <div className="preview-content">
-                <div className="preview-card">
-                  <h4>Exemplo de Card</h4>
-                  <p>Este é como ficará o conteúdo com o tema escolhido.</p>
-                  <Button size="sm">Ação</Button>
-                </div>
-                <div className="preview-sidebar">
-                  <div className="sidebar-item">Menu Item 1</div>
-                  <div className="sidebar-item">Menu Item 2</div>
-                  <div className="sidebar-item">Menu Item 3</div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-
-  function isCurrentTheme(theme: ThemeColors): boolean {
-    return (
-      theme.primaryColor === currentTheme.primaryColor &&
-      theme.secondaryColor === currentTheme.secondaryColor &&
-      theme.backgroundColor === currentTheme.backgroundColor
     );
   }
-} 
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Palette className="h-5 w-5" />
+          Gerenciador de Temas
+        </CardTitle>
+        <CardDescription>
+          Personalize as cores do seu perfil profissional. As alterações serão refletidas para todos os seus pacientes.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="predefined" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="predefined">Temas Pré-definidos</TabsTrigger>
+            <TabsTrigger value="custom">Personalizado</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="predefined" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {predefinedThemes.map((theme) => (
+                <Card key={theme.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{theme.name}</CardTitle>
+                      {currentColors?.selectedTheme === theme.id && (
+                        <Badge variant="default">
+                          <Check className="h-3 w-3 mr-1" />
+                          Ativo
+                        </Badge>
+                      )}
+                    </div>
+                    <CardDescription>{theme.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <div 
+                          className="w-8 h-8 rounded-full border-2 border-gray-200"
+                          style={{ backgroundColor: theme.previewColor }}
+                        />
+                        <div className="flex-1 grid grid-cols-4 gap-1">
+                          <div 
+                            className="h-4 rounded"
+                            style={{ backgroundColor: theme.colors.themePrimaryColor }}
+                          />
+                          <div 
+                            className="h-4 rounded"
+                            style={{ backgroundColor: theme.colors.themeSecondaryColor }}
+                          />
+                          <div 
+                            className="h-4 rounded"
+                            style={{ backgroundColor: theme.colors.themeAccentColor }}
+                          />
+                          <div 
+                            className="h-4 rounded"
+                            style={{ backgroundColor: theme.colors.themeBackgroundColor }}
+                          />
+                        </div>
+                      </div>
+                      <Button 
+                        className="w-full" 
+                        size="sm"
+                        onClick={() => handleApplyPredefinedTheme(theme)}
+                        disabled={saving}
+                      >
+                        {saving ? (
+                          <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Check className="h-4 w-4 mr-2" />
+                        )}
+                        Aplicar Tema
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="custom" className="space-y-4">
+            {previewColors && (
+              <>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Cores Principais */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Cores Principais</h3>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="primary">Cor Primária</Label>
+                        <div className="flex gap-2 mt-1">
+                          <Input
+                            id="primary"
+                            type="color"
+                            value={previewColors.themePrimaryColor}
+                            onChange={(e) => handleColorChange('themePrimaryColor', e.target.value)}
+                            className="w-16 h-10 p-1"
+                          />
+                          <Input
+                            value={previewColors.themePrimaryColor}
+                            onChange={(e) => handleColorChange('themePrimaryColor', e.target.value)}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="secondary">Cor Secundária</Label>
+                        <div className="flex gap-2 mt-1">
+                          <Input
+                            id="secondary"
+                            type="color"
+                            value={previewColors.themeSecondaryColor}
+                            onChange={(e) => handleColorChange('themeSecondaryColor', e.target.value)}
+                            className="w-16 h-10 p-1"
+                          />
+                          <Input
+                            value={previewColors.themeSecondaryColor}
+                            onChange={(e) => handleColorChange('themeSecondaryColor', e.target.value)}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="accent">Cor de Destaque</Label>
+                        <div className="flex gap-2 mt-1">
+                          <Input
+                            id="accent"
+                            type="color"
+                            value={previewColors.themeAccentColor}
+                            onChange={(e) => handleColorChange('themeAccentColor', e.target.value)}
+                            className="w-16 h-10 p-1"
+                          />
+                          <Input
+                            value={previewColors.themeAccentColor}
+                            onChange={(e) => handleColorChange('themeAccentColor', e.target.value)}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Cores de Interface */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Interface</h3>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="background">Fundo</Label>
+                        <div className="flex gap-2 mt-1">
+                          <Input
+                            id="background"
+                            type="color"
+                            value={previewColors.themeBackgroundColor}
+                            onChange={(e) => handleColorChange('themeBackgroundColor', e.target.value)}
+                            className="w-16 h-10 p-1"
+                          />
+                          <Input
+                            value={previewColors.themeBackgroundColor}
+                            onChange={(e) => handleColorChange('themeBackgroundColor', e.target.value)}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="surface">Superfície</Label>
+                        <div className="flex gap-2 mt-1">
+                          <Input
+                            id="surface"
+                            type="color"
+                            value={previewColors.themeSurfaceColor}
+                            onChange={(e) => handleColorChange('themeSurfaceColor', e.target.value)}
+                            className="w-16 h-10 p-1"
+                          />
+                          <Input
+                            value={previewColors.themeSurfaceColor}
+                            onChange={(e) => handleColorChange('themeSurfaceColor', e.target.value)}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="text">Texto</Label>
+                        <div className="flex gap-2 mt-1">
+                          <Input
+                            id="text"
+                            type="color"
+                            value={previewColors.themeTextColor}
+                            onChange={(e) => handleColorChange('themeTextColor', e.target.value)}
+                            className="w-16 h-10 p-1"
+                          />
+                          <Input
+                            value={previewColors.themeTextColor}
+                            onChange={(e) => handleColorChange('themeTextColor', e.target.value)}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Botões de Ação */}
+                <div className="flex gap-2 pt-4 border-t">
+                  <Button onClick={handleSaveColors} disabled={saving}>
+                    {saving ? (
+                      <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-2" />
+                    )}
+                    Salvar Cores
+                  </Button>
+                  
+                  <Button variant="outline" onClick={handleResetPreview}>
+                    <X className="h-4 w-4 mr-2" />
+                    Cancelar
+                  </Button>
+                </div>
+              </>
+            )}
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  );
+}

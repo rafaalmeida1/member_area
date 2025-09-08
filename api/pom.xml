@@ -231,7 +231,7 @@
 				<artifactId>flyway-maven-plugin</artifactId>
 				<version>11.7.2</version>
 				<configuration>
-					<url>jdbc:postgresql://localhost:5432/nutri_thata_db</url>
+					<url>jdbc:postgresql://localhost:5432/nutri_thata</url>
 					<user>postgres</user>
 					<password>postgres</password>
 				</configuration>

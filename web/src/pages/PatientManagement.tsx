@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiService, Patient, PatientStats } from '@/services/api';
-import { Layout } from '@/components/Layout';
+import { ModernLayout } from '@/components/ModernLayout';
 import { LoadingWrapper } from '@/components/LoadingSpinner';
 import './PatientManagement.css';
 
@@ -173,9 +173,8 @@ export function PatientManagement({
   };
 
   return (
-    <Layout
+    <ModernLayout
       title="Gerenciamento de Pacientes"
-      professionalName={professionalName}
     >
       <div className="patient-management-container">
         {/* Header com estatísticas gerais */}
@@ -497,6 +496,6 @@ export function PatientManagement({
           </DialogContent>
         </Dialog>
       </div>
-    </Layout>
+    </ModernLayout>
   );
 } 

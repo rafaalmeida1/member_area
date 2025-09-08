@@ -1,7 +1,7 @@
 -- Migration V4: Adicionar tabela de reset de senha e usuário profissional
 
 -- Criar tabela de tokens de reset de senha
-CREATE TABLE password_reset_tokens (
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
     id BIGSERIAL PRIMARY KEY,
     token VARCHAR(255) NOT NULL UNIQUE,
     user_id BIGINT NOT NULL,
@@ -12,9 +12,9 @@ CREATE TABLE password_reset_tokens (
 );
 
 -- Índices para performance
-CREATE INDEX idx_password_reset_tokens_token ON password_reset_tokens(token);
-CREATE INDEX idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
-CREATE INDEX idx_password_reset_tokens_expires_at ON password_reset_tokens(expires_at);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires_at ON password_reset_tokens(expires_at);
 
 -- Tabela de reset de senha criada acima
 -- Usuários já foram criados na V2

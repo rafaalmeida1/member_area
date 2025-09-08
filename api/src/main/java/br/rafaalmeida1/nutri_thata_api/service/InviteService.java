@@ -42,6 +42,7 @@ public class InviteService {
     private final EmailService emailService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final NotificationService notificationService;
 
     @Value("${INVITE_EXPIRATION_HOURS}")
     private int expirationHours;
@@ -146,6 +147,9 @@ public class InviteService {
 
         // Send welcome email asynchronously
         sendWelcomeEmailAsync(user);
+
+        // Notificar o profissional sobre o novo paciente
+        notificationService.notifyInviteAccepted(invite.getCreatedBy(), user.getName(), user.getEmail());
 
         // Generate JWT token
         String jwtToken = jwtService.generateToken(user);

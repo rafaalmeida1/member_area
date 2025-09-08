@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, File, X, CheckCircle, AlertCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import './PDFUpload.css';
 
 interface PDFUploadProps {
@@ -29,27 +29,19 @@ export function PDFUpload({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
+  const { handleError, handleSuccess } = useErrorHandler();
 
   const validateFile = (file: File): boolean => {
     // Verificar se é PDF
     if (file.type !== 'application/pdf') {
-      toast({
-        title: "Arquivo inválido",
-        description: "Por favor, selecione apenas arquivos PDF.",
-        variant: "destructive",
-      });
+      handleError(new Error("Por favor, selecione apenas arquivos PDF."));
       return false;
     }
 
     // Verificar tamanho
     const fileSizeMB = file.size / (1024 * 1024);
     if (fileSizeMB > maxFileSize) {
-      toast({
-        title: "Arquivo muito grande",
-        description: `O arquivo deve ter no máximo ${maxFileSize}MB. Arquivo atual: ${fileSizeMB.toFixed(2)}MB`,
-        variant: "destructive",
-      });
+      handleError(new Error(`O arquivo deve ter no máximo ${maxFileSize}MB. Arquivo atual: ${fileSizeMB.toFixed(2)}MB`));
       return false;
     }
 
@@ -106,10 +98,7 @@ export function PDFUpload({
         uploadedAt: result.data.createdAt,
       };
 
-      toast({
-        title: "Upload concluído!",
-        description: `${file.name} foi enviado com sucesso.`,
-      });
+      handleSuccess(`${file.name} foi enviado com sucesso.`);
 
       if (onUploadSuccess) {
         onUploadSuccess(uploadedPDF);
@@ -123,15 +112,10 @@ export function PDFUpload({
       }, 2000);
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido no upload';
-      
-      toast({
-        title: "Erro no upload",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      handleError(error);
 
       if (onUploadError) {
+        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido no upload';
         onUploadError(errorMessage);
       }
 

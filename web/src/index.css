@@ -6,6 +6,31 @@
 
 @layer base {
   :root {
+    /* Cores padrão - serão sobrescritas pelas variáveis de tema */
+    --color-primary: #DBCFCB;
+    --color-secondary: #D8C4A4;
+    --color-accent: #A67B5B;
+    --color-background: #FFFFFF;
+    --color-surface: #FAFAFA;
+    --color-text: #2C2C2C;
+    --color-text-secondary: #666666;
+    --color-border: #E5E5E5;
+    --color-input-bg: #FFFFFF;
+    --color-input-border: #D1D5DB;
+    --color-input-focus: #A67B5B;
+    --color-button-primary-bg: #A67B5B;
+    --color-button-primary-hover: #8B5A3C;
+    --color-button-primary-text: #FFFFFF;
+    --color-button-secondary-bg: #F3F4F6;
+    --color-button-secondary-hover: #E5E7EB;
+    --color-button-secondary-text: #374151;
+    --color-button-disabled-bg: #F9FAFB;
+    --color-button-disabled-text: #9CA3AF;
+    --color-success: #10B981;
+    --color-warning: #F59E0B;
+    --color-error: #EF4444;
+    --color-info: #3B82F6;
+
     /* Light mode - Natural & Clean - usando variáveis de tema dinâmicas */
     --background: var(--color-background);
     --foreground: var(--color-text);
@@ -26,19 +51,19 @@
     --secondary: var(--color-secondary);
     --secondary-foreground: var(--color-text);
 
-    --muted: var(--color-muted);
+    --muted: var(--color-surface);
     --muted-foreground: var(--color-text-secondary);
 
     /* Accent usando cor do tema */
     --accent: var(--color-accent);
     --accent-foreground: var(--color-text);
 
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: var(--color-error);
+    --destructive-foreground: #FFFFFF;
 
     --border: var(--color-border);
-    --input: var(--color-surface);
-    --ring: var(--color-primary);
+    --input: var(--color-input-bg);
+    --ring: var(--color-input-focus);
 
     --radius: 0.75rem;
 
@@ -134,6 +159,63 @@
 }
 
 @layer components {
+  /* Theme-aware Input Styles */
+  .theme-input {
+    background-color: var(--color-input-bg) !important;
+    border-color: var(--color-input-border) !important;
+    color: var(--color-text) !important;
+  }
+  
+  .theme-input:focus {
+    border-color: var(--color-input-focus) !important;
+    box-shadow: 0 0 0 2px var(--color-input-focus) !important;
+  }
+  
+  /* Theme-aware Button Styles */
+  .theme-button-primary {
+    background-color: var(--color-button-primary-bg) !important;
+    color: var(--color-button-primary-text) !important;
+    border-color: var(--color-button-primary-bg) !important;
+  }
+  
+  .theme-button-primary:hover {
+    background-color: var(--color-button-primary-hover) !important;
+    border-color: var(--color-button-primary-hover) !important;
+  }
+  
+  .theme-button-secondary {
+    background-color: var(--color-button-secondary-bg) !important;
+    color: var(--color-button-secondary-text) !important;
+    border-color: var(--color-button-secondary-bg) !important;
+  }
+  
+  .theme-button-secondary:hover {
+    background-color: var(--color-button-secondary-hover) !important;
+    border-color: var(--color-button-secondary-hover) !important;
+  }
+  
+  .theme-button-disabled {
+    background-color: var(--color-button-disabled-bg) !important;
+    color: var(--color-button-disabled-text) !important;
+    border-color: var(--color-button-disabled-bg) !important;
+  }
+  
+  /* Theme-aware Card Styles */
+  .theme-card {
+    background-color: var(--color-surface) !important;
+    border-color: var(--color-border) !important;
+    color: var(--color-text) !important;
+  }
+  
+  /* Theme-aware Text Styles */
+  .theme-text {
+    color: var(--color-text) !important;
+  }
+  
+  .theme-text-secondary {
+    color: var(--color-text-secondary) !important;
+  }
+  
   /* Drag and Drop Styles */
   .drag-handle {
     cursor: grab;
@@ -145,7 +227,7 @@
   }
   
   .drag-handle:hover {
-    background-color: hsl(var(--accent));
+    background-color: var(--color-accent);
     border-radius: 0.375rem;
   }
   

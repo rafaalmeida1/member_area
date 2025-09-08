@@ -688,7 +688,7 @@
 
 /* ===== DARK MODE ADJUSTMENTS ===== */
 [data-theme="dark"] .hero-banner-section {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+  background: var(--gradient-primary);
 }
 
 [data-theme="dark"] .hero-banner-section::before {

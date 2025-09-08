@@ -1,5 +1,5 @@
 -- Criação da tabela para configurações personalizadas da página de links
-CREATE TABLE link_page_profiles (
+CREATE TABLE IF NOT EXISTS link_page_profiles (
     id BIGSERIAL PRIMARY KEY,
     professional_profile_id BIGINT NOT NULL,
     
@@ -58,8 +58,8 @@ CREATE TABLE link_page_profiles (
 );
 
 -- Índices para melhor performance
-CREATE INDEX idx_link_page_profiles_professional_id ON link_page_profiles(professional_profile_id);
-CREATE INDEX idx_link_page_profiles_public ON link_page_profiles(is_public) WHERE is_public = TRUE;
+CREATE INDEX IF NOT EXISTS idx_link_page_profiles_professional_id ON link_page_profiles(professional_profile_id);
+CREATE INDEX IF NOT EXISTS idx_link_page_profiles_public ON link_page_profiles(is_public) WHERE is_public = TRUE;
 
 -- Comentários para documentação
 COMMENT ON TABLE link_page_profiles IS 'Configurações personalizadas da página pública de links dos profissionais';

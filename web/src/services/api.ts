@@ -51,7 +51,7 @@ export interface ModuleDetail extends Module {
 
 export interface ContentBlock {
   id: string;
-  type: 'TEXT' | 'VIDEO' | 'AUDIO';
+  type: 'TEXT' | 'VIDEO' | 'AUDIO' | 'PDF';
   content: string;
   order: number;
   createdAt: string;
@@ -414,14 +414,25 @@ class ApiService {
     coverImage?: string;
     category: string;
     content: Array<{
-      type: 'TEXT' | 'VIDEO' | 'AUDIO';
+      type: 'TEXT' | 'VIDEO' | 'AUDIO' | 'PDF';
       content: string;
       order: number;
     }>;
     visibility?: 'GENERAL' | 'SPECIFIC';
     allowedPatientIds?: number[];
   }): Promise<ModuleDetail> {
-    const response: AxiosResponse<ApiResponse<ModuleDetail>> = await this.api.post('/modules', data);
+    // Mapear allowedPatientIds para exclusivePatientIds e visibility para isPublic
+    const requestData = {
+      title: data.title,
+      description: data.description,
+      coverImage: data.coverImage,
+      category: data.category,
+      content: data.content,
+      isPublic: data.visibility === 'GENERAL',
+      exclusivePatientIds: data.visibility === 'SPECIFIC' ? data.allowedPatientIds : undefined
+    };
+
+    const response: AxiosResponse<ApiResponse<ModuleDetail>> = await this.api.post('/modules', requestData);
 
     if (response.data.status === 'success' && response.data.data) {
       return response.data.data;
@@ -436,7 +447,7 @@ class ApiService {
     coverImage?: string;
     category?: string;
     content?: Array<{
-      type: 'TEXT' | 'VIDEO' | 'AUDIO';
+      type: 'TEXT' | 'VIDEO' | 'AUDIO' | 'PDF';
       content: string;
       order: number;
     }>;
@@ -659,7 +670,7 @@ class ApiService {
     throw new Error(response.data.message || 'Erro ao buscar lista de pacientes');
   }
 
-  async uploadFile(file: File, type: 'IMAGE' | 'VIDEO' | 'AUDIO', description?: string): Promise<MediaAsset> {
+  async uploadFile(file: File, type: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT', description?: string): Promise<MediaAsset> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('type', type);
@@ -887,3 +898,4 @@ class ApiService {
 
 // Instância singleton do serviço
 export const apiService = new ApiService();
+

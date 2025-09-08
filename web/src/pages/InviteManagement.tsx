@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { LoadingWrapper, InlineLoading } from '@/components/LoadingSpinner';
-import { Layout } from '@/components/Layout';
+import { ModernLayout } from '@/components/ModernLayout';
 import { 
   ArrowLeft, 
   Plus, 
@@ -207,9 +207,8 @@ export function InviteManagement({
   const cancelledInvites = invites.filter(invite => invite.status === 'CANCELLED');
 
   return (
-    <Layout
+    <ModernLayout
       title="Gerenciar Convites"
-      professionalName={professionalName}
     >
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -676,6 +675,6 @@ export function InviteManagement({
             </TabsContent>
           </LoadingWrapper>
         </Tabs>
-      </Layout>
+      </ModernLayout>
     );
   }

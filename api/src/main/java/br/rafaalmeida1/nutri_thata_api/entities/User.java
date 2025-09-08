@@ -62,6 +62,80 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // ========== THEME COLORS ==========
+    
+    @Column(name = "theme_primary_color")
+    private String themePrimaryColor;
+    
+    @Column(name = "theme_secondary_color")
+    private String themeSecondaryColor;
+    
+    @Column(name = "theme_accent_color")
+    private String themeAccentColor;
+    
+    @Column(name = "theme_background_color")
+    private String themeBackgroundColor;
+    
+    @Column(name = "theme_surface_color")
+    private String themeSurfaceColor;
+    
+    @Column(name = "theme_text_color")
+    private String themeTextColor;
+    
+    @Column(name = "theme_text_secondary_color")
+    private String themeTextSecondaryColor;
+    
+    @Column(name = "theme_border_color")
+    private String themeBorderColor;
+    
+    @Column(name = "theme_input_bg_color")
+    private String themeInputBgColor;
+    
+    @Column(name = "theme_input_border_color")
+    private String themeInputBorderColor;
+    
+    @Column(name = "theme_input_focus_color")
+    private String themeInputFocusColor;
+    
+    @Column(name = "theme_button_primary_bg")
+    private String themeButtonPrimaryBg;
+    
+    @Column(name = "theme_button_primary_hover")
+    private String themeButtonPrimaryHover;
+    
+    @Column(name = "theme_button_primary_text")
+    private String themeButtonPrimaryText;
+    
+    @Column(name = "theme_button_secondary_bg")
+    private String themeButtonSecondaryBg;
+    
+    @Column(name = "theme_button_secondary_hover")
+    private String themeButtonSecondaryHover;
+    
+    @Column(name = "theme_button_secondary_text")
+    private String themeButtonSecondaryText;
+    
+    @Column(name = "theme_button_disabled_bg")
+    private String themeButtonDisabledBg;
+    
+    @Column(name = "theme_button_disabled_text")
+    private String themeButtonDisabledText;
+    
+    @Column(name = "theme_success_color")
+    private String themeSuccessColor;
+    
+    @Column(name = "theme_warning_color")
+    private String themeWarningColor;
+    
+    @Column(name = "theme_error_color")
+    private String themeErrorColor;
+    
+    @Column(name = "theme_info_color")
+    private String themeInfoColor;
+    
+    @Column(name = "selected_theme")
+    private String selectedTheme;
+
     // ========== SPRING SECURITY METHODS ==========
 
     @Override

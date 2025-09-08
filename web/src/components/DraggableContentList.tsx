@@ -8,7 +8,7 @@ import { FileText, Video, Volume2, Trash2, GripVertical } from 'lucide-react';
 
 interface ContentBlock {
   id: string;
-  type: 'TEXT' | 'VIDEO' | 'AUDIO';
+  type: 'TEXT' | 'VIDEO' | 'AUDIO' | 'PDF';
   content: string;
   order: number;
 }
@@ -35,6 +35,7 @@ export function DraggableContentList({
       case 'TEXT': return <FileText className="w-4 h-4" />;
       case 'VIDEO': return <Video className="w-4 h-4" />;
       case 'AUDIO': return <Volume2 className="w-4 h-4" />;
+      case 'PDF': return <FileText className="w-4 h-4 text-red-500" />;
       default: return <FileText className="w-4 h-4" />;
     }
   };
@@ -42,7 +43,7 @@ export function DraggableContentList({
   const addContentBlock = () => {
     const newBlock = {
       id: Date.now().toString(),
-      type: 'TEXT' as 'TEXT' | 'VIDEO' | 'AUDIO',
+      type: 'TEXT' as 'TEXT' | 'VIDEO' | 'AUDIO' | 'PDF',
       content: '',
       order: contentBlocks.length + 1
     };
@@ -202,6 +203,7 @@ export function DraggableContentList({
                     <SelectItem value="TEXT">Texto</SelectItem>
                     <SelectItem value="VIDEO">Vídeo</SelectItem>
                     <SelectItem value="AUDIO">Áudio</SelectItem>
+                    <SelectItem value="PDF">PDF</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -214,11 +216,13 @@ export function DraggableContentList({
                   />
                 ) : (
                   <FileUpload
-                    type={block.type.toLowerCase() as 'video' | 'audio'}
+                    type={block.type.toLowerCase() as 'video' | 'audio' | 'pdf'}
                     currentUrl={block.content}
                     field="content"
                     onFileSelect={(publicUrl) => updateContentBlock(block.id, 'content', publicUrl)}
-                    setFormData={setFormData}
+                    setFormData={(data: Record<string, unknown>) => {
+                      setFormData(prev => ({ ...prev, ...data }));
+                    }}
                     formData={formData}
                     specifications={block.type === 'VIDEO' ? {
                       title: "Vídeo Educacional",
@@ -232,7 +236,7 @@ export function DraggableContentList({
                         "Evite vídeos muito longos (recomendado até 10 minutos)",
                         "Certifique-se de que o áudio está claro"
                       ]
-                    } : {
+                    } : block.type === 'AUDIO' ? {
                       title: "Áudio Educacional",
                       description: "Este áudio será reproduzido no conteúdo do módulo",
                       format: "MP3, WAV, AAC",
@@ -243,6 +247,18 @@ export function DraggableContentList({
                         "Evite ruídos de fundo",
                         "Recomendamos duração de até 15 minutos",
                         "Use um microfone de boa qualidade para gravação"
+                      ]
+                    } : {
+                      title: "Documento PDF",
+                      description: "Este PDF será exibido no conteúdo do módulo",
+                      format: "PDF",
+                      maxSize: "20MB",
+                      tips: [
+                        "Use PDFs com texto selecionável (não apenas imagens)",
+                        "Certifique-se de que o conteúdo está bem formatado",
+                        "Evite PDFs muito grandes ou com muitas páginas",
+                        "Recomendamos até 50 páginas por documento",
+                        "Use fontes legíveis e tamanho adequado"
                       ]
                     }}
                   />
