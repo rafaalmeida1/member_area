@@ -62,6 +62,9 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
     // ========== THEME COLORS ==========
     
     @Column(name = "theme_primary_color")

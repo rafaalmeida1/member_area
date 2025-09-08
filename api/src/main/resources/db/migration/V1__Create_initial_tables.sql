@@ -14,6 +14,7 @@ CREATE TABLE users (
     birth_date DATE,
     role VARCHAR(20) NOT NULL CHECK (role IN ('PATIENT', 'PROFESSIONAL', 'ADMIN')),
     is_active BOOLEAN NOT NULL DEFAULT true,
+    last_login_at TIMESTAMP WITH TIME ZONE,
     -- Theme-related columns (align with entity User)
     theme_primary_color VARCHAR(7),
     theme_secondary_color VARCHAR(7),
@@ -232,3 +233,6 @@ BEGIN
             ADD COLUMN IF NOT EXISTS selected_theme VARCHAR(50);
     END IF;
 END $$;
+
+-- Garantir coluna last_login_at (idempotente)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP WITH TIME ZONE;
