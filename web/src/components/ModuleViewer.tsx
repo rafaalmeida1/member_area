@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingWrapper } from '@/components/LoadingSpinner';
 import { ModernLayout } from '@/components/ModernLayout';
-import { PDFViewer } from '@/components/PDFViewer';
+import { PDFViewerSimple } from '@/components/PDFViewerSimple';
 import { ArrowLeft, FileText, Video, Volume2, Calendar, User, Eye, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
@@ -162,7 +162,7 @@ export function ModuleViewer() {
               </div>
             </CardHeader>
             <CardContent>
-              <PDFViewer url={block.content} className="h-96" />
+              <PDFViewerSimple url={block.content} className="h-96" />
             </CardContent>
           </Card>
         );
