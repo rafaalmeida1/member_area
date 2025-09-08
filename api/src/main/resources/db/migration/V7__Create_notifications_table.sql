@@ -13,6 +13,43 @@ CREATE TABLE IF NOT EXISTS notifications (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Garantir colunas quando a tabela já existir
+ALTER TABLE notifications
+    ADD COLUMN IF NOT EXISTS module_id VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS module_title VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS read_at TIMESTAMP WITH TIME ZONE;
+
+-- Converter module_id UUID -> VARCHAR(255) apenas se necessário
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema = 'public' AND table_name = 'notifications' AND column_name = 'module_id' AND data_type = 'uuid'
+    ) THEN
+        ALTER TABLE notifications ALTER COLUMN module_id TYPE VARCHAR(255) USING module_id::text;
+    END IF;
+END $$;
+
+-- Migrar coluna legada 'read' -> 'is_read' e remover a antiga
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema = 'public' AND table_name = 'notifications' AND column_name = 'read'
+    ) THEN
+        -- Garantir coluna is_read existe
+        ALTER TABLE notifications ADD COLUMN IF NOT EXISTS is_read BOOLEAN;
+        -- Copiar valores
+        UPDATE notifications SET is_read = COALESCE(is_read, read);
+        -- Definir restrições finais
+        ALTER TABLE notifications ALTER COLUMN is_read SET DEFAULT FALSE;
+        ALTER TABLE notifications ALTER COLUMN is_read SET NOT NULL;
+        -- Remover coluna antiga
+        ALTER TABLE notifications DROP COLUMN IF EXISTS read;
+    END IF;
+END $$;
+
 -- Indexes para performance
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_type ON notifications(type);
