@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingWrapper } from '@/components/LoadingSpinner';
 import { ModernLayout } from '@/components/ModernLayout';
-import { PDFViewerBeautiful } from '@/components/PDFViewerBeautiful';
+import { PDFViewerMinimal } from '@/components/PDFViewerMinimal';
 import { ArrowLeft, FileText, Video, Volume2, Calendar, User, Eye, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
@@ -152,14 +152,14 @@ export function ModuleViewer() {
         
       case 'PDF':
         return (
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-3">
               {getContentIcon(block.type)}
               <span className="font-medium text-sm text-muted-foreground">
                 PDF {block.order}
               </span>
             </div>
-            <PDFViewerBeautiful url={block.content} />
+            <PDFViewerMinimal url={block.content} />
           </div>
         );
         
