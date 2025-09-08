@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -44,7 +45,12 @@ public class AnalyticsService {
         List<ViewsByDateResponse> viewsByDate = viewsByDateData.stream()
             .map(row -> {
                 ViewsByDateResponse viewData = new ViewsByDateResponse();
-                viewData.setDate((LocalDate) row[0]);
+                // Converter java.sql.Date para LocalDate
+                if (row[0] instanceof Date) {
+                    viewData.setDate(((Date) row[0]).toLocalDate());
+                } else {
+                    viewData.setDate((LocalDate) row[0]);
+                }
                 viewData.setViews((Long) row[1]);
                 viewData.setUniqueViews((Long) row[2]);
                 return viewData;
@@ -135,7 +141,12 @@ public class AnalyticsService {
         List<ClicksByDateResponse> clicksByDate = clicksByDateData.stream()
             .map(row -> {
                 ClicksByDateResponse clickData = new ClicksByDateResponse();
-                clickData.setDate((LocalDate) row[0]);
+                // Converter java.sql.Date para LocalDate
+                if (row[0] instanceof Date) {
+                    clickData.setDate(((Date) row[0]).toLocalDate());
+                } else {
+                    clickData.setDate((LocalDate) row[0]);
+                }
                 clickData.setClicks((Long) row[1]);
                 clickData.setUniqueClicks((Long) row[2]);
                 return clickData;
