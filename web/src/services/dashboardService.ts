@@ -46,7 +46,7 @@ class DashboardService {
    * Busca informações do profissional
    */
   async getProfessionalInfo(): Promise<ProfessionalInfo> {
-    const response = await privateApi.get<ApiResponse<ProfessionalInfo>>('/dashboard/professional-info');
+    const response = await privateApi.get<ApiResponse<ProfessionalInfo>>('/api/dashboard/professional-info');
     
     if (response.data.status === 'success' && response.data.data) {
       return response.data.data;
@@ -59,7 +59,7 @@ class DashboardService {
    * Busca estatísticas do dashboard
    */
   async getDashboardStats(): Promise<DashboardStats> {
-    const response = await privateApi.get<ApiResponse<DashboardStats>>('/dashboard/stats');
+    const response = await privateApi.get<ApiResponse<DashboardStats>>('/api/dashboard/stats');
     
     if (response.data.status === 'success' && response.data.data) {
       return response.data.data;
@@ -72,7 +72,7 @@ class DashboardService {
    * Busca módulos para o dashboard
    */
   async getModules(): Promise<Module[]> {
-    const response = await privateApi.get<ApiResponse<Module[]>>('/dashboard/modules');
+    const response = await privateApi.get<ApiResponse<Module[]>>('/api/dashboard/modules');
     
     if (response.data.status === 'success' && response.data.data) {
       return response.data.data;

@@ -479,7 +479,7 @@ const PublicLinks: React.FC = () => {
                                 color: data.themeTextPrimaryColor || "#111827",
                             }}
                         >
-                            {data.name}
+                            {data.name || 'Profissional'}
                         </h1>
                         {data.title && (
                             <p

@@ -5,7 +5,7 @@ import { NutritionistBanner } from '@/components/NutritionistBanner';
 import { ModuleCard } from '@/components/ModuleCard';
 import { LoadingWrapper } from '@/components/LoadingSpinner';
 import { ModuleSkeletonGrid } from '@/components/ModuleSkeleton';
-import { Layout } from '@/components/Layout';
+import { ModernLayout } from '@/components/ModernLayout';
 import { useToast } from '@/hooks/use-toast';
 import { apiService, Module, ProfessionalProfile } from '@/services/api';
 import { Button } from '@/components/ui/button';
@@ -116,9 +116,8 @@ export function PatientHome({ professionalName }: PatientHomeProps) {
   };
 
   return (
-    <Layout
+    <ModernLayout
       title="Dashboard"
-      professionalName={professionalName}
     >
       <div className="patient-home-container">
         {/* Hero Banner Section */}
@@ -246,6 +245,6 @@ export function PatientHome({ professionalName }: PatientHomeProps) {
           </LoadingWrapper>
         </div>
       </div>
-    </Layout>
+    </ModernLayout>
   );
 }

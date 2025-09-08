@@ -13,7 +13,7 @@ export const analyticsService = {
     if (endDate) params.append('endDate', endDate);
     
     const response = await privateApi.get<ApiResponse<PageAnalytics>>(
-      `/professional/analytics/page?${params.toString()}`
+      `/api/professional/analytics/page?${params.toString()}`
     );
     
     if (response.data.status === 'success' && response.data.data) {
@@ -37,7 +37,7 @@ export const analyticsService = {
     if (endDate) params.append('endDate', endDate);
     
     const response = await privateApi.get<ApiResponse<LinkAnalytics>>(
-      `/professional/analytics/link/${linkId}?${params.toString()}`
+      `/api/professional/analytics/link/${linkId}?${params.toString()}`
     );
     
     if (response.data.status === 'success' && response.data.data) {

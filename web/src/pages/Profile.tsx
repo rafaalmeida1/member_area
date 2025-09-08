@@ -5,7 +5,7 @@ import { Save, User, Settings, Mail, Phone, Calendar } from 'lucide-react';
 import { FileUpload } from '@/components/FileUpload';
 import { BannerPreview } from '@/components/BannerPreview';
 import { apiService } from '@/services/api';
-import { Layout } from '@/components/Layout';
+import { ModernLayout } from '@/components/ModernLayout';
 import './Profile.css';
 
 interface ProfileProps {
@@ -119,9 +119,8 @@ export function Profile({ onBack }: ProfileProps) {
   };
 
   return (
-    <Layout
+    <ModernLayout
       title="Minha Conta"
-      onNavigateToPatient={onBack}
       showSidebar={false}
       showBackButton={true}
       onBack={onBack}
@@ -288,6 +287,6 @@ export function Profile({ onBack }: ProfileProps) {
           </div>
         )}
       </div>
-    </Layout>
+    </ModernLayout>
   );
 }

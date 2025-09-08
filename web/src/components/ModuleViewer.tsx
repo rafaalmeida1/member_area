@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingWrapper } from '@/components/LoadingSpinner';
-import { Layout } from '@/components/Layout';
+import { ModernLayout } from '@/components/ModernLayout';
 import { ArrowLeft, FileText, Video, Volume2, Calendar, User, Eye, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
@@ -187,17 +187,17 @@ export function ModuleViewer() {
 
   if (isLoading) {
     return (
-      <Layout title="Carregando módulo..." showSidebar={false}>
+      <ModernLayout title="Carregando módulo..." showSidebar={false}>
         <LoadingWrapper loading={true}>
           <div>Carregando módulo...</div>
         </LoadingWrapper>
-      </Layout>
+      </ModernLayout>
     );
   }
 
   if (!module) {
     return (
-      <Layout title="Módulo não encontrado" showSidebar={false}>
+      <ModernLayout title="Módulo não encontrado" showSidebar={false}>
         <div className="container mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold mb-4">Módulo não encontrado</h1>
           <Button onClick={handleBack}>
@@ -205,12 +205,12 @@ export function ModuleViewer() {
             Voltar ao Início
           </Button>
         </div>
-      </Layout>
+      </ModernLayout>
     );
   }
 
   return (
-    <Layout 
+    <ModernLayout 
       title={module.title}
       showSidebar={false}
       showBackButton={true}
@@ -275,6 +275,6 @@ export function ModuleViewer() {
           )}
         </div>
       </div>
-    </Layout>
+    </ModernLayout>
   );
 }

@@ -5,7 +5,7 @@ import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
 import { InviteToken } from './pages/InviteToken';
 import { InviteRegister } from './pages/InviteRegister';
-import Index from './pages/Index';
+// import Index from './pages/Index';
 import { PatientHome } from './pages/PatientHome';
 import { ModuleManagement } from './pages/ModuleManagement';
 import { MyAccount } from './pages/MyAccount';
@@ -107,7 +107,7 @@ function AppRoutes() {
           path="/" 
           element={
             <ProtectedRoute>
-              <Index />
+              <PatientHome />
             </ProtectedRoute>
           } 
         />
