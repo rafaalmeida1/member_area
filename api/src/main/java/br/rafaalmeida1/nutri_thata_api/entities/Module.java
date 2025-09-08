@@ -44,6 +44,14 @@ public class Module {
     @Builder.Default
     private Integer orderIndex = 0;
 
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private boolean isActive = true;
+
+    @Column(name = "view_count", nullable = false)
+    @Builder.Default
+    private long viewCount = 0L;
+
     @OneToMany(mappedBy = "module", cascade = CascadeType.ALL)
     @OrderBy("orderIndex ASC")
     private List<ContentBlock> content;

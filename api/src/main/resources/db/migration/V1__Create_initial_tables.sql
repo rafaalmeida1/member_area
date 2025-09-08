@@ -117,6 +117,8 @@ CREATE TABLE modules (
     description TEXT NOT NULL,
     cover_image TEXT,
     category VARCHAR(100) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    view_count BIGINT NOT NULL DEFAULT 0,
     created_by BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE
@@ -236,3 +238,8 @@ END $$;
 
 -- Garantir coluna last_login_at (idempotente)
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP WITH TIME ZONE;
+
+-- Garantir colunas is_active e view_count em modules (idempotente)
+ALTER TABLE modules
+    ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true,
+    ADD COLUMN IF NOT EXISTS view_count BIGINT NOT NULL DEFAULT 0;
