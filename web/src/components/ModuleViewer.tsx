@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingWrapper } from '@/components/LoadingSpinner';
 import { ModernLayout } from '@/components/ModernLayout';
-import { PDFViewerElegant } from '@/components/PDFViewerElegant';
+import { PDFViewerBeautiful } from '@/components/PDFViewerBeautiful';
 import { ArrowLeft, FileText, Video, Volume2, Calendar, User, Eye, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
@@ -152,19 +152,15 @@ export function ModuleViewer() {
         
       case 'PDF':
         return (
-          <Card className="border-l-4 border-l-red-500/50">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                {getContentIcon(block.type)}
-                <span className="font-medium text-sm text-muted-foreground">
-                  PDF {block.order}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <PDFViewerElegant url={block.content} className="h-[600px]" />
-            </CardContent>
-          </Card>
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              {getContentIcon(block.type)}
+              <span className="font-medium text-sm text-muted-foreground">
+                PDF {block.order}
+              </span>
+            </div>
+            <PDFViewerBeautiful url={block.content} />
+          </div>
         );
         
       case 'AUDIO':

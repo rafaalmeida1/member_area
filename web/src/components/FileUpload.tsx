@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { InlineLoading } from '@/components/LoadingSpinner';
-import { PDFViewerElegant } from '@/components/PDFViewerElegant';
+import { PDFViewerBeautiful } from '@/components/PDFViewerBeautiful';
 import { Upload, Link, Image, Video, Volume2, FileText, X, Check, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiService } from '../services/api';
@@ -327,7 +327,7 @@ export function FileUpload({
           
           {type === 'pdf' && (
             <div className="mt-3">
-              <PDFViewerElegant url={currentUrl} className="h-[600px]" />
+              <PDFViewerBeautiful url={currentUrl} />
             </div>
           )}
         </CardContent>
