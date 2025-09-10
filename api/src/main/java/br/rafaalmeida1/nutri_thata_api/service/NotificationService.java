@@ -38,7 +38,7 @@ public class NotificationService {
                     .message(message)
                     .moduleId(moduleId)
                     .moduleTitle(moduleTitle)
-                    .read(false)
+                    .is_read(false)
                     .createdAt(LocalDateTime.now())
                     .build();
 
@@ -195,7 +195,7 @@ public class NotificationService {
         Notification notification = notificationRepository.findByIdAndUser(notificationId, user)
                 .orElseThrow(() -> new RuntimeException("Notificação não encontrada"));
         
-        notification.setRead(true);
+        notification.setIs_read(true);
         notification.setReadAt(LocalDateTime.now());
         notificationRepository.save(notification);
     }
@@ -208,7 +208,7 @@ public class NotificationService {
         List<Notification> unreadNotifications = notificationRepository.findUnreadByUser(user);
         
         for (Notification notification : unreadNotifications) {
-            notification.setRead(true);
+            notification.setIs_read(true);
             notification.setReadAt(LocalDateTime.now());
         }
         

@@ -501,7 +501,6 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
     <ModernLayout
       title="Gerenciar Módulos"
       showSidebar={true}
-      showBackButton={true}
       onBack={resetForm}
     >
 
@@ -509,7 +508,6 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
         {/* Dashboard Header - Mobile First */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
           <div className="text-center sm:text-left">
-            <h2 className="text-xl sm:text-3xl font-bold">Gerenciar Módulos</h2>
             <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
               Crie e edite conteúdos para seus pacientes
             </p>

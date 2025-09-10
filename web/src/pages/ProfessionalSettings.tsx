@@ -42,7 +42,7 @@ export function ProfessionalSettings({
     // Cores personalizadas do tema
     themePrimaryColor: '#DBCFCB',
     themeSecondaryColor: '#D8C4A4',
-    themeAccentColor: '#A67B5B',
+    themeAccentColor: '#D8C4A4',
     themeBackgroundColor: '#FFFFFF',
     themeSurfaceColor: '#FAFAFA',
     themeTextColor: '#2C2C2C',

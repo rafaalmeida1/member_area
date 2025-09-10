@@ -107,12 +107,17 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       setActionLoading(notificationId);
       await notificationService.markAsRead(notificationId);
       
-      // Atualizar estado local
+      // Atualizar estado local imediatamente
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       setAllNotifications(prev => 
         prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
+      
+      // Aguardar um pouco antes de permitir polling novamente
+      setTimeout(() => {
+        setActionLoading(null);
+      }, 1000);
     } catch (error) {
       console.error('Erro ao marcar como lida:', error);
       toast({
@@ -120,7 +125,6 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         description: "Não foi possível marcar a notificação como lida.",
         variant: "destructive",
       });
-    } finally {
       setActionLoading(null);
     }
   }, [toast]);
@@ -131,7 +135,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       setMarkAllLoading(true);
       await notificationService.markAllAsRead();
       
-      // Atualizar estado local
+      // Atualizar estado local imediatamente
       setNotifications([]);
       setAllNotifications(prev => prev.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
@@ -140,6 +144,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         title: "Sucesso",
         description: "Todas as notificações foram marcadas como lidas.",
       });
+      
+      // Aguardar um pouco antes de permitir polling novamente
+      setTimeout(() => {
+        setMarkAllLoading(false);
+      }, 1000);
     } catch (error) {
       console.error('Erro ao marcar todas como lidas:', error);
       toast({
@@ -147,7 +156,6 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         description: "Não foi possível marcar todas as notificações como lidas.",
         variant: "destructive",
       });
-    } finally {
       setMarkAllLoading(false);
     }
   }, [toast]);
@@ -218,8 +226,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       loadUnreadNotifications();
       
       // Configurar polling para atualizar notificações a cada 30 segundos
+      // Mas apenas se não houver ações em andamento
       const interval = setInterval(() => {
-        loadUnreadNotifications();
+        if (actionLoading === null && !markAllLoading) {
+          loadUnreadNotifications();
+        }
       }, 30000); // 30 segundos
       
       return () => clearInterval(interval);
@@ -229,7 +240,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       setAllNotifications([]);
       setUnreadCount(0);
     }
-  }, [user, loadUnreadNotifications]);
+  }, [user, loadUnreadNotifications, actionLoading, markAllLoading]);
 
   const value: NotificationContextType = {
     // Estados

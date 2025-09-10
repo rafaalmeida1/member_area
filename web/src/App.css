@@ -3,7 +3,7 @@
   /* Cores padrÃ£o do tema */
   --color-primary: #DBCFCB;
   --color-secondary: #D8C4A4;
-  --color-accent: #A67B5B;
+  --color-accent: #ecd0bb;
   --color-background: #FFFFFF;
   --color-surface: #FAFAFA;
   --color-text: #2C2C2C;
@@ -12,13 +12,13 @@
   --color-muted: #f5f5f5;
   --color-shadow: rgba(0, 0, 0, 0.1);
   --color-overlay: rgba\(0, 0, 0, 0\.5\);
-  /* Cores específicas para inputs */
+  /* Cores especï¿½ficas para inputs */
   --input-background-color: #FFFFFF;
   --input-border-color: #e5e5e5;
   --input-focus-color: var(--color-primary);
   --input-placeholder-color: #999999;
   
-  /* Cores específicas para botões */
+  /* Cores especï¿½ficas para botï¿½es */
   --button-primary-color: var(--color-primary);
   --button-primary-hover-color: var(--color-accent);
   --button-primary-text-color: #2C2C2C;
@@ -34,7 +34,7 @@
   --color-error: #F44336;
   --color-info: #2196F3;
   
-  /* Cores de interação */
+  /* Cores de interaï¿½ï¿½o */
   --color-hover: #f0f0f0;
   --color-disabled: #CCCCCC;
   
@@ -54,7 +54,7 @@
   /* Cores do tema escuro */
   --color-primary: #DBCFCB;
   --color-secondary: #D8C4A4;
-  --color-accent: #A67B5B;
+  --color-accent: #e7c7af;
   --color-background: #1a1a1a;
   --color-surface: #2c2c2c;
   --color-text: #ffffff;
@@ -63,13 +63,13 @@
   --color-muted: #2c2c2c;
   --color-shadow: rgba(0, 0, 0, 0.5);
   --color-overlay: rgba(0, 0, 0, 0.8);
-  /* Cores específicas para inputs - Dark Mode */
+  /* Cores especï¿½ficas para inputs - Dark Mode */
   --input-background-color: #2c2c2c;
   --input-border-color: #444444;
   --input-focus-color: var(--color-primary);
   --input-placeholder-color: #888888;
   
-  /* Cores específicas para botões - Dark Mode */
+  /* Cores especï¿½ficas para botï¿½es - Dark Mode */
   --button-primary-color: var(--color-primary);
   --button-primary-hover-color: var(--color-accent);
   --button-primary-text-color: #2C2C2C;
@@ -85,7 +85,7 @@
   --color-error: #EF5350;
   --color-info: #42A5F5;
   
-  /* Cores de interação - Dark Mode */
+  /* Cores de interaï¿½ï¿½o - Dark Mode */
   --color-hover: #3c3c3c;
   --color-disabled: #555555;
   
@@ -274,7 +274,7 @@ textarea::placeholder {
   color: var(--input-placeholder-color) !important;
 }
 
-/* Estilos globais para botões */
+/* Estilos globais para botï¿½es */
 button.btn-primary,
 .btn-primary {
   background-color: var(--button-primary-color) !important;

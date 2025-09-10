@@ -22,21 +22,22 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * Busca notificações recentes do usuário (10 não lidas + 5 lidas mais recentes)
      */
     @Query("""
-        (SELECT n FROM Notification n WHERE n.user = :user AND n.read = false ORDER BY n.createdAt DESC LIMIT 10)
+        (SELECT n FROM Notification n WHERE n.user = :user AND n.is_read = false ORDER BY n.createdAt DESC LIMIT 10)
         UNION ALL
-        (SELECT n FROM Notification n WHERE n.user = :user AND n.read = true ORDER BY n.createdAt DESC LIMIT 5)
+        (SELECT n FROM Notification n WHERE n.user = :user AND n.is_read = true ORDER BY n.createdAt DESC LIMIT 5)
     """)
     List<Notification> findRecentNotificationsByUser(@Param("user") User user);
 
     /**
      * Busca todas as notificações não lidas do usuário
      */
-    List<Notification> findUnreadByUserOrderByCreatedAtDesc(User user);
+    @Query("SELECT n FROM Notification n WHERE n.user = :user AND n.is_read = false ORDER BY n.createdAt DESC")
+    List<Notification> findUnreadByUserOrderByCreatedAtDesc(@Param("user") User user);
 
     /**
      * Busca todas as notificações não lidas do usuário (para atualização)
      */
-    @Query("SELECT n FROM Notification n WHERE n.user = :user AND n.read = false")
+    @Query("SELECT n FROM Notification n WHERE n.user = :user AND n.is_read = false")
     List<Notification> findUnreadByUser(@Param("user") User user);
 
     /**
@@ -47,7 +48,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     /**
      * Conta notificações não lidas do usuário
      */
-    @Query("SELECT COUNT(n) FROM Notification n WHERE n.user = :user AND n.read = false")
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.user = :user AND n.is_read = false")
     long countUnreadByUser(@Param("user") User user);
 
     /**
@@ -78,7 +79,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      */
     @Query("""
         SELECT n FROM Notification n 
-        WHERE n.user = :user AND n.type = :type AND n.read = false 
+        WHERE n.user = :user AND n.type = :type AND n.is_read = false 
         ORDER BY n.createdAt DESC
     """)
     List<Notification> findUnreadByUserAndType(@Param("user") User user, @Param("type") String type);

@@ -398,7 +398,7 @@ export function ModernLayout({
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto">
-          <div className="w-full max-w-full overflow-hidden">
+          <div className="w-full p-3 max-w-full overflow-hidden">
             {children}
           </div>
         </main>

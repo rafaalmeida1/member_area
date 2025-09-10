@@ -22,7 +22,7 @@ public class NotificationMapper {
                 .message(notification.getMessage())
                 .moduleId(notification.getModuleId())
                 .moduleTitle(notification.getModuleTitle())
-                .read(notification.getRead())
+                .read(notification.getIs_read())
                 .createdAt(notification.getCreatedAt())
                 .readAt(notification.getReadAt())
                 .build();

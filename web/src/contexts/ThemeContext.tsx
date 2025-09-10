@@ -174,13 +174,36 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         await new Promise(resolve => setTimeout(resolve, 2500));
       }
 
-      // PRIMEIRO: Carregar do localStorage (rápido)
+      // PRIMEIRO: Tentar carregar da API (sempre priorizar servidor)
+      try {
+        const { apiService } = await import('@/services/api');
+        const serverTheme = await apiService.getTheme();
+        
+        setTheme(serverTheme);
+        applyThemeToCSS(serverTheme);
+        saveThemeToLocalStorage(serverTheme);
+        console.log('Tema carregado da API');
+        
+        if (showAnimation) {
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 500);
+        } else {
+          setIsLoading(false);
+        }
+        
+        return; // Sair da função se conseguiu carregar da API
+      } catch (serverError) {
+        console.warn('Erro ao carregar tema da API, tentando localStorage:', serverError);
+      }
+
+      // SEGUNDO: Se falhou a API, tentar localStorage
       const savedTheme = loadThemeFromLocalStorage();
       
       if (savedTheme) {
         setTheme(savedTheme);
         applyThemeToCSS(savedTheme);
-        console.log('Tema carregado do localStorage');
+        console.log('Tema carregado do localStorage (fallback)');
         
         if (showAnimation) {
           setTimeout(() => {
@@ -190,7 +213,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           setIsLoading(false);
         }
       } else {
-        // Se não há tema salvo, usar padrão
+        // Último recurso: usar tema padrão
         setTheme(defaultTheme);
         applyThemeToCSS(defaultTheme);
         console.log('Tema padrão aplicado (sem localStorage)');
@@ -202,23 +225,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         } else {
           setIsLoading(false);
         }
-      }
-
-      // SEGUNDO: Atualizar do servidor em background (sem bloquear UI)
-      try {
-        const { apiService } = await import('@/services/api');
-        const serverTheme = await apiService.getTheme();
-        
-        // Só atualizar se for diferente do que está no localStorage
-        if (!savedTheme || JSON.stringify(serverTheme) !== JSON.stringify(savedTheme)) {
-          setTheme(serverTheme);
-          applyThemeToCSS(serverTheme);
-          saveThemeToLocalStorage(serverTheme);
-          console.log('Tema atualizado do servidor');
-        }
-      } catch (serverError) {
-        console.warn('Erro ao atualizar tema do servidor (não crítico):', serverError);
-        // Não fazer nada, o tema do localStorage já está aplicado
       }
       
     } catch (error) {

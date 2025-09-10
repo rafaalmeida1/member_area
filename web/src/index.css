@@ -9,7 +9,7 @@
     /* Cores padrão - serão sobrescritas pelas variáveis de tema */
     --color-primary: #DBCFCB;
     --color-secondary: #D8C4A4;
-    --color-accent: #A67B5B;
+    --color-accent: #D8C4A4;
     --color-background: #FFFFFF;
     --color-surface: #FAFAFA;
     --color-text: #2C2C2C;
@@ -17,8 +17,8 @@
     --color-border: #E5E5E5;
     --color-input-bg: #FFFFFF;
     --color-input-border: #D1D5DB;
-    --color-input-focus: #A67B5B;
-    --color-button-primary-bg: #A67B5B;
+    --color-input-focus: #D8C4A4;
+    --color-button-primary-bg: #D8C4A4;
     --color-button-primary-hover: #8B5A3C;
     --color-button-primary-text: #FFFFFF;
     --color-button-secondary-bg: #F3F4F6;
