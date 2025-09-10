@@ -210,7 +210,7 @@ export interface ThemeColors {
 
 // Classe principal do serviço de API
 class ApiService {
-  private api: AxiosInstance;
+  public api: AxiosInstance;
   private token: string | null = null;
 
   constructor() {
@@ -855,7 +855,6 @@ class ApiService {
       const response = await this.api.get('/theme/colors');
       const data = response.data?.data || {};
       // Mapear ThemeColorsResponse (backend) -> ThemeColors (frontend)
-      console.log(data);
 
       const mapped: ThemeColors = {
         primaryColor: data.themePrimaryColor || data.primaryColor || '#DBCFCB',
@@ -868,8 +867,6 @@ class ApiService {
         hoverColor: data.themeButtonPrimaryHover || data.hoverColor || data.themeSecondaryColor || '#F0F0F0',
         disabledColor: data.themeButtonDisabledBg || data.disabledColor || '#CCCCCC'
       };
-
-      console.log(response);
       return mapped;
     } catch (error) {
       console.error('Erro ao buscar tema:', error);

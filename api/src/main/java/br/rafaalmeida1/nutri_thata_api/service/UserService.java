@@ -10,6 +10,10 @@ import br.rafaalmeida1.nutri_thata_api.exception.BusinessException;
 import br.rafaalmeida1.nutri_thata_api.exception.NotFoundException;
 import br.rafaalmeida1.nutri_thata_api.mapper.UserMapper;
 import br.rafaalmeida1.nutri_thata_api.repositories.UserRepository;
+import br.rafaalmeida1.nutri_thata_api.repository.UserActivityRepository;
+import br.rafaalmeida1.nutri_thata_api.repository.UserSessionRepository;
+import br.rafaalmeida1.nutri_thata_api.repository.ModuleViewRepository;
+import br.rafaalmeida1.nutri_thata_api.repository.UserCategoryProgressRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +23,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -32,6 +38,10 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final CacheService cacheService;
+    private final UserActivityRepository userActivityRepository;
+    private final UserSessionRepository userSessionRepository;
+    private final ModuleViewRepository moduleViewRepository;
+    private final UserCategoryProgressRepository userCategoryProgressRepository;
 
     public UserResponse getCurrentUser(User user) {
         return userMapper.toUserResponse(user);
@@ -90,31 +100,132 @@ public class UserService {
         List<User> patients = userRepository.findByRoleAndIsActiveTrue(Role.PATIENT);
         
         return patients.stream()
-                .map(user -> UserResponse.builder()
-                        .id(user.getId())
-                        .name(user.getName())
-                        .email(user.getEmail())
-                        .role(user.getRole())
-                        .isActive(user.getIsActive())
-                        .createdAt(user.getCreatedAt())
-                        .build())
+                .map(user -> {
+                    UserResponse.UserResponseBuilder builder = UserResponse.builder()
+                            .id(user.getId())
+                            .name(user.getName())
+                            .email(user.getEmail())
+                            .role(user.getRole())
+                            .isActive(user.getIsActive())
+                            .createdAt(user.getCreatedAt());
+
+                    // Adicionar estatísticas se disponíveis
+                    try {
+                        Long totalModulesViewed = moduleViewRepository.countByUser(user);
+                        Long totalTimeSpent = moduleViewRepository.sumTimeSpentByUser(user);
+                        Long modulesCompleted = moduleViewRepository.countCompletedByUser(user);
+                        Double averageSessionTime = userSessionRepository.findAverageSessionDurationByUser(user);
+                        
+                        // Buscar última atividade
+                        String lastActivity = "Nunca";
+                        var lastActivityOpt = userActivityRepository.findLastActivityByUser(user);
+                        if (lastActivityOpt != null) {
+                            lastActivity = lastActivityOpt.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                        }
+
+                        // Buscar categorias favoritas
+                        List<Object[]> favoriteCategoriesData = userActivityRepository.findFavoriteCategoriesByUser(user);
+                        List<String> favoriteCategories = favoriteCategoriesData.stream()
+                                .limit(3) // Top 3 categorias
+                                .map(row -> (String) row[0])
+                                .collect(Collectors.toList());
+
+                        // Calcular progresso
+                        Integer progressPercentage = 0;
+                        if (totalModulesViewed > 0) {
+                            progressPercentage = (int) Math.round((double) modulesCompleted / totalModulesViewed * 100);
+                        }
+
+                        builder.stats(UserResponse.PatientStats.builder()
+                                .totalModulesViewed(totalModulesViewed.intValue())
+                                .totalTimeSpent(totalTimeSpent != null ? totalTimeSpent.intValue() : 0)
+                                .modulesCompleted(modulesCompleted.intValue())
+                                .averageSessionTime(averageSessionTime != null ? averageSessionTime.intValue() : 0)
+                                .lastActivity(lastActivity)
+                                .favoriteCategories(favoriteCategories)
+                                .progressPercentage(progressPercentage)
+                                .build());
+                    } catch (Exception e) {
+                        log.error("Erro ao calcular estatísticas do paciente: {}", user.getId(), e);
+                        // Continuar sem estatísticas em caso de erro
+                    }
+
+                    return builder.build();
+                })
                 .collect(Collectors.toList());
     }
 
-    @Cacheable(value = "users", key = "'patients_stats'")
+    @Cacheable(value = "users", key = "'user_stats_' + #userId")
     public UserStatsResponse getUserStats(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
 
-        // Implementar lógica de estatísticas do usuário
-        return UserStatsResponse.builder()
-                .totalModulesViewed(0) // Implementar
-                .totalTimeSpent(0) // Implementar
-                .modulesCompleted(0) // Implementar
-                .averageSessionTime(0) // Implementar
-                .favoriteCategories(new ArrayList<>()) // Implementar
-                .progressPercentage(0) // Implementar
-                .build();
+        try {
+            // Buscar estatísticas reais dos repositórios
+            Long totalModulesViewed = moduleViewRepository.countByUser(user);
+            Long totalTimeSpent = moduleViewRepository.sumTimeSpentByUser(user);
+            Long modulesCompleted = moduleViewRepository.countCompletedByUser(user);
+            Double averageSessionTime = userSessionRepository.findAverageSessionDurationByUser(user);
+            
+            // Buscar categorias favoritas
+            List<Object[]> favoriteCategoriesData = userActivityRepository.findFavoriteCategoriesByUser(user);
+            List<String> favoriteCategories = favoriteCategoriesData.stream()
+                    .limit(5) // Top 5 categorias
+                    .map(row -> (String) row[0])
+                    .collect(Collectors.toList());
+
+            // Calcular progresso geral (baseado em módulos completados vs visualizados)
+            Integer progressPercentage = 0;
+            if (totalModulesViewed > 0) {
+                progressPercentage = (int) Math.round((double) modulesCompleted / totalModulesViewed * 100);
+            }
+
+            // Buscar atividade semanal (últimos 7 dias)
+            LocalDateTime endDate = LocalDateTime.now();
+            LocalDateTime startDate = endDate.minusDays(7);
+            List<Object[]> weeklyActivityData = userActivityRepository.findWeeklyActivityByUser(user, startDate, endDate);
+            
+            List<UserStatsResponse.WeeklyActivity> weeklyActivity = weeklyActivityData.stream()
+                    .map(row -> UserStatsResponse.WeeklyActivity.builder()
+                            .date(((java.sql.Date) row[0]).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                            .modulesViewed(((Long) row[1]).intValue())
+                            .timeSpent(0) // Seria necessário calcular baseado no tempo gasto por dia
+                            .build())
+                    .collect(Collectors.toList());
+
+            // Buscar última atividade
+            String lastActivity = "Nunca";
+            var lastActivityOpt = userActivityRepository.findLastActivityByUser(user);
+            if (lastActivityOpt != null) {
+                lastActivity = lastActivityOpt.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            }
+
+            return UserStatsResponse.builder()
+                    .id(userId)
+                    .totalModulesViewed(totalModulesViewed.intValue())
+                    .totalTimeSpent(totalTimeSpent != null ? totalTimeSpent.intValue() : 0)
+                    .modulesCompleted(modulesCompleted.intValue())
+                    .averageSessionTime(averageSessionTime != null ? averageSessionTime.intValue() : 0)
+                    .favoriteCategories(favoriteCategories)
+                    .progressPercentage(progressPercentage)
+                    .lastActivity(lastActivity)
+                    .weeklyActivity(weeklyActivity)
+                    .build();
+        } catch (Exception e) {
+            log.error("Erro ao calcular estatísticas do usuário: {}", userId, e);
+            // Retornar estatísticas vazias em caso de erro
+            return UserStatsResponse.builder()
+                    .id(userId)
+                    .totalModulesViewed(0)
+                    .totalTimeSpent(0)
+                    .modulesCompleted(0)
+                    .averageSessionTime(0)
+                    .favoriteCategories(new ArrayList<>())
+                    .progressPercentage(0)
+                    .lastActivity("Nunca")
+                    .weeklyActivity(new ArrayList<>())
+                    .build();
+        }
     }
 
     @Caching(evict = {

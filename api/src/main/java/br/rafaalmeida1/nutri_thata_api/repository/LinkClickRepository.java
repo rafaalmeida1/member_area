@@ -42,9 +42,9 @@ public interface LinkClickRepository extends JpaRepository<LinkClick, Long> {
     @Query("SELECT COUNT(lc) FROM LinkClick lc WHERE lc.user = :user AND lc.professionalLink.professionalProfile = :profile")
     Long countByUserAndProfessionalProfile(@Param("user") User user, @Param("profile") ProfessionalProfile professionalProfile);
 
-    @Query("SELECT DATE(lc.clickedAt) as date, COUNT(lc) as clicks, COUNT(DISTINCT lc.ipAddress) as uniqueClicks " +
+    @Query("SELECT CAST(lc.clickedAt AS date) as date, COUNT(lc) as clicks, COUNT(DISTINCT lc.ipAddress) as uniqueClicks " +
            "FROM LinkClick lc WHERE lc.professionalLink = :link AND lc.clickedAt BETWEEN :startDate AND :endDate " +
-           "GROUP BY DATE(lc.clickedAt) ORDER BY date")
+           "GROUP BY CAST(lc.clickedAt AS date) ORDER BY date")
     List<Object[]> findClicksByDateForLink(@Param("link") ProfessionalLink professionalLink, 
                                           @Param("startDate") LocalDateTime startDate, 
                                           @Param("endDate") LocalDateTime endDate);

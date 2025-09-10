@@ -33,9 +33,9 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
     @Query("SELECT COUNT(pv) FROM PageView pv WHERE pv.user = :user AND pv.professionalProfile = :profile")
     Long countByUserAndProfessionalProfile(@Param("user") User user, @Param("profile") ProfessionalProfile professionalProfile);
 
-    @Query("SELECT DATE(pv.viewedAt) as date, COUNT(pv) as views, COUNT(DISTINCT pv.ipAddress) as uniqueViews " +
+    @Query("SELECT CAST(pv.viewedAt AS date) as date, COUNT(pv) as views, COUNT(DISTINCT pv.ipAddress) as uniqueViews " +
            "FROM PageView pv WHERE pv.professionalProfile = :profile AND pv.viewedAt BETWEEN :startDate AND :endDate " +
-           "GROUP BY DATE(pv.viewedAt) ORDER BY date")
+           "GROUP BY CAST(pv.viewedAt AS date) ORDER BY date")
     List<Object[]> findViewsByDateForProfile(@Param("profile") ProfessionalProfile professionalProfile, 
                                            @Param("startDate") LocalDateTime startDate, 
                                            @Param("endDate") LocalDateTime endDate);

@@ -7,9 +7,10 @@ import { ModernLayout } from '@/components/ModernLayout';
 import { PDFViewerMinimal } from '@/components/PDFViewerMinimal';
 import { ArrowLeft, FileText, Video, Volume2, Calendar, User, Eye, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { userActivityService } from '@/services/userActivityService';
 
 export function ModuleViewer() {
   const { user } = useAuth();
@@ -18,6 +19,12 @@ export function ModuleViewer() {
   const { toast } = useToast();
   const [module, setModule] = useState<ModuleDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [completionPercentage, setCompletionPercentage] = useState(0);
+  const [timeSpent, setTimeSpent] = useState(0);
+  const [viewedBlocks, setViewedBlocks] = useState<Set<string>>(new Set());
+  const startTime = useRef<number>(Date.now());
+  const trackingInterval = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const loadModule = async () => {
@@ -27,6 +34,11 @@ export function ModuleViewer() {
         setIsLoading(true);
         const moduleData = await apiService.getModuleById(id);
         setModule(moduleData);
+        
+        // Iniciar tracking do módulo quando carregado
+        if (user && moduleData) {
+          startModuleTracking(parseInt(id), moduleData.title, moduleData.category);
+        }
       } catch (error) {
         console.error('Erro ao carregar módulo:', error);
         toast({
@@ -41,7 +53,82 @@ export function ModuleViewer() {
     };
 
     loadModule();
-  }, [id, navigate, toast]);
+  }, [id, navigate, toast, user]);
+
+  const startModuleTracking = (moduleId: number, moduleTitle: string, category: string) => {
+    startTime.current = Date.now();
+    
+    // Rastrear visualização inicial do módulo
+    userActivityService.trackModuleView(moduleId, moduleTitle, category, 0);
+    
+    // Rastrear visualização do módulo a cada 30 segundos
+    trackingInterval.current = setInterval(() => {
+      const currentTimeSpent = Math.floor((Date.now() - startTime.current) / 1000);
+      setTimeSpent(currentTimeSpent);
+      
+      // Enviar tracking a cada 30 segundos
+      if (currentTimeSpent % 30 === 0 && currentTimeSpent > 0) {
+        userActivityService.trackModuleView(moduleId, moduleTitle, category, currentTimeSpent);
+      }
+    }, 1000);
+  };
+
+  const markBlockAsViewed = (blockId: string) => {
+    if (!module || !id) return;
+    
+    setViewedBlocks(prev => {
+      const newViewedBlocks = new Set(prev);
+      newViewedBlocks.add(blockId);
+      
+      // Calcular nova porcentagem baseada nos blocos visualizados
+      const totalBlocks = module.content.length;
+      const viewedCount = newViewedBlocks.size;
+      const newPercentage = totalBlocks > 0 ? Math.round((viewedCount / totalBlocks) * 100) : 0;
+      
+      setCompletionPercentage(newPercentage);
+      
+      // SEMPRE rastrear quando um bloco é marcado como visto
+      const currentTimeSpent = Math.floor((Date.now() - startTime.current) / 1000);
+      userActivityService.trackModuleView(
+        parseInt(id), 
+        module.title, 
+        module.category, 
+        currentTimeSpent
+      );
+      
+      // Rastrear progresso significativo (a cada 25% ou quando completar)
+      if (newPercentage > 0 && (newPercentage % 25 === 0 || newPercentage === 100)) {
+        userActivityService.trackModuleCompletion(
+          parseInt(id), 
+          module.title, 
+          module.category, 
+          currentTimeSpent, 
+          newPercentage
+        );
+      }
+      
+      // Se completou 100%, marcar como concluído
+      if (newPercentage === 100 && !isCompleted) {
+        setIsCompleted(true);
+        toast({
+          title: "Módulo Concluído! 🎉",
+          description: "Parabéns! Você visualizou todo o conteúdo deste módulo.",
+        });
+      }
+      
+      return newViewedBlocks;
+    });
+  };
+
+
+  // Cleanup do tracking quando o componente for desmontado
+  useEffect(() => {
+    return () => {
+      if (trackingInterval.current) {
+        clearInterval(trackingInterval.current);
+      }
+    };
+  }, []);
 
   const handleBack = () => {
     navigate('/');
@@ -58,16 +145,47 @@ export function ModuleViewer() {
   };
 
   const renderContent = (block: ContentBlock) => {
+    const isViewed = viewedBlocks.has(block.id);
+    
+    const handleMarkAsViewed = () => {
+      markBlockAsViewed(block.id);
+    };
+
     switch (block.type) {
       case 'TEXT':
         return (
-          <Card className="border-l-4 border-l-color-primary">
+          <Card 
+            className={`border-l-4 transition-all duration-300 ${
+              isViewed 
+                ? 'border-l-green-500 bg-green-50/50 dark:bg-green-950/20' 
+                : 'border-l-color-primary'
+            }`}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                {getContentIcon(block.type)}
+                <div className={`p-1 rounded-full ${isViewed ? 'bg-green-100 dark:bg-green-900' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                  {isViewed ? (
+                    <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                  ) : (
+                    <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs">👁️</span>
+                    </div>
+                  )}
+                </div>
                 <span className="font-medium text-sm text-muted-foreground">
                   Conteúdo {block.order}
                 </span>
+                {isViewed ? (
+                  <Badge variant="default" className="ml-auto text-xs bg-green-500 hover:bg-green-600">
+                    ✓ Visto
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="ml-auto text-xs text-muted-foreground">
+                    👁️ Não visto
+                  </Badge>
+                )}
               </div>
             </CardHeader>
             <CardContent>
@@ -77,6 +195,17 @@ export function ModuleViewer() {
                   dangerouslySetInnerHTML={{ __html: block.content.replace(/\n/g, '<br/>') }}
                 />
               </div>
+              {!isViewed && (
+                <div className="mt-4 pt-4 border-t">
+                  <Button 
+                    onClick={handleMarkAsViewed}
+                    size="sm"
+                    className="w-full"
+                  >
+                    ✓ Marcar como Visto
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         );
@@ -114,13 +243,38 @@ export function ModuleViewer() {
         }
         
         return (
-          <Card className="border-l-4 border-l-primary/50">
+          <Card 
+            className={`border-l-4 transition-all duration-300 ${
+              isViewed 
+                ? 'border-l-green-500 bg-green-50/50 dark:bg-green-950/20' 
+                : 'border-l-primary/50'
+            }`}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                {getContentIcon(block.type)}
+                <div className={`p-1 rounded-full ${isViewed ? 'bg-green-100 dark:bg-green-900' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                  {isViewed ? (
+                    <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                  ) : (
+                    <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs">👁️</span>
+                    </div>
+                  )}
+                </div>
                 <span className="font-medium text-sm text-muted-foreground">
                   Vídeo {block.order}
                 </span>
+                {isViewed ? (
+                  <Badge variant="default" className="ml-auto text-xs bg-green-500 hover:bg-green-600">
+                    ✓ Visto
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="ml-auto text-xs text-muted-foreground">
+                    👁️ Não visto
+                  </Badge>
+                )}
               </div>
             </CardHeader>
             <CardContent>
@@ -145,6 +299,17 @@ export function ModuleViewer() {
                   </video>
                 )}
               </div>
+              {!isViewed && (
+                <div className="mt-4 pt-4 border-t">
+                  <Button 
+                    onClick={handleMarkAsViewed}
+                    size="sm"
+                    className="w-full"
+                  >
+                    ✓ Marcar como Visto
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         );
@@ -154,24 +319,85 @@ export function ModuleViewer() {
         return (
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-3">
-              {getContentIcon(block.type)}
+              <div className={`p-1 rounded-full ${isViewed ? 'bg-green-100 dark:bg-green-900' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                {isViewed ? (
+                  <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
+                  </div>
+                ) : (
+                  <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">👁️</span>
+                  </div>
+                )}
+              </div>
               <span className="font-medium text-sm text-muted-foreground">
                 PDF {block.order}
               </span>
+              {isViewed ? (
+                <Badge variant="default" className="ml-auto text-xs bg-green-500 hover:bg-green-600">
+                  ✓ Visto
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="ml-auto text-xs text-muted-foreground">
+                  👁️ Não visto
+                </Badge>
+              )}
             </div>
-            <PDFViewerMinimal url={block.content} />
+            <div className={`transition-all duration-300 ${
+              isViewed 
+                ? 'ring-2 ring-green-500/30 rounded-lg' 
+                : ''
+            }`}>
+              <PDFViewerMinimal url={block.content} />
+            </div>
+            {!isViewed && (
+              <div className="mt-4 pt-4 border-t">
+                <Button 
+                  onClick={handleMarkAsViewed}
+                  size="sm"
+                  className="w-full"
+                >
+                  ✓ Marcar como Visto
+                </Button>
+              </div>
+            )}
           </div>
         );
         
       case 'AUDIO':
         return (
-          <Card className="border-l-4 border-l-secondary/50">
+          <Card 
+            className={`border-l-4 transition-all duration-300 ${
+              isViewed 
+                ? 'border-l-green-500 bg-green-50/50 dark:bg-green-950/20' 
+                : 'border-l-secondary/50'
+            }`}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                {getContentIcon(block.type)}
+                <div className={`p-1 rounded-full ${isViewed ? 'bg-green-100 dark:bg-green-900' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                  {isViewed ? (
+                    <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                  ) : (
+                    <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs">👁️</span>
+                    </div>
+                  )}
+                </div>
                 <span className="font-medium text-sm text-muted-foreground">
                   Áudio {block.order}
                 </span>
+                {isViewed ? (
+                  <Badge variant="default" className="ml-auto text-xs bg-green-500 hover:bg-green-600">
+                    ✓ Visto
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="ml-auto text-xs text-muted-foreground">
+                    👁️ Não visto
+                  </Badge>
+                )}
               </div>
             </CardHeader>
             <CardContent>
@@ -185,6 +411,17 @@ export function ModuleViewer() {
                   Seu navegador não suporta o elemento de áudio.
                 </audio>
               </div>
+              {!isViewed && (
+                <div className="mt-4 pt-4 border-t">
+                  <Button 
+                    onClick={handleMarkAsViewed}
+                    size="sm"
+                    className="w-full"
+                  >
+                    ✓ Marcar como Visto
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         );
@@ -272,6 +509,55 @@ export function ModuleViewer() {
             </div>
           )}
         </div>
+
+        {/* Progress Tracking */}
+        {user && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                Seu Progresso
+                {isCompleted && (
+                  <Badge variant="default" className="bg-green-500">
+                    🎉 Concluído!
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-muted-foreground">
+                    Tempo gasto: {Math.floor(timeSpent / 60)}:{(timeSpent % 60).toString().padStart(2, '0')}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    Conteúdo visualizado: {viewedBlocks.size} de {module.content.length}
+                  </span>
+                  <span className="text-sm font-medium">
+                    Progresso: {completionPercentage}%
+                  </span>
+                </div>
+              </div>
+              <div className="w-full bg-muted rounded-full h-3">
+                <div 
+                  className={`h-3 rounded-full transition-all duration-500 ${
+                    isCompleted ? 'bg-green-500' : 'bg-primary'
+                  }`}
+                  style={{ width: `${completionPercentage}%` }}
+                />
+              </div>
+              {completionPercentage === 0 && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  👀 Clique em "Marcar como Visto" em cada conteúdo para acompanhar seu progresso
+                </p>
+              )}
+              {completionPercentage > 0 && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  O progresso é baseado no conteúdo que você marcou como visto
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Content Blocks */}
         <div className="space-y-6">

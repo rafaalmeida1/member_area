@@ -61,6 +61,7 @@ public class AnalyticsService {
         // Views por país
         List<Object[]> viewsByCountryData = pageViewRepository.findViewsByCountryForProfile(profile);
         Map<String, Long> viewsByCountry = viewsByCountryData.stream()
+            .filter(row -> row[0] != null) // Filtrar países nulos
             .collect(Collectors.toMap(
                 row -> (String) row[0], 
                 row -> (Long) row[1],
@@ -71,6 +72,7 @@ public class AnalyticsService {
         // Views por dispositivo
         List<Object[]> viewsByDeviceData = pageViewRepository.findViewsByDeviceForProfile(profile);
         Map<String, Long> viewsByDevice = viewsByDeviceData.stream()
+            .filter(row -> row[0] != null) // Filtrar dispositivos nulos
             .collect(Collectors.toMap(
                 row -> (String) row[0], 
                 row -> (Long) row[1],
@@ -81,6 +83,7 @@ public class AnalyticsService {
         // Views por navegador
         List<Object[]> viewsByBrowserData = pageViewRepository.findViewsByBrowserForProfile(profile);
         Map<String, Long> viewsByBrowser = viewsByBrowserData.stream()
+            .filter(row -> row[0] != null) // Filtrar navegadores nulos
             .collect(Collectors.toMap(
                 row -> (String) row[0], 
                 row -> (Long) row[1],

@@ -2,6 +2,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ThemeLoadingScreen } from "./components/ThemeLoadingScreen";
+import { UserActivityTracker } from "./components/UserActivityTracker";
 import AppRoutes from "./AppRoutes";
 import "./App.css";
 
@@ -14,6 +15,7 @@ function AppContent() {
                 <ThemeLoadingScreen isLoading={isLoading} />
                 <AuthProvider>
                     <NotificationProvider>
+                        <UserActivityTracker />
                         <AppRoutes />
                     </NotificationProvider>
                 </AuthProvider>
