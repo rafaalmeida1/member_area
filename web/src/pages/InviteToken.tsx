@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Mail, ArrowLeft } from 'lucide-react';
 import './InviteToken.css';
 import NutriotinistImage from '@/components/NutriotinistImage';
+import { Button } from '@/components/ui/button';
 
 export function InviteToken() {
   const [token, setToken] = useState('');
@@ -55,9 +56,6 @@ export function InviteToken() {
 
           {/* Header */}
           <div className="invite-token-header">
-            <div className="header-icon">
-              <Mail size={24} />
-            </div>
             <h2 className="header-title">Tenho um Convite</h2>
             <p className="header-description">
               Insira o token do convite que você recebeu por email
@@ -71,7 +69,6 @@ export function InviteToken() {
                 Token do Convite
               </label>
               <div className="input-container">
-                <Mail className="input-icon" size={18} />
                 <input
                   id="token"
                   type="text"
@@ -88,13 +85,13 @@ export function InviteToken() {
             </div>
             
             <div className="form-actions">
-              <button
+              <Button
                 type="submit"
                 className="invite-token-button"
                 disabled={isLoading}
               >
                 {isLoading ? 'Verificando...' : 'continuar com o convite'}
-              </button>
+              </Button>
             </div>
           </form>
           

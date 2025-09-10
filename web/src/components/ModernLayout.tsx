@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { NotificationDropdown } from '@/components/NotificationDropdown'
 import { 
   Home, 
@@ -20,7 +21,10 @@ import {
   Settings,
   Bell,
   Search,
-  ChevronDown
+  ChevronDown,
+  ChevronRight,
+  Shield,
+  Database
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -30,6 +34,83 @@ interface ModernLayoutProps {
   showSidebar?: boolean
   showBackButton?: boolean
   onBack?: () => void
+}
+
+interface NavigationGroupProps {
+  group: {
+    type?: string
+    label: string
+    icon: React.ComponentType<{ className?: string }>
+    items?: Array<{
+      href: string
+      icon: React.ComponentType<{ className?: string }>
+      label: string
+      active: boolean
+    }>
+  }
+  onItemClick: () => void
+}
+
+function NavigationGroup({ group, onItemClick }: NavigationGroupProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const hasActiveItem = group.items?.some(item => item.active) || false
+  
+  // Abrir automaticamente se algum item estiver ativo
+  React.useEffect(() => {
+    if (hasActiveItem) {
+      setIsOpen(true)
+    }
+  }, [hasActiveItem])
+
+  const Icon = group.icon
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger asChild>
+        <Button
+          variant="ghost"
+          className={cn(
+            "w-full justify-start gap-3 px-3 py-2 text-sm font-medium transition-all hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-foreground)]",
+            hasActiveItem
+              ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] shadow-sm"
+              : "text-muted-foreground"
+          )}
+        >
+          <Icon className="h-4 w-4" />
+          {group.label}
+          {isOpen ? (
+            <ChevronDown className="ml-auto h-4 w-4" />
+          ) : (
+            <ChevronRight className="ml-auto h-4 w-4" />
+          )}
+        </Button>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="space-y-1 pl-6">
+        {group.items?.map((item) => {
+          const ItemIcon = item.icon
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-foreground)]",
+                item.active
+                  ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] shadow-sm"
+                  : "text-muted-foreground"
+              )}
+              onClick={onItemClick}
+            >
+              <ItemIcon className="h-4 w-4" />
+              {item.label}
+              {item.active && (
+                <div className="ml-auto h-2 w-2 rounded-full bg-primary" />
+              )}
+            </Link>
+          )
+        })}
+      </CollapsibleContent>
+    </Collapsible>
+  )
 }
 
 export function ModernLayout({ 
@@ -71,59 +152,99 @@ export function ModernLayout({
     )
   }
 
-  const navigationItems = [
+  // Estrutura de navegação com submenus
+  const navigationItems: Array<{
+    href?: string
+    icon: React.ComponentType<{ className?: string }>
+    label: string
+    active?: boolean
+    type?: string
+    items?: Array<{
+      href: string
+      icon: React.ComponentType<{ className?: string }>
+      label: string
+      active: boolean
+    }>
+  }> = [
     {
       href: "/",
       icon: Home,
       label: "Dashboard",
       active: pathname === "/",
     },
-    ...(user?.role === "PROFESSIONAL"
+    // Menu de Administração (apenas para profissionais)
+    ...((user?.role === "PROFESSIONAL" || user?.role === "ADMIN")
       ? [
           {
-            href: "/modules",
-            icon: FileText,
-            label: "Módulos",
-            active: pathname === "/modules",
-          },
-          {
-            href: "/patients",
-            icon: Users,
-            label: "Pacientes",
-            active: pathname === "/patients",
-          },
-          {
-            href: "/invites",
-            icon: Mail,
-            label: "Convites",
-            active: pathname === "/invites",
-          },
-          {
-            href: "/my-links",
-            icon: Link2,
-            label: "Meus Links",
-            active: pathname === "/my-links",
-          },
-          {
-            href: "/analytics",
-            icon: BarChart3,
-            label: "Analytics",
-            active: pathname === "/analytics",
-          },
+            type: "group",
+            label: "Administração",
+            icon: Shield,
+            items: [
+              {
+                href: "/modules",
+                icon: FileText,
+                label: "Módulos",
+                active: pathname === "/modules",
+              },
+              {
+                href: "/patients",
+                icon: Users,
+                label: "Pacientes",
+                active: pathname === "/patients",
+              },
+              {
+                href: "/invites",
+                icon: Mail,
+                label: "Convites",
+                active: pathname === "/invites",
+              },
+              {
+                href: "/my-links",
+                icon: Link2,
+                label: "Meus Links",
+                active: pathname === "/my-links",
+              },
+              {
+                href: "/analytics",
+                icon: BarChart3,
+                label: "Analytics",
+                active: pathname === "/analytics",
+              },
+            ]
+          }
         ]
       : []),
+    // Menu de Configurações (para todos)
     {
-      href: "/profile",
-      icon: User,
-      label: "Perfil",
-      active: pathname === "/profile",
+      type: "group",
+      label: "Configurações",
+      icon: Settings,
+      items: [
+        {
+          href: "/profile",
+          icon: User,
+          label: "Perfil",
+          active: pathname === "/profile",
+        },
+        // Cache (apenas para profissionais/admin)
+        ...((user?.role === "PROFESSIONAL" || user?.role === "ADMIN")
+          ? [
+              {
+                href: "/cache-management",
+                icon: Database,
+                label: "Gerenciar Cache",
+                active: pathname === "/cache-management",
+              }
+            ]
+          : []),
+      ]
     },
   ]
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 items-center border-b border-[var(--color-border)] px-6">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <FileText className="h-4 w-4" />
@@ -137,21 +258,19 @@ export function ModernLayout({
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3 py-4">
-        <div className="mb-4">
-          <h3 className="mb-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Menu Principal
-          </h3>
-          <div className="space-y-1">
-            {navigationItems.map((item) => {
+        <div className="space-y-4">
+          {navigationItems.map((item, index) => {
+            // Item simples (sem submenu)
+            if (!item.type || item.type !== "group") {
               const Icon = item.icon
               return (
                 <Link
                   key={item.href}
                   to={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent hover:text-accent-foreground",
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-foreground)]",
                     item.active
-                      ? "bg-accent text-accent-foreground shadow-sm"
+                      ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] shadow-sm"
                       : "text-muted-foreground"
                   )}
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -163,13 +282,22 @@ export function ModernLayout({
                   )}
                 </Link>
               )
-            })}
-          </div>
+            }
+
+            // Grupo com submenu
+            return (
+              <NavigationGroup
+                key={index}
+                group={item}
+                onItemClick={() => setIsMobileMenuOpen(false)}
+              />
+            )
+          })}
         </div>
       </nav>
 
       {/* User Section */}
-      <div className="border-t p-4">
+      <div className="border-t border-[var(--color-border)] p-4">
         <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-primary text-primary-foreground text-xs">
@@ -190,7 +318,7 @@ export function ModernLayout({
         <Button
           variant="ghost"
           onClick={handleLogout}
-          className="w-full mt-2 justify-start text-muted-foreground hover:text-foreground"
+          className="w-full mt-2 justify-start text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
           size="sm"
         >
           <LogOut className="h-4 w-4 mr-2" />
@@ -201,9 +329,9 @@ export function ModernLayout({
   )
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-[var(--color-background)]">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-card border-r border-border">
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-[var(--color-card)] border-r border-[var(--color-border)]">
         <SidebarContent />
       </aside>
 
@@ -217,7 +345,7 @@ export function ModernLayout({
       {/* Main Content */}
       <div className="flex-1 lg:ml-64">
         {/* Header */}
-        <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm">
+        <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-background)]/80 backdrop-blur-sm">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-4">
               {/* Mobile Menu Button */}
@@ -238,12 +366,12 @@ export function ModernLayout({
               {/* Page Title */}
               <div className="flex items-center gap-2">
                 {showBackButton && onBack && (
-                  <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-muted">
+                  <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-[var(--color-muted)]">
                     <ArrowLeft className="w-4 h-4" />
                   </Button>
                 )}
                 {title && (
-                  <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+                  <h1 className="text-lg font-semibold text-[var(--color-text)]">{title}</h1>
                 )}
               </div>
             </div>
@@ -260,7 +388,7 @@ export function ModernLayout({
 
               {/* User Avatar (Mobile) */}
               <Avatar className="h-8 w-8 lg:hidden">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                <AvatarFallback className="bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-xs">
                   {user?.name?.charAt(0).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
@@ -270,7 +398,7 @@ export function ModernLayout({
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+          <div className="w-full max-w-full overflow-hidden">
             {children}
           </div>
         </main>

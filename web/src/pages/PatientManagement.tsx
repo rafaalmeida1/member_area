@@ -216,7 +216,7 @@ export function PatientManagement({
         </div>
 
         {/* Barra de pesquisa */}
-        <div className="search-section">
+        <div className="search-section mt-2">
           <div className="search-input-container">
             <Input
               placeholder="Pesquisar pacientes..."
@@ -255,7 +255,7 @@ export function PatientManagement({
                   </CardHeader>
                   
                   <CardContent>
-                    <div className="patient-stats-preview">
+                    <div className="patient-stats-preview grid grid-cols-3 gap-2">
                       <div className="stat-preview">
                         <BookOpen className="w-4 h-4" />
                         <span>{patient.stats?.totalModulesViewed || 0} módulos</span>
@@ -306,8 +306,8 @@ export function PatientManagement({
 
         {/* Modal de detalhes do paciente */}
         <Dialog open={showPatientDetails} onOpenChange={setShowPatientDetails}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="modal-content max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="modal-header">
               <DialogTitle>Detalhes do Paciente</DialogTitle>
             </DialogHeader>
             
@@ -447,8 +447,8 @@ export function PatientManagement({
 
         {/* Modal de edição */}
         <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-          <DialogContent>
-            <DialogHeader>
+          <DialogContent className="modal-content max-w-2xl">
+            <DialogHeader className="modal-header">
               <DialogTitle>Editar Paciente</DialogTitle>
             </DialogHeader>
             

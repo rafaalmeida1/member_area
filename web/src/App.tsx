@@ -1,28 +1,29 @@
-import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider, useTheme } from './contexts/ThemeContext';
-import { ThemeLoadingScreen } from './components/ThemeLoadingScreen';
-import AppRoutes from './AppRoutes';
-import './App.css';
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
+import { ThemeLoadingScreen } from "./components/ThemeLoadingScreen";
+import AppRoutes from "./AppRoutes";
+import "./App.css";
 
 function AppContent() {
-  const { isLoading } = useTheme();
+    const { isLoading } = useTheme();
 
-  return (
-    <>
-      <ThemeLoadingScreen isLoading={isLoading} />
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </>
-  );
+    return (
+        <>
+            <ThemeProvider>
+                <ThemeLoadingScreen isLoading={isLoading} />
+                <AuthProvider>
+                    <NotificationProvider>
+                        <AppRoutes />
+                    </NotificationProvider>
+                </AuthProvider>
+            </ThemeProvider>
+        </>
+    );
 }
 
 function App() {
-  return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
-  );
+    return <AppContent />;
 }
 
 export default App;

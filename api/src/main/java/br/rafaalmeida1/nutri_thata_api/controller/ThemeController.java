@@ -27,8 +27,14 @@ public class ThemeController {
     public ResponseEntity<ApiResponse<ThemeColorsResponse>> getUserThemeColors(
             @AuthenticationPrincipal User user) {
         try {
-            ThemeColorsResponse colors = themeService.getUserThemeColors(user);
-            return ResponseEntity.ok(ApiResponse.success("Cores do tema carregadas com sucesso", colors));
+            ThemeColorsResponse colors;
+            if (user == null) {
+                // Sem autenticação: retornar tema padrão (primeiro da lista de pré-definidos)
+                colors = themeService.getPredefinedThemes().get(0).getColors();
+            } else {
+                colors = themeService.getUserThemeColors(user);
+            }
+            return ResponseEntity.ok(ApiResponse.success(colors));
         } catch (Exception e) {
             log.error("Erro ao carregar cores do tema: {}", e.getMessage(), e);
             return ResponseEntity.badRequest()
@@ -73,6 +79,24 @@ public class ThemeController {
             log.error("Erro ao aplicar tema: {}", e.getMessage(), e);
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error("Erro ao aplicar tema: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/clear-cache")
+    public ResponseEntity<ApiResponse<String>> clearCache(@AuthenticationPrincipal User user) {
+        try {
+            // Verificar se o usuário é profissional ou admin
+            if (user == null || (!user.getRole().equals("PROFESSIONAL") && !user.getRole().equals("ADMIN"))) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Apenas profissionais e administradores podem limpar o cache"));
+            }
+            
+            themeService.clearCache();
+            return ResponseEntity.ok(ApiResponse.success("Cache limpo com sucesso", "Cache do Redis foi limpo"));
+        } catch (Exception e) {
+            log.error("Erro ao limpar cache: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Erro ao limpar cache: " + e.getMessage()));
         }
     }
 }

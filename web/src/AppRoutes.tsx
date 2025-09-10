@@ -12,6 +12,7 @@ import { MyAccount } from './pages/MyAccount';
 import { InviteManagement } from './pages/InviteManagement';
 import { PatientManagement } from './pages/PatientManagement';
 import { ProfessionalSettings } from './pages/ProfessionalSettings';
+import { CacheManagement } from './pages/CacheManagement';
 import NotFound from './pages/NotFound';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ModuleViewer } from './components/ModuleViewer';
@@ -173,6 +174,24 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <MyAccount />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/my-account" 
+          element={
+            <ProtectedRoute>
+              <MyAccount />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/cache-management" 
+          element={
+            <ProtectedRoute>
+              <CacheManagement />
             </ProtectedRoute>
           } 
         />

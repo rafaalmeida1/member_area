@@ -1,0 +1,114 @@
+/* ===== MYLINKS RESPONSIVE ===== */
+
+/* Garantir que não haja overflow horizontal */
+.mylinks-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Cards dos links */
+.mylinks-container .card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.mylinks-container .card-content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Flex containers */
+.mylinks-container .flex {
+  min-width: 0;
+}
+
+.mylinks-container .flex-1 {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Textos que podem quebrar */
+.mylinks-container .truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Badges responsivos */
+.mylinks-container .badge {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Botões de ação */
+.mylinks-container .action-buttons {
+  flex-shrink: 0;
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* Mobile específico */
+@media (max-width: 640px) {
+  .mylinks-container .card-content {
+    padding: 0.375rem;
+  }
+  
+  .mylinks-container .flex {
+    gap: 0.375rem;
+  }
+  
+  .mylinks-container .text-xs {
+    font-size: 0.65rem;
+    line-height: 1.2;
+  }
+  
+  .mylinks-container .badge {
+    font-size: 0.6rem;
+    padding: 0.125rem 0.25rem;
+  }
+  
+  .mylinks-container .action-buttons button {
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+  }
+  
+  /* Reduzir espaçamento entre cards */
+  .mylinks-container .space-y-2 > * + * {
+    margin-top: 0.25rem;
+  }
+  
+  /* Cards mais compactos */
+  .mylinks-container .card {
+    border-radius: 0.375rem;
+  }
+  
+  /* Textos mais compactos */
+  .mylinks-container h3 {
+    font-size: 0.7rem;
+    line-height: 1.1;
+  }
+  
+  .mylinks-container p {
+    font-size: 0.65rem;
+    line-height: 1.1;
+  }
+}
+
+/* Garantir que drag and drop não quebre o layout */
+.mylinks-container [data-rbd-draggable-id] {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.mylinks-container [data-rbd-droppable-id] {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}

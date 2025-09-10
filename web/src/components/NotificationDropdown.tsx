@@ -1,8 +1,10 @@
 "use client"
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Bell, Check, ExternalLink, BookOpen, RefreshCw, MessageSquare, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNotifications } from '@/contexts/NotificationContext';
+import { Notification as NotificationType } from '@/services/notificationService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -15,165 +17,64 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useToast } from '@/hooks/use-toast';
-import { notificationService, Notification as NotificationType } from '@/services/notificationService';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useNavigate } from 'react-router-dom';
 import './NotificationDropdown.css';
 
-// Usar o tipo do serviço
-type Notification = NotificationType;
-
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [allNotifications, setAllNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState<number | null>(null);
-  const [markAllLoading, setMarkAllLoading] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   
-  // Estados para paginação
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-
-  // Carregar notificações não lidas para o dropdown
-  const loadUnreadNotifications = async () => {
-    if (!user) return;
-    
-    try {
-      setIsLoading(true);
-      const unreadNotifications = await notificationService.getUnreadNotifications();
-      setNotifications(unreadNotifications);
-      setUnreadCount(unreadNotifications.length);
-    } catch (error) {
-      console.error('Erro ao carregar notificações:', error);
-      toast({
-        title: "Erro ao carregar notificações",
-        description: "Não foi possível carregar as notificações.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Carregar todas as notificações para o sheet
-  const loadAllNotifications = async () => {
-    if (!user) return;
-    
-    try {
-      setIsLoading(true);
-      const allNotifications = await notificationService.getNotifications();
-      setAllNotifications(allNotifications);
-    } catch (error) {
-      console.error('Erro ao carregar todas as notificações:', error);
-      toast({
-        title: "Erro ao carregar notificações",
-        description: "Não foi possível carregar as notificações.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
+  // Usar o contexto de notificações
+  const {
+    notifications,
+    allNotifications,
+    unreadCount,
+    isLoading,
+    actionLoading,
+    markAllLoading,
+    totalElements,
+    isLoadingMore,
+    hasMore,
+    loadAllNotifications,
+    markAsRead,
+    markAllAsRead,
+    getNotificationIcon,
+    getNotificationColor,
+    formatTime,
+  } = useNotifications();
 
   // Detectar scroll para carregar mais (simplificado)
-  const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     // Implementação simplificada sem paginação
-  }, []);
-
-  // Carregar notificações quando abrir o dropdown
-  useEffect(() => {
-    if (isOpen && user) {
-      loadUnreadNotifications();
-    }
-  }, [isOpen, user]);
+  };
 
   // Carregar todas as notificações quando abrir o sheet
-  useEffect(() => {
+  React.useEffect(() => {
     if (sheetOpen && user) {
       loadAllNotifications();
     }
-  }, [sheetOpen, user]);
-
-  // Marcar notificação como lida
-  const markAsRead = async (notificationId: number) => {
-    try {
-      setActionLoading(notificationId);
-      await notificationService.markAsRead(notificationId);
-      
-      // Atualizar estado local
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
-      setAllNotifications(prev => 
-        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-      );
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Erro ao marcar como lida:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível marcar a notificação como lida.",
-        variant: "destructive",
-      });
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  // Marcar todas como lidas
-  const markAllAsRead = async () => {
-    try {
-      setMarkAllLoading(true);
-      await notificationService.markAllAsRead();
-      
-      // Atualizar estado local
-      setNotifications([]);
-      setAllNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      setUnreadCount(0);
-      
-      toast({
-        title: "Sucesso",
-        description: "Todas as notificações foram marcadas como lidas.",
-      });
-    } catch (error) {
-      console.error('Erro ao marcar todas como lidas:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível marcar todas as notificações como lidas.",
-        variant: "destructive",
-      });
-    } finally {
-      setMarkAllLoading(false);
-    }
-  };
+  }, [sheetOpen, user, loadAllNotifications]);
 
   // Navegar para módulo
-  const handleModuleClick = async (notification: Notification) => {
+  const handleModuleClick = async (notification: NotificationType) => {
     if (notification.moduleId) {
       try {
-        setActionLoading(notification.id);
         await markAsRead(notification.id);
         window.location.href = window.location.origin + `/module/${notification.moduleId}`;
         setIsOpen(false);
       } catch (error) {
         console.error('Erro ao navegar para módulo:', error);
-      } finally {
-        setActionLoading(null);
       }
     }
   };
 
-  const getNotificationIcon = (type: Notification['type']) => {
+  // Função para renderizar ícones com componentes Lucide
+  const renderNotificationIcon = (type: NotificationType['type']) => {
     switch (type) {
       case 'MODULE_NEW':
         return <BookOpen className="size-4 text-emerald-500" />;
@@ -186,41 +87,6 @@ export function NotificationDropdown() {
       default:
         return <Bell className="size-4 text-gray-500" />;
     }
-  };
-
-  const getNotificationColor = (type: Notification['type']) => {
-    switch (type) {
-      case 'MODULE_NEW':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'MODULE_UPDATED':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'PROFESSIONAL_MESSAGE':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'SYSTEM':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
-    }
-  };
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
-    if (diffInMinutes < 1) return 'Agora mesmo';
-    if (diffInMinutes < 60) return `${diffInMinutes} min atrás`;
-    
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours}h atrás`;
-    
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return `${diffInDays}d atrás`;
-    
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-    });
   };
 
   // Se não há usuário logado, não mostrar o componente
@@ -291,7 +157,7 @@ export function NotificationDropdown() {
               {notifications.map((notification) => (
                 <DropdownMenuItem
                   key={notification.id}
-                  className="flex items-start gap-3 p-3 cursor-pointer group"
+                  className="flex items-start gap-3 p-3 cursor-pointer group border-[var(--color-border)] hover:bg-[var(--color-accent)]"
                   onClick={() => !notification.read && handleModuleClick(notification)}
                   disabled={actionLoading === notification.id}
                 >
@@ -301,7 +167,7 @@ export function NotificationDropdown() {
                         {actionLoading === notification.id ? (
                           <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
                         ) : (
-                          getNotificationIcon(notification.type)
+                          renderNotificationIcon(notification.type)
                         )}
                       </AvatarFallback>
                     </Avatar>
@@ -309,7 +175,7 @@ export function NotificationDropdown() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 border-[var(--color-border)]">
                         <p
                           className={`text-sm font-medium leading-tight ${
                             !notification.read ? "text-foreground" : "text-muted-foreground"
@@ -437,14 +303,14 @@ export function NotificationDropdown() {
                       key={notification.id}
                       className={`p-3 rounded-lg border transition-colors ${
                         notification.read 
-                          ? 'bg-muted/50' 
-                          : 'bg-background border-primary/20'
+                          ? 'bg-[var(--color-muted)]/50 border-[var(--color-border)] hover:bg-[var(--color-accent)]' 
+                          : 'bg-[var(--color-background)] border-[var(--color-border)] hover:bg-[var(--color-accent)]'
                       }`}
                     >
                       <div className="flex items-start gap-3">
                         <Avatar className="w-8 h-8">
                           <AvatarFallback className={`text-xs ${getNotificationColor(notification.type)}`}>
-                            {getNotificationIcon(notification.type)}
+                            {renderNotificationIcon(notification.type)}
                           </AvatarFallback>
                         </Avatar>
                         

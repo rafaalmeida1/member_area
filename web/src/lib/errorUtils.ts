@@ -64,9 +64,27 @@ export function parseApiError(error: unknown): ProcessedError {
       
       // Se há erros de validação específicos
       if (Object.keys(validationErrors).length > 0) {
+        // Se há apenas um erro, retornar a mensagem específica
+        const errorKeys = Object.keys(validationErrors);
+        if (errorKeys.length === 1) {
+          const field = errorKeys[0];
+          const message = validationErrors[field];
+          const processed = processFieldSpecificError(field, message);
+          return {
+            title: processed.title,
+            message: processed.message,
+            validationErrors,
+            statusCode: status,
+            type: 'validation'
+          };
+        }
+        
+        // Se há múltiplos erros, retornar o primeiro ou uma mensagem geral
+        const firstError = errorKeys[0];
+        const firstMessage = validationErrors[firstError];
         return {
           title: 'Dados Inválidos',
-          message: data.message || 'Por favor, corrija os campos destacados',
+          message: firstMessage || data.message || 'Por favor, corrija os campos destacados',
           validationErrors,
           statusCode: status,
           type: 'validation'
@@ -175,6 +193,32 @@ function getFieldDisplayName(field: string): string {
     birthDate: 'Data de nascimento',
     startDate: 'Data inicial',
     endDate: 'Data final',
+    
+    // Theme fields
+    themePrimaryColor: 'Cor primária',
+    themeSecondaryColor: 'Cor secundária',
+    themeAccentColor: 'Cor de destaque',
+    themeBackgroundColor: 'Cor de fundo',
+    themeSurfaceColor: 'Cor de superfície',
+    themeTextColor: 'Cor do texto',
+    themeTextSecondaryColor: 'Cor do texto secundário',
+    themeBorderColor: 'Cor da borda',
+    themeInputBgColor: 'Cor de fundo do input',
+    themeInputBorderColor: 'Cor da borda do input',
+    themeInputFocusColor: 'Cor de foco do input',
+    themeButtonPrimaryBg: 'Cor de fundo do botão primário',
+    themeButtonPrimaryHover: 'Cor de hover do botão primário',
+    themeButtonPrimaryText: 'Cor do texto do botão primário',
+    themeButtonSecondaryBg: 'Cor de fundo do botão secundário',
+    themeButtonSecondaryHover: 'Cor de hover do botão secundário',
+    themeButtonSecondaryText: 'Cor do texto do botão secundário',
+    themeButtonDisabledBg: 'Cor de fundo do botão desabilitado',
+    themeButtonDisabledText: 'Cor do texto do botão desabilitado',
+    themeSuccessColor: 'Cor de sucesso',
+    themeWarningColor: 'Cor de aviso',
+    themeErrorColor: 'Cor de erro',
+    themeInfoColor: 'Cor de informação',
+    selectedTheme: 'Tema selecionado',
   };
   
   return fieldMap[field] || field.charAt(0).toUpperCase() + field.slice(1);
@@ -287,6 +331,51 @@ export function validatePositiveNumber(value: number, fieldName: string): string
   }
   
   return null;
+}
+
+/**
+ * Processa erros específicos de campos conhecidos
+ */
+function processFieldSpecificError(field: string, message: string): { title: string; message: string } {
+  // Erros específicos de senha
+  if (field === 'password' || field === 'currentPassword' || field === 'newPassword') {
+    return {
+      title: 'Senha inválida',
+      message: message
+    };
+  }
+  
+  // Erros específicos de email
+  if (field === 'email') {
+    if (message.includes('formato') || message.includes('format') || message.includes('válido')) {
+      return {
+        title: 'Email inválido',
+        message: 'Por favor, insira um email válido'
+      };
+    }
+    if (message.includes('exist') || message.includes('já existe') || message.includes('already')) {
+      return {
+        title: 'Email já cadastrado',
+        message: 'Este email já está sendo usado por outro usuário'
+      };
+    }
+  }
+  
+  // Erros específicos de cores (tema)
+  if (field.includes('Color') || field.includes('color')) {
+    if (message.includes('hexadecimal') || message.includes('hex') || message.includes('formato')) {
+      return {
+        title: 'Cor inválida',
+        message: 'Por favor, insira uma cor válida no formato hexadecimal (#RRGGBB)'
+      };
+    }
+  }
+  
+  // Retornar erro genérico se não for um caso específico
+  return {
+    title: getFieldDisplayName(field),
+    message: message
+  };
 }
 
 /**

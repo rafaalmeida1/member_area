@@ -851,9 +851,26 @@ class ApiService {
   // MARK: - Theme
   async getTheme(): Promise<ThemeColors> {
     try {
-      const response = await this.api.get('/api/theme');
-      console.log(response.data.data);
-      return response.data.data;
+      // BaseURL já contém "/api" quando necessário; aqui usamos o endpoint correto do backend
+      const response = await this.api.get('/theme/colors');
+      const data = response.data?.data || {};
+      // Mapear ThemeColorsResponse (backend) -> ThemeColors (frontend)
+      console.log(data);
+
+      const mapped: ThemeColors = {
+        primaryColor: data.themePrimaryColor || data.primaryColor || '#DBCFCB',
+        secondaryColor: data.themeSecondaryColor || data.secondaryColor || '#D8C4A4',
+        backgroundColor: data.themeBackgroundColor || data.backgroundColor || '#FFFFFF',
+        surfaceColor: data.themeSurfaceColor || data.surfaceColor || '#FAFAFA',
+        textPrimaryColor: data.themeTextColor || data.textPrimaryColor || '#2C2C2C',
+        textSecondaryColor: data.themeTextSecondaryColor || data.textSecondaryColor || '#666666',
+        borderColor: data.themeBorderColor || data.borderColor || '#E0E0E0',
+        hoverColor: data.themeButtonPrimaryHover || data.hoverColor || data.themeSecondaryColor || '#F0F0F0',
+        disabledColor: data.themeButtonDisabledBg || data.disabledColor || '#CCCCCC'
+      };
+
+      console.log(response);
+      return mapped;
     } catch (error) {
       console.error('Erro ao buscar tema:', error);
       // Retornar tema padrão em caso de erro
@@ -879,6 +896,85 @@ class ApiService {
       }
     } catch (error) {
       console.error('Erro ao atualizar tema:', error);
+      throw error;
+    }
+  }
+
+  async clearCache(): Promise<void> {
+    try {
+      const response = await this.api.post('/cache/clear-all');
+      if (response.data.status !== 'success') {
+        throw new Error(response.data.message || 'Erro ao limpar cache');
+      }
+    } catch (error) {
+      console.error('Erro ao limpar cache:', error);
+      throw error;
+    }
+  }
+
+  async clearUserCache(): Promise<void> {
+    try {
+      const response = await this.api.post('/cache/clear/users');
+      if (response.data.status !== 'success') {
+        throw new Error(response.data.message || 'Erro ao limpar cache de usuários');
+      }
+    } catch (error) {
+      console.error('Erro ao limpar cache de usuários:', error);
+      throw error;
+    }
+  }
+
+  async clearModuleCache(): Promise<void> {
+    try {
+      const response = await this.api.post('/cache/clear/modules');
+      if (response.data.status !== 'success') {
+        throw new Error(response.data.message || 'Erro ao limpar cache de módulos');
+      }
+    } catch (error) {
+      console.error('Erro ao limpar cache de módulos:', error);
+      throw error;
+    }
+  }
+
+  async clearSessionCache(): Promise<void> {
+    try {
+      const response = await this.api.post('/cache/clear/sessions');
+      if (response.data.status !== 'success') {
+        throw new Error(response.data.message || 'Erro ao limpar cache de sessões');
+      }
+    } catch (error) {
+      console.error('Erro ao limpar cache de sessões:', error);
+      throw error;
+    }
+  }
+
+  async clearThemeCache(): Promise<void> {
+    try {
+      const response = await this.api.post('/cache/clear/themes');
+      if (response.data.status !== 'success') {
+        throw new Error(response.data.message || 'Erro ao limpar cache de temas');
+      }
+    } catch (error) {
+      console.error('Erro ao limpar cache de temas:', error);
+      throw error;
+    }
+  }
+
+  async getCacheInfo(): Promise<{
+    totalKeys: number;
+    userKeys: number;
+    moduleKeys: number;
+    sessionKeys: number;
+    themeKeys: number;
+  }> {
+    try {
+      const response = await this.api.get('/cache/info');
+      if (response.data.status !== 'success') {
+        throw new Error(response.data.message || 'Erro ao obter informações do cache');
+      }
+      return response.data.data;
+    } catch (error) {
+      console.error('Erro ao obter informações do cache:', error);
       throw error;
     }
   }

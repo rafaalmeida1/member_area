@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ThemeColorsResponse {
+    private String message;
     private String themePrimaryColor;
     private String themeSecondaryColor;
     private String themeAccentColor;

@@ -56,7 +56,7 @@ export function Login() {
       const parsed = parseApiError(error);
       toast({
         title: parsed.title,
-        description: parsed.description,
+        description: parsed.message,
         variant: "destructive",
       });
     } finally {
@@ -139,7 +139,7 @@ export function Login() {
                 className="login-button w-full"
                 disabled={isLoading}
               >
-                {isLoading ? 'Entrando...' : 'login'}
+                {isLoading ? 'Entrando...' : 'Login'}
               </Button>
             </div>
           </form>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -93,15 +93,7 @@ export function MyAccount({
     confirmPassword: ''
   });
 
-  // Carregar estatísticas do usuário
-  useEffect(() => {
-    loadUserStats();
-    if (user?.role === 'PROFESSIONAL') {
-      loadProfessionalProfile();
-    }
-  }, [user]);
-
-  const loadUserStats = async () => {
+  const loadUserStats = useCallback(async () => {
     try {
       setIsLoading(true);
       const stats = await apiService.getUserStats();
@@ -116,9 +108,9 @@ export function MyAccount({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
-  const loadProfessionalProfile = async () => {
+  const loadProfessionalProfile = useCallback(async () => {
     try {
       const profile = await apiService.getProfessionalProfile();
       setProfessionalProfile(profile);
@@ -140,7 +132,15 @@ export function MyAccount({
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
+
+  // Carregar estatísticas do usuário
+  useEffect(() => {
+    loadUserStats();
+    if (user?.role === 'PROFESSIONAL') {
+      loadProfessionalProfile();
+    }
+  }, [user, loadUserStats, loadProfessionalProfile]);
 
   const handleSaveProfile = async () => {
     try {
@@ -288,15 +288,17 @@ export function MyAccount({
     <ModernLayout
       title="Minha Conta"
     >
-      <div className="my-account-container">
+      <div className="w-full min-w-0">
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
-            <TabsTrigger value="profile" className="text-xs sm:text-sm">Meu Perfil</TabsTrigger>
-            {isProfessional && <TabsTrigger value="professional" className="text-xs sm:text-sm">Perfil Profissional</TabsTrigger>}
-            {isProfessional && <TabsTrigger value="theme" className="text-xs sm:text-sm">Tema</TabsTrigger>}
-            <TabsTrigger value="stats" className="text-xs sm:text-sm">Estatísticas</TabsTrigger>
-            <TabsTrigger value="security" className="text-xs sm:text-sm">Segurança</TabsTrigger>
-          </TabsList>
+          <div className="w-full overflow-hidden">
+            <TabsList className="flex w-full overflow-x-auto scrollbar-hide gap-1 p-1">
+              <TabsTrigger value="profile" className="text-xs sm:text-sm flex-shrink-0 whitespace-nowrap">Meu Perfil</TabsTrigger>
+              {isProfessional && <TabsTrigger value="professional" className="text-xs sm:text-sm flex-shrink-0 whitespace-nowrap">Perfil Profissional</TabsTrigger>}
+              {isProfessional && <TabsTrigger value="theme" className="text-xs sm:text-sm flex-shrink-0 whitespace-nowrap">Tema</TabsTrigger>}
+              <TabsTrigger value="stats" className="text-xs sm:text-sm flex-shrink-0 whitespace-nowrap">Estatísticas</TabsTrigger>
+              <TabsTrigger value="security" className="text-xs sm:text-sm flex-shrink-0 whitespace-nowrap">Segurança</TabsTrigger>
+            </TabsList>
+          </div>
           
           <TabsContent value="profile" className="space-y-4 sm:space-y-6">
             <Card>

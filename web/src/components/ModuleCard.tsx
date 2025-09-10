@@ -58,7 +58,7 @@ export function ModuleCard({
 
   return (
     <Card 
-      className={`group hover:shadow-elegant w-full transition-all duration-500 hover:scale-[1.02] bg-card border-border/50 hover:border-primary/30 overflow-hidden ${
+      className={`group hover:shadow-elegant w-full transition-all duration-500 hover:scale-[1.02] bg-card border-[var(--color-border)] hover:border-[var(--color-primary)] overflow-hidden ${
         onView ? 'cursor-pointer' : ''
       } ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''}`}
       onClick={handleClick}

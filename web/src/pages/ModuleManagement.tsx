@@ -529,7 +529,6 @@ export function ModuleManagement({ professionalName }: AdminDashboardProps) {
           loading={isLoading} 
           loadingMessage="Carregando módulos..."
           overlay={true}
-          card={true}
           size="lg"
         >
           <DraggableModuleList

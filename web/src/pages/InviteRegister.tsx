@@ -8,6 +8,7 @@ import { apiService, InvitePreview } from "@/services/api";
 import { parseApiError } from "@/lib/utils";
 import "./InviteRegister.css";
 import NutriotinistImage from "@/components/NutriotinistImage";
+import { Button } from "@/components/ui/button";
 
 export function InviteRegister() {
     const { token } = useParams<{ token: string }>();
@@ -79,6 +80,10 @@ export function InviteRegister() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        if(!invite.phone) {
+            invite.phone = formData.phone;
+        }
+
         if (!token) {
             toast({
                 title: "Token inválido",
@@ -128,6 +133,8 @@ export function InviteRegister() {
 
             // Atualizar dados do usuário no contexto
             updateUser(response.user);
+            localStorage.setItem("user", JSON.stringify(response.user));
+            localStorage.setItem("token", response.token);
 
             toast({
                 title: "Conta criada com sucesso!",
@@ -274,8 +281,9 @@ export function InviteRegister() {
                                     placeholder="Sua senha"
                                     disabled={isLoading}
                                 />
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
                                     onClick={() =>
                                         setShowPassword(!showPassword)
                                     }
@@ -287,7 +295,7 @@ export function InviteRegister() {
                                     ) : (
                                         <Eye size={18} />
                                     )}
-                                </button>
+                                </Button>
                             </div>
                         </div>
 
@@ -314,8 +322,9 @@ export function InviteRegister() {
                                     placeholder="Confirme sua senha"
                                     disabled={isLoading}
                                 />
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
                                     onClick={() =>
                                         setShowConfirmPassword(
                                             !showConfirmPassword
@@ -329,12 +338,12 @@ export function InviteRegister() {
                                     ) : (
                                         <Eye size={18} />
                                     )}
-                                </button>
+                                </Button>
                             </div>
                         </div>
 
                         <div className="form-actions">
-                            <button
+                            <Button
                                 type="submit"
                                 className="invite-register-button"
                                 disabled={isLoading}
@@ -342,7 +351,7 @@ export function InviteRegister() {
                                 {isLoading
                                     ? "Criando conta..."
                                     : "aceitar convite"}
-                            </button>
+                            </Button>
                         </div>
                     </form>
 

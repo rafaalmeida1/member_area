@@ -9,14 +9,14 @@
 /* Sidebar Styles */
 .modern-sidebar {
   background: hsl(var(--card));
-  border-right: 1px solid hsl(var(--border));
+  border-right: 1px solid hsl(var(--color-border));
   box-shadow: 0 4px 12px hsl(var(--shadow));
 }
 
 .modern-sidebar-logo {
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid hsl(var(--border));
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-soft)));
+  border-bottom: 1px solid hsl(var(--color-border));
+  background: linear-gradient(135deg, hsl(var(--color-primary)), hsl(var(--primary-soft)));
 }
 
 .modern-sidebar-logo-icon {
@@ -27,7 +27,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: hsl(var(--primary));
+  color: hsl(var(--color-primary));
 }
 
 .modern-sidebar-nav {
@@ -42,7 +42,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: hsl(var(--muted-foreground));
+  color: hsl(var(--color-text-secondary));
 }
 
 .modern-sidebar-nav-item {
@@ -53,19 +53,19 @@
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: hsl(var(--muted-foreground));
+  color: hsl(var(--color-text-secondary));
   text-decoration: none;
   transition: all 0.2s ease;
   margin-bottom: 0.25rem;
 }
 
 .modern-sidebar-nav-item:hover {
-  background: hsl(var(--accent));
+  background: hsl(var(--color-accent));
   color: hsl(var(--accent-foreground));
 }
 
 .modern-sidebar-nav-item.active {
-  background: hsl(var(--accent));
+  background: hsl(var(--color-accent));
   color: hsl(var(--accent-foreground));
   box-shadow: 0 2px 4px hsl(var(--shadow));
 }
@@ -75,17 +75,17 @@
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: hsl(var(--primary));
+  background: hsl(var(--color-primary));
   margin-left: auto;
 }
 
 .modern-sidebar-user {
   padding: 1rem;
-  border-top: 1px solid hsl(var(--border));
+  border-top: 1px solid hsl(var(--color-border));
 }
 
 .modern-sidebar-user-card {
-  background: hsl(var(--muted));
+  background: hsl(var(--color-muted));
   border-radius: 0.5rem;
   padding: 0.75rem;
   margin-bottom: 0.5rem;
@@ -95,7 +95,7 @@
 .modern-header {
   background: hsl(var(--background) / 0.8);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--color-border));
   position: sticky;
   top: 0;
   z-index: 40;
@@ -112,7 +112,7 @@
 .modern-header-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: hsl(var(--foreground));
+  color: hsl(var(--color-text));
 }
 
 .modern-header-actions {

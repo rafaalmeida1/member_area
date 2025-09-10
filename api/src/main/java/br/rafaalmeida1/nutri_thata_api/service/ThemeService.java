@@ -8,6 +8,7 @@ import br.rafaalmeida1.nutri_thata_api.mapper.ThemeMapper;
 import br.rafaalmeida1.nutri_thata_api.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ public class ThemeService {
 
     private final UserRepository userRepository;
     private final ThemeMapper themeMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     /**
      * Busca as cores do tema do usuário
@@ -287,5 +289,22 @@ public class ThemeService {
                     .build())
                 .build()
         );
+    }
+
+    /**
+     * Limpa todo o cache do Redis
+     */
+    public void clearCache() {
+        try {
+            log.info("Iniciando limpeza do cache Redis");
+            
+            // Limpar todas as chaves do Redis
+            redisTemplate.getConnectionFactory().getConnection().flushAll();
+            
+            log.info("Cache Redis limpo com sucesso");
+        } catch (Exception e) {
+            log.error("Erro ao limpar cache Redis: {}", e.getMessage(), e);
+            throw new RuntimeException("Erro ao limpar cache: " + e.getMessage());
+        }
     }
 }

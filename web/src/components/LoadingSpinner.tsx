@@ -108,7 +108,7 @@ interface InlineLoadingProps {
 export function InlineLoading({ loading, children, loadingText }: InlineLoadingProps) {
   if (loading) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 border-[var(--color-border)]">
         <Loader2 className="w-4 h-4 animate-spin" />
         {loadingText && <span>{loadingText}</span>}
       </div>

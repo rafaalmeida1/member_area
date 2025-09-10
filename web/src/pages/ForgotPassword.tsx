@@ -5,6 +5,7 @@ import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { apiService } from '@/services/api';
 import './ForgotPassword.css';
 import NutriotinistImage from '@/components/NutriotinistImage';
+import { Button } from '@/components/ui/button';
 
 export function ForgotPassword() {
   const { toast } = useToast();
@@ -100,9 +101,6 @@ export function ForgotPassword() {
 
           {/* Header */}
           <div className="forgot-password-header">
-            <div className="header-icon">
-              <Mail size={24} />
-            </div>
             <h2 className="header-title">Esqueceu sua senha?</h2>
             <p className="header-description">
               Digite seu e-mail e enviaremos instruções para redefinir sua senha
@@ -116,7 +114,6 @@ export function ForgotPassword() {
                 E-mail
               </label>
               <div className="input-container">
-                <Mail className="input-icon" size={18} />
                 <input
                   id="email"
                   type="email"
@@ -130,13 +127,13 @@ export function ForgotPassword() {
             </div>
             
             <div className="form-actions">
-              <button
+              <Button
                 type="submit"
-                className="forgot-password-button"
+                className="forgot-password-button w-full"
                 disabled={isLoading}
               >
                 {isLoading ? 'Enviando...' : 'enviar instruções'}
-              </button>
+              </Button>
             </div>
           </form>
           

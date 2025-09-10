@@ -16,6 +16,7 @@ import {
 import { themeService, ThemeColors, PredefinedTheme } from '@/services/themeService';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ThemeManagerProps {
   onThemeChange?: (colors: ThemeColors) => void;
@@ -29,10 +30,30 @@ export function ThemeManager({ onThemeChange }: ThemeManagerProps) {
   const [previewColors, setPreviewColors] = useState<ThemeColors | null>(null);
   const { handleError, handleSuccess } = useErrorHandler();
   const { toast } = useToast();
+  const { forceThemeUpdate } = useTheme();
 
   useEffect(() => {
     loadData();
   }, []);
+
+  const mapThemeColors = (themeColors: ThemeColors) => {
+    return {
+      primaryColor: themeColors.themePrimaryColor,
+      secondaryColor: themeColors.themeSecondaryColor,
+      accentColor: themeColors.themeAccentColor,
+      backgroundColor: themeColors.themeBackgroundColor,
+      surfaceColor: themeColors.themeSurfaceColor,
+      textPrimaryColor: themeColors.themeTextColor,
+      textSecondaryColor: themeColors.themeTextSecondaryColor,
+      hoverColor: themeColors.themeButtonPrimaryHover,
+      borderColor: themeColors.themeButtonSecondaryBg,
+      disabledColor: themeColors.themeButtonDisabledBg,
+      successColor: themeColors.themeSuccessColor,
+      warningColor: themeColors.themeWarningColor,
+      errorColor: themeColors.themeErrorColor,
+      infoColor: themeColors.themeInfoColor,
+    };
+  };
 
   const loadData = async () => {
     try {
@@ -48,6 +69,7 @@ export function ThemeManager({ onThemeChange }: ThemeManagerProps) {
       
       // Aplicar cores atuais
       themeService.applyThemeColors(colors);
+      localStorage.setItem('nutri-thata-theme', JSON.stringify(mapThemeColors(colors)));
     } catch (error) {
       handleError(error);
     } finally {
@@ -72,6 +94,9 @@ export function ThemeManager({ onThemeChange }: ThemeManagerProps) {
       setCurrentColors(savedColors);
       handleSuccess('Cores do tema salvas com sucesso!');
       onThemeChange?.(savedColors);
+      localStorage.setItem('nutri-thata-theme', JSON.stringify(mapThemeColors(savedColors)));
+      // Forçar atualização do tema no contexto
+      forceThemeUpdate();
     } catch (error) {
       handleError(error);
     } finally {
@@ -87,6 +112,9 @@ export function ThemeManager({ onThemeChange }: ThemeManagerProps) {
       setPreviewColors(colors);
       handleSuccess(`Tema "${theme.name}" aplicado com sucesso!`);
       onThemeChange?.(colors);
+      localStorage.setItem('nutri-thata-theme', JSON.stringify(mapThemeColors(colors)));
+      // Forçar atualização do tema no contexto
+      forceThemeUpdate();
     } catch (error) {
       handleError(error);
     } finally {

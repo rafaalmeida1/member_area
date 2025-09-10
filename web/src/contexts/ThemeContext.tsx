@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { ThemeColors } from '@/services/api';
 
 interface ThemeContextType {
@@ -6,6 +6,7 @@ interface ThemeContextType {
   isLoading: boolean;
   refreshTheme: () => Promise<void>;
   markForAnimation: () => void;
+  forceThemeUpdate: () => void;
 }
 
 const defaultTheme: ThemeColors = {
@@ -44,6 +45,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     root.style.setProperty('--color-border', themeColors.borderColor);
     root.style.setProperty('--color-hover', themeColors.hoverColor);
     root.style.setProperty('--color-disabled', themeColors.disabledColor);
+    // Variáveis específicas de botão usadas pelos componentes UI
+    // Mapeamento padrão: background -> primary, hover -> secondary, text -> texto primário
+    root.style.setProperty('--color-button-background', themeColors.primaryColor);
+    root.style.setProperty('--color-button-hover', themeColors.secondaryColor);
+    root.style.setProperty('--color-button-text', themeColors.textPrimaryColor);
     
     // Aplicar também para compatibilidade com Tailwind
     root.style.setProperty('--tw-color-primary', themeColors.primaryColor);
@@ -64,6 +70,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     document.body.style.setProperty('--color-text-primary', themeColors.textPrimaryColor);
     document.body.style.setProperty('--color-text-secondary', themeColors.textSecondaryColor);
     document.body.style.setProperty('--color-text', themeColors.textPrimaryColor); // Alias para compatibilidade
+    document.body.style.setProperty('--color-border', themeColors.borderColor);
+    document.body.style.setProperty('--color-hover', themeColors.hoverColor);
+    document.body.style.setProperty('--color-disabled', themeColors.disabledColor);
+    // Variáveis de botão também no body
+    document.body.style.setProperty('--color-button-background', themeColors.primaryColor);
+    document.body.style.setProperty('--color-button-hover', themeColors.secondaryColor);
+    document.body.style.setProperty('--color-button-text', themeColors.textPrimaryColor);
   };
 
   const saveThemeToLocalStorage = (themeColors: ThemeColors) => {
@@ -116,27 +129,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
-  const shouldShowAnimation = (): boolean => {
-    try {
-      // Não mostrar animação na página pública de links
-      if (window.location.pathname.startsWith('/links/')) {
-        return false;
-      }
-      
-      // Verificar se foi marcado para mostrar animação (para redirects diretos)
-      const shouldAnimate = sessionStorage.getItem('nutri-thata-show-animation');
-      if (shouldAnimate === 'true') {
-        sessionStorage.removeItem('nutri-thata-show-animation');
-        return true;
-      }
-      
-      // Se é redirect externo, mostrar animação
-      return isExternalRedirect();
-    } catch (error) {
-      console.error('Erro ao verificar se deve mostrar animação:', error);
-      return false;
-    }
-  };
 
   // Função para marcar que deve mostrar animação (usada em links de redirect direto)
   const markForAnimation = () => {
@@ -147,9 +139,31 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
-  const loadTheme = async () => {
+  const loadTheme = useCallback(async () => {
     try {
       // Verificar se deve mostrar animação
+      const shouldShowAnimation = (): boolean => {
+        try {
+          // Não mostrar animação na página pública de links
+          if (window.location.pathname.startsWith('/links/')) {
+            return false;
+          }
+          
+          // Verificar se foi marcado para mostrar animação (para redirects diretos)
+          const shouldAnimate = sessionStorage.getItem('nutri-thata-show-animation');
+          if (shouldAnimate === 'true') {
+            sessionStorage.removeItem('nutri-thata-show-animation');
+            return true;
+          }
+          
+          // Se é redirect externo, mostrar animação
+          return isExternalRedirect();
+        } catch (error) {
+          console.error('Erro ao verificar se deve mostrar animação:', error);
+          return false;
+        }
+      };
+      
       const showAnimation = shouldShowAnimation();
       
       if (showAnimation) {
@@ -160,52 +174,64 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         await new Promise(resolve => setTimeout(resolve, 2500));
       }
 
-      // Tentar carregar do localStorage primeiro
+      // PRIMEIRO: Carregar do localStorage (rápido)
       const savedTheme = loadThemeFromLocalStorage();
       
       if (savedTheme) {
-        // Usar tema salvo
         setTheme(savedTheme);
         applyThemeToCSS(savedTheme);
+        console.log('Tema carregado do localStorage');
         
         if (showAnimation) {
-          // Delay adicional para garantir que a animação seja vista
           setTimeout(() => {
             setIsLoading(false);
           }, 500);
+        } else {
+          setIsLoading(false);
         }
-        return;
+      } else {
+        // Se não há tema salvo, usar padrão
+        setTheme(defaultTheme);
+        applyThemeToCSS(defaultTheme);
+        console.log('Tema padrão aplicado (sem localStorage)');
+        
+        if (showAnimation) {
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 500);
+        } else {
+          setIsLoading(false);
+        }
       }
 
-      // Se não há tema salvo, carregar do servidor
-      const { apiService } = await import('@/services/api');
-      const themeColors = await apiService.getTheme();
-      
-      setTheme(themeColors);
-      applyThemeToCSS(themeColors);
-      saveThemeToLocalStorage(themeColors);
-      
-      if (showAnimation) {
-        // Delay adicional para garantir que a animação seja vista
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 500);
+      // SEGUNDO: Atualizar do servidor em background (sem bloquear UI)
+      try {
+        const { apiService } = await import('@/services/api');
+        const serverTheme = await apiService.getTheme();
+        
+        // Só atualizar se for diferente do que está no localStorage
+        if (!savedTheme || JSON.stringify(serverTheme) !== JSON.stringify(savedTheme)) {
+          setTheme(serverTheme);
+          applyThemeToCSS(serverTheme);
+          saveThemeToLocalStorage(serverTheme);
+          console.log('Tema atualizado do servidor');
+        }
+      } catch (serverError) {
+        console.warn('Erro ao atualizar tema do servidor (não crítico):', serverError);
+        // Não fazer nada, o tema do localStorage já está aplicado
       }
+      
     } catch (error) {
-      console.error('Erro ao carregar tema:', error);
-      // Usar tema padrão em caso de erro
+      console.error('Erro crítico ao carregar tema:', error);
+      
+      // Último recurso: usar tema padrão
       setTheme(defaultTheme);
       applyThemeToCSS(defaultTheme);
+      console.log('Tema padrão aplicado (erro crítico)');
       
-      if (shouldShowAnimation()) {
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 500);
-      } else {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
-  };
+  }, []);
 
   const refreshTheme = async () => {
     try {
@@ -220,8 +246,29 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
+  const forceThemeUpdate = () => {
+    const savedTheme = loadThemeFromLocalStorage();
+    if (savedTheme) {
+      setTheme(savedTheme);
+      applyThemeToCSS(savedTheme);
+    }
+  };
+
   useEffect(() => {
     loadTheme();
+
+    // Listener para detectar mudanças no localStorage do tema
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'nutri-thata-theme' && e.newValue) {
+        try {
+          const newTheme = JSON.parse(e.newValue);
+          setTheme(newTheme);
+          applyThemeToCSS(newTheme);
+        } catch (error) {
+          console.error('Erro ao aplicar tema do localStorage:', error);
+        }
+      }
+    };
 
     // Listener para detectar navegação interna e garantir que a animação não apareça
     const handleBeforeUnload = () => {
@@ -236,21 +283,23 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       }
     };
 
+    window.addEventListener('storage', handleStorageChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pageshow', handlePageShow);
 
     return () => {
+      window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pageshow', handlePageShow);
     };
-  }, []);
+  }, [loadTheme]);
 
   useEffect(() => {
     applyThemeToCSS(theme);
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, isLoading, refreshTheme, markForAnimation }}>
+    <ThemeContext.Provider value={{ theme, isLoading, refreshTheme, markForAnimation, forceThemeUpdate }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from './components/ui/toaster';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import App from './App';
 import './index.css';
 
@@ -11,9 +12,11 @@ const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-      <Toaster />
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <App />
+        <Toaster />
+      </BrowserRouter>
+    </ThemeProvider>
   </React.StrictMode>
 );

@@ -2,122 +2,120 @@ package br.rafaalmeida1.nutri_thata_api.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CacheService {
 
-    private final CacheManager cacheManager;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     /**
-     * Invalida um cache específico
+     * Limpa todo o cache do Redis
      */
-    public void evictCache(String cacheName) {
-        Cache cache = cacheManager.getCache(cacheName);
-        if (cache != null) {
-            cache.clear();
-            log.info("Cache '{}' invalidado com sucesso", cacheName);
-        } else {
-            log.warn("Cache '{}' não encontrado", cacheName);
+    public void clearAllCache() {
+        try {
+            log.info("Iniciando limpeza completa do cache Redis");
+            
+            // Limpar todas as chaves do Redis
+            redisTemplate.getConnectionFactory().getConnection().flushAll();
+            
+            log.info("Cache Redis limpo com sucesso - todas as chaves foram removidas");
+        } catch (Exception e) {
+            log.error("Erro ao limpar cache Redis: {}", e.getMessage(), e);
+            throw new RuntimeException("Erro ao limpar cache: " + e.getMessage());
         }
     }
 
     /**
-     * Invalida um item específico de um cache
+     * Limpa cache específico por padrão
      */
-    public void evictCacheItem(String cacheName, Object key) {
-        Cache cache = cacheManager.getCache(cacheName);
-        if (cache != null) {
-            cache.evict(key);
-            log.info("Item '{}' do cache '{}' invalidado com sucesso", key, cacheName);
-        } else {
-            log.warn("Cache '{}' não encontrado", cacheName);
-        }
-    }
-
-    /**
-     * Invalida múltiplos caches
-     */
-    public void evictMultipleCaches(String... cacheNames) {
-        for (String cacheName : cacheNames) {
-            evictCache(cacheName);
-        }
-    }
-
-    /**
-     * Invalida todos os caches
-     */
-    public void evictAllCaches() {
-        Collection<String> cacheNames = cacheManager.getCacheNames();
-        for (String cacheName : cacheNames) {
-            evictCache(cacheName);
-        }
-        log.info("Todos os caches foram invalidados");
-    }
-
-    /**
-     * Adiciona um item ao cache com TTL personalizado
-     */
-    public void putCacheItem(String cacheName, Object key, Object value) {
-        Cache cache = cacheManager.getCache(cacheName);
-        if (cache != null) {
-            cache.put(key, value);
-            log.debug("Item '{}' adicionado ao cache '{}'", key, cacheName);
-        } else {
-            log.warn("Cache '{}' não encontrado", cacheName);
-        }
-    }
-
-    /**
-     * Obtém um item do cache
-     */
-    public Object getCacheItem(String cacheName, Object key) {
-        Cache cache = cacheManager.getCache(cacheName);
-        if (cache != null) {
-            Cache.ValueWrapper value = cache.get(key);
-            if (value != null) {
-                log.debug("Item '{}' encontrado no cache '{}'", key, cacheName);
-                return value.get();
+    public void clearCacheByPattern(String pattern) {
+        try {
+            log.info("Iniciando limpeza do cache com padrão: {}", pattern);
+            
+            Set<String> keys = redisTemplate.keys(pattern);
+            if (keys != null && !keys.isEmpty()) {
+                redisTemplate.delete(keys);
+                log.info("Cache limpo com sucesso - {} chaves removidas com padrão: {}", keys.size(), pattern);
+            } else {
+                log.info("Nenhuma chave encontrada com o padrão: {}", pattern);
             }
-        }
-        log.debug("Item '{}' não encontrado no cache '{}'", key, cacheName);
-        return null;
-    }
-
-    /**
-     * Verifica se um item existe no cache
-     */
-    public boolean hasCacheItem(String cacheName, Object key) {
-        Cache cache = cacheManager.getCache(cacheName);
-        return cache != null && cache.get(key) != null;
-    }
-
-    /**
-     * Lista todos os caches disponíveis
-     */
-    public Collection<String> getCacheNames() {
-        return cacheManager.getCacheNames();
-    }
-
-    /**
-     * Obtém estatísticas do cache (se disponível)
-     */
-    public void logCacheStats() {
-        Collection<String> cacheNames = cacheManager.getCacheNames();
-        log.info("Caches disponíveis: {}", cacheNames);
-        
-        for (String cacheName : cacheNames) {
-            Cache cache = cacheManager.getCache(cacheName);
-            if (cache != null) {
-                log.info("Cache '{}': {}", cacheName, cache.getNativeCache().getClass().getSimpleName());
-            }
+        } catch (Exception e) {
+            log.error("Erro ao limpar cache com padrão {}: {}", pattern, e.getMessage(), e);
+            throw new RuntimeException("Erro ao limpar cache com padrão: " + e.getMessage());
         }
     }
-} 
+
+    /**
+     * Obtém informações sobre o cache
+     */
+    public CacheInfo getCacheInfo() {
+        try {
+            Set<String> allKeys = redisTemplate.keys("*");
+            int totalKeys = allKeys != null ? allKeys.size() : 0;
+            
+            // Contar chaves por padrão
+            int userKeys = redisTemplate.keys("user:*") != null ? redisTemplate.keys("user:*").size() : 0;
+            int moduleKeys = redisTemplate.keys("module:*") != null ? redisTemplate.keys("module:*").size() : 0;
+            int sessionKeys = redisTemplate.keys("session:*") != null ? redisTemplate.keys("session:*").size() : 0;
+            int themeKeys = redisTemplate.keys("theme:*") != null ? redisTemplate.keys("theme:*").size() : 0;
+            
+            return CacheInfo.builder()
+                    .totalKeys(totalKeys)
+                    .userKeys(userKeys)
+                    .moduleKeys(moduleKeys)
+                    .sessionKeys(sessionKeys)
+                    .themeKeys(themeKeys)
+                    .build();
+        } catch (Exception e) {
+            log.error("Erro ao obter informações do cache: {}", e.getMessage(), e);
+            throw new RuntimeException("Erro ao obter informações do cache: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Limpa cache de usuários
+     */
+    public void clearUserCache() {
+        clearCacheByPattern("user:*");
+    }
+
+    /**
+     * Limpa cache de módulos
+     */
+    public void clearModuleCache() {
+        clearCacheByPattern("module:*");
+    }
+
+    /**
+     * Limpa cache de sessões
+     */
+    public void clearSessionCache() {
+        clearCacheByPattern("session:*");
+    }
+
+    /**
+     * Limpa cache de temas
+     */
+    public void clearThemeCache() {
+        clearCacheByPattern("theme:*");
+    }
+
+    /**
+     * Classe para informações do cache
+     */
+    @lombok.Builder
+    @lombok.Data
+    public static class CacheInfo {
+        private int totalKeys;
+        private int userKeys;
+        private int moduleKeys;
+        private int sessionKeys;
+        private int themeKeys;
+    }
+}

@@ -1,55 +1,91 @@
 package br.rafaalmeida1.nutri_thata_api.controller;
 
 import br.rafaalmeida1.nutri_thata_api.dto.response.ApiResponse;
+import br.rafaalmeida1.nutri_thata_api.entities.User;
 import br.rafaalmeida1.nutri_thata_api.service.CacheService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
-@RequestMapping("/api/cache")
+@RequestMapping("/cache")
 @RequiredArgsConstructor
+@Slf4j
 public class CacheController {
 
     private final CacheService cacheService;
 
-    @PreAuthorize("hasRole('PROFESSIONAL')")
-    @GetMapping("/stats")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getCacheStats() {
-        Collection<String> cacheNames = cacheService.getCacheNames();
-        
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("totalCaches", cacheNames.size());
-        stats.put("cacheNames", cacheNames);
-        
-        return ResponseEntity.ok(ApiResponse.success("Estatísticas do cache", stats));
+    @PostMapping("/clear-all")
+    public ResponseEntity<ApiResponse<String>> clearAllCache(@AuthenticationPrincipal User user) {
+        try {
+            cacheService.clearAllCache();
+            return ResponseEntity.ok(ApiResponse.success("Cache limpo com sucesso", "Todo o cache do sistema foi limpo"));
+        } catch (Exception e) {
+            log.error("Erro ao limpar cache: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Erro ao limpar cache: " + e.getMessage()));
+        }
     }
 
-    @PreAuthorize("hasRole('PROFESSIONAL')")
-    @DeleteMapping("/{cacheName}")
-    public ResponseEntity<ApiResponse<String>> evictCache(@PathVariable String cacheName) {
-        cacheService.evictCache(cacheName);
-        return ResponseEntity.ok(ApiResponse.success("Cache '" + cacheName + "' invalidado com sucesso", null));
+    @PostMapping("/clear/users")
+    public ResponseEntity<ApiResponse<String>> clearUserCache(@AuthenticationPrincipal User user) {
+        try {
+            cacheService.clearUserCache();
+            return ResponseEntity.ok(ApiResponse.success("Cache de usuários limpo", "Cache de usuários foi limpo com sucesso"));
+        } catch (Exception e) {
+            log.error("Erro ao limpar cache de usuários: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Erro ao limpar cache de usuários: " + e.getMessage()));
+        }
     }
 
-    @PreAuthorize("hasRole('PROFESSIONAL')")
-    @DeleteMapping("/{cacheName}/{key}")
-    public ResponseEntity<ApiResponse<String>> evictCacheItem(
-            @PathVariable String cacheName, 
-            @PathVariable String key) {
-        cacheService.evictCacheItem(cacheName, key);
-        return ResponseEntity.ok(ApiResponse.success("Item '" + key + "' do cache '" + cacheName + "' invalidado com sucesso", null));
+    @PostMapping("/clear/modules")
+    public ResponseEntity<ApiResponse<String>> clearModuleCache(@AuthenticationPrincipal User user) {
+        try {
+            cacheService.clearModuleCache();
+            return ResponseEntity.ok(ApiResponse.success("Cache de módulos limpo", "Cache de módulos foi limpo com sucesso"));
+        } catch (Exception e) {
+            log.error("Erro ao limpar cache de módulos: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Erro ao limpar cache de módulos: " + e.getMessage()));
+        }
     }
 
-    @PreAuthorize("hasRole('PROFESSIONAL')")
-    @DeleteMapping("/all")
-    public ResponseEntity<ApiResponse<String>> evictAllCaches() {
-        cacheService.evictAllCaches();
-        return ResponseEntity.ok(ApiResponse.success("Todos os caches foram invalidados", null));
+    @PostMapping("/clear/sessions")
+    public ResponseEntity<ApiResponse<String>> clearSessionCache(@AuthenticationPrincipal User user) {
+        try {
+            cacheService.clearSessionCache();
+            return ResponseEntity.ok(ApiResponse.success("Cache de sessões limpo", "Cache de sessões foi limpo com sucesso"));
+        } catch (Exception e) {
+            log.error("Erro ao limpar cache de sessões: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Erro ao limpar cache de sessões: " + e.getMessage()));
+        }
     }
-} 
+
+    @PostMapping("/clear/themes")
+    public ResponseEntity<ApiResponse<String>> clearThemeCache(@AuthenticationPrincipal User user) {
+        try {
+            cacheService.clearThemeCache();
+            return ResponseEntity.ok(ApiResponse.success("Cache de temas limpo", "Cache de temas foi limpo com sucesso"));
+        } catch (Exception e) {
+            log.error("Erro ao limpar cache de temas: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Erro ao limpar cache de temas: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<ApiResponse<CacheService.CacheInfo>> getCacheInfo(@AuthenticationPrincipal User user) {
+        try {
+            CacheService.CacheInfo cacheInfo = cacheService.getCacheInfo();
+            return ResponseEntity.ok(ApiResponse.success("Informações do cache obtidas com sucesso", cacheInfo));
+        } catch (Exception e) {
+            log.error("Erro ao obter informações do cache: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Erro ao obter informações do cache: " + e.getMessage()));
+        }
+    }
+}
