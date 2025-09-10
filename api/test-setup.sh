@@ -29,3 +29,4 @@ docker-compose logs api
 echo "✅ Teste concluído!"
 
 
+

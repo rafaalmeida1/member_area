@@ -21,7 +21,7 @@ export function createApiInstance(requireAuth = true): AxiosInstance {
       return config;
     });
 
-    // Interceptor para tratar respostas de erro
+    // Interceptor para tratar respostas de erro (sem redirecionar automaticamente)
     api.interceptors.response.use(
       (response) => response,
       (error) => {
@@ -37,11 +37,7 @@ export function createApiInstance(requireAuth = true): AxiosInstance {
           console.warn('Token inválido ou expirado, limpando localStorage...');
           localStorage.removeItem('auth_token');
           localStorage.removeItem('user_data');
-          
-          // Se não estamos na página de login, redirecionar
-          if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
-            window.location.href = '/login';
-          }
+          // Não redirecionar automaticamente; ProtectedRoute cuida do fluxo.
         }
 
         return Promise.reject(error);
